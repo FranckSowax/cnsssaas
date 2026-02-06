@@ -1,5 +1,4 @@
 const winston = require('winston');
-const path = require('path');
 
 // Configuration des niveaux de log
 const levels = {
@@ -10,7 +9,6 @@ const levels = {
   debug: 4
 };
 
-// Configuration des couleurs
 const colors = {
   error: 'red',
   warn: 'yellow',
@@ -21,44 +19,20 @@ const colors = {
 
 winston.addColors(colors);
 
-// Format de log
-const format = winston.format.combine(
-  winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss:ms' }),
-  winston.format.colorize({ all: true }),
-  winston.format.printf(
-    (info) => `${info.timestamp} ${info.level}: ${info.message}`
-  )
-);
-
-// Transports
+// Transports: console seulement (serverless = filesystem en lecture seule)
 const transports = [
-  // Console
   new winston.transports.Console({
     format: winston.format.combine(
+      winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
       winston.format.colorize(),
-      winston.format.simple()
+      winston.format.printf(info => `${info.timestamp} ${info.level}: ${info.message}`)
     )
-  }),
-  
-  // Fichier des erreurs
-  new winston.transports.File({
-    filename: path.join(__dirname, '../../logs/error.log'),
-    level: 'error',
-    format: winston.format.json()
-  }),
-  
-  // Fichier combiné
-  new winston.transports.File({
-    filename: path.join(__dirname, '../../logs/combined.log'),
-    format: winston.format.json()
   })
 ];
 
-// Créer le logger
 const logger = winston.createLogger({
   level: process.env.LOG_LEVEL || 'info',
   levels,
-  format,
   transports
 });
 
