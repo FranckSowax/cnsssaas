@@ -56,6 +56,20 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Database connection test
+app.get('/api/debug/db', async (req, res) => {
+  try {
+    const { PrismaClient } = require('@prisma/client');
+    const prisma = new PrismaClient();
+    const userCount = await prisma.user.count();
+    const contactCount = await prisma.contact.count();
+    await prisma.$disconnect();
+    res.json({ ok: true, users: userCount, contacts: contactCount, dbUrl: process.env.DATABASE_URL ? 'set (' + process.env.DATABASE_URL.substring(0, 30) + '...)' : 'NOT SET', jwtSecret: process.env.JWT_SECRET ? 'set' : 'NOT SET' });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message, dbUrl: process.env.DATABASE_URL ? 'set' : 'NOT SET' });
+  }
+});
+
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/campaigns', campaignRoutes);

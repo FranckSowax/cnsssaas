@@ -83,10 +83,11 @@ router.post('/login', authLimiter, async (req, res) => {
       }
     });
   } catch (error) {
-    logger.error('Login error', { error: error.message });
+    logger.error('Login error: ' + error.message);
     res.status(500).json({
       error: 'Erreur de connexion',
-      message: 'Une erreur est survenue lors de la connexion'
+      message: error.message,
+      hint: !process.env.DATABASE_URL ? 'DATABASE_URL non configuree' : !process.env.JWT_SECRET ? 'JWT_SECRET non configure' : undefined
     });
   }
 });
