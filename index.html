@@ -35,14 +35,74 @@
         .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
         .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
         @keyframes typing { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-10px); } }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .animate-spin { animation: spin 1s linear infinite; }
     </style>
 </head>
 <body>
     <div id="root"></div>
     <script type="text/babel">
-        const { useState, useEffect, useRef } = React;
+        const { useState, useEffect, useRef, useCallback } = React;
 
+        // =============================================
+        // API Layer
+        // =============================================
+        const API_BASE = '/api';
+
+        const authStore = {
+            getToken: () => localStorage.getItem('bgfi_token'),
+            setToken: (t) => localStorage.setItem('bgfi_token', t),
+            getUser: () => { try { return JSON.parse(localStorage.getItem('bgfi_user')); } catch(e) { return null; } },
+            setUser: (u) => localStorage.setItem('bgfi_user', JSON.stringify(u)),
+            clear: () => { localStorage.removeItem('bgfi_token'); localStorage.removeItem('bgfi_user'); },
+        };
+
+        const api = async (endpoint, options = {}) => {
+            const token = authStore.getToken();
+            const headers = { ...options.headers };
+            if (token) headers['Authorization'] = 'Bearer ' + token;
+            if (!(options.body instanceof FormData)) headers['Content-Type'] = 'application/json';
+            const res = await fetch(API_BASE + endpoint, { ...options, headers });
+            if (res.status === 401) { authStore.clear(); window.location.reload(); return; }
+            const contentType = res.headers.get('content-type');
+            if (contentType && contentType.includes('text/csv')) return res.blob();
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) throw new Error(data.error || data.message || 'Erreur ' + res.status);
+            return data;
+        };
+
+        const useApi = (endpoint, autoFetch = true) => {
+            const [data, setData] = useState(null);
+            const [loading, setLoading] = useState(autoFetch);
+            const [error, setError] = useState(null);
+            const fetchData = useCallback(async () => {
+                setLoading(true); setError(null);
+                try { const result = await api(endpoint); setData(result); }
+                catch (err) { setError(err.message); }
+                finally { setLoading(false); }
+            }, [endpoint]);
+            useEffect(() => { if (autoFetch) fetchData(); }, [fetchData, autoFetch]);
+            return { data, loading, error, refetch: fetchData };
+        };
+
+        const formatNum = (n) => {
+            if (!n && n !== 0) return '0';
+            if (n >= 1000000) return (n/1000000).toFixed(1) + 'M';
+            if (n >= 1000) return (n/1000).toFixed(1) + 'K';
+            return n.toLocaleString('fr-FR');
+        };
+
+        const statusMap = { DRAFT: 'Brouillon', SCHEDULED: 'Planifiee', RUNNING: 'En cours', COMPLETED: 'Terminee', CANCELLED: 'Annulee', SENT: 'Envoye' };
+        const statusVariant = { DRAFT: 'default', SCHEDULED: 'warning', RUNNING: 'info', COMPLETED: 'success', CANCELLED: 'danger' };
+        const segmentMap = { ACTIVE: 'Actif', INACTIVE: 'Inactif', VIP: 'VIP', NEW: 'Nouveau', PREMIUM: 'Premium' };
+        const segmentVariant = { ACTIVE: 'success', INACTIVE: 'warning', VIP: 'primary', NEW: 'info', PREMIUM: 'primary' };
+        const catMap = { MARKETING: 'Marketing', UTILITY: 'Utilitaire', AUTHENTICATION: 'Authentification', REACTIVATION: 'Reactivation', NOTIFICATION: 'Notification' };
+        const tplStatusMap = { PENDING: 'En attente', APPROVED: 'Approuve', REJECTED: 'Rejete' };
+        const tplStatusVariant = { PENDING: 'warning', APPROVED: 'success', REJECTED: 'danger' };
+
+        // =============================================
         // Icons
+        // =============================================
         const Icons = {
             LayoutDashboard: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>,
             Send: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22,2 15,22 11,13 2,9"/></svg>,
@@ -75,54 +135,17 @@
             Calendar: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>,
             RefreshCw: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>,
             Copy: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>,
+            LogOut: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>,
         };
 
-        // Mock Data
-        const mockCampaigns = [
-            { id: 1, name: 'Relance App Mobile - Janvier', status: 'completed', sent: 25000, delivered: 24200, read: 18900, clicked: 4200, date: '2026-01-15', type: 'reactivation' },
-            { id: 2, name: 'Nouvelle Vidéo Tutoriel', status: 'running', sent: 15000, delivered: 14500, read: 11200, clicked: 2800, date: '2026-02-01', type: 'tutorial' },
-            { id: 3, name: 'Maintenance Programmée', status: 'scheduled', sent: 0, delivered: 0, read: 0, clicked: 0, date: '2026-02-10', type: 'notification' },
-            { id: 4, name: 'Nouvelle Fonctionnalité', status: 'draft', sent: 0, delivered: 0, read: 0, clicked: 0, date: null, type: 'feature' },
-        ];
-
-        const mockContacts = [
-            { id: 1, name: 'Jean Dupont', phone: '+241 74 12 34 56', email: 'jean.dupont@email.com', segment: 'inactif', lastActivity: '2025-11-20', status: 'active' },
-            { id: 2, name: 'Marie Claire', phone: '+241 66 23 45 67', email: 'marie.claire@email.com', segment: 'actif', lastActivity: '2026-01-28', status: 'active' },
-            { id: 3, name: 'Pierre Martin', phone: '+241 74 34 56 78', email: 'pierre.martin@email.com', segment: 'inactif', lastActivity: '2025-10-15', status: 'active' },
-            { id: 4, name: 'Sophie Ndong', phone: '+241 66 45 67 89', email: 'sophie.ndong@email.com', segment: 'nouveau', lastActivity: '2026-02-05', status: 'active' },
-            { id: 5, name: 'Alain Moussa', phone: '+241 74 56 78 90', email: 'alain.moussa@email.com', segment: 'inactif', lastActivity: '2025-09-30', status: 'unsubscribed' },
-        ];
-
-        const mockTemplates = [
-            { id: 1, name: 'Relance Connexion', category: 'marketing', status: 'approved', content: 'Bonjour {{1}} ! Votre application BGFI vous attend. Reconnectez-vous en 1 clic : {{2}}' },
-            { id: 2, name: 'Nouveau Tutoriel', category: 'utility', status: 'approved', content: 'Decouvrez notre nouveau tutoriel "{{1}}" : {{2}}' },
-            { id: 3, name: 'Code OTP', category: 'authentication', status: 'approved', content: 'Votre code de verification BGFI est : {{1}}. Valide 5 minutes.' },
-            { id: 4, name: 'Maintenance Info', category: 'utility', status: 'pending', content: 'Maintenance programmee le {{1}} de {{2}} a {{3}}.' },
-        ];
-
-        const mockKnowledgeBase = [
-            { id: 1, name: 'FAQ_BGFI_2026.pdf', type: 'pdf', size: '2.4 MB', uploadedAt: '2026-01-10', status: 'indexed' },
-            { id: 2, name: 'Tarifs_Complets.xlsx', type: 'excel', size: '856 KB', uploadedAt: '2026-01-12', status: 'indexed' },
-            { id: 3, name: 'Procedures_Virements.docx', type: 'word', size: '1.2 MB', uploadedAt: '2026-01-15', status: 'indexed' },
-        ];
-
-        const mockChatHistory = [
-            { id: 1, role: 'user', content: 'Bonjour, comment puis-je recupérer mes identifiants ?', timestamp: '10:30' },
-            { id: 2, role: 'bot', content: 'Bonjour ! Pour recuperer vos identifiants BGFI, vous pouvez :\n\n1. Cliquer sur "Mot de passe oublie" sur l\'application\n2. Appeler le service client au 0770 12 34 56\n3. Vous rendre en agence avec une piece d\'identite\n\nSouhaitez-vous que je vous envoie le lien direct ?', timestamp: '10:31' },
-        ];
-
-        // Components
-        const Button = ({ children, onClick, variant = 'primary', size = 'md', className = '', disabled = false, icon: Icon }) => {
+        // =============================================
+        // UI Components
+        // =============================================
+        const Button = ({ children, onClick, variant = 'primary', size = 'md', className = '', disabled = false, icon: Icon, type = 'button' }) => {
             const baseClasses = 'inline-flex items-center justify-center gap-2 font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed';
-            const variants = {
-                primary: 'bg-bgfi-primary text-white hover:bg-bgfi-secondary shadow-md hover:shadow-lg',
-                secondary: 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 shadow-sm',
-                accent: 'bg-bgfi-accent text-white hover:bg-emerald-600 shadow-md hover:shadow-lg',
-                danger: 'bg-red-500 text-white hover:bg-red-600 shadow-md',
-                ghost: 'text-gray-600 hover:bg-gray-100 hover:text-gray-900',
-            };
+            const variants = { primary: 'bg-bgfi-primary text-white hover:bg-bgfi-secondary shadow-md hover:shadow-lg', secondary: 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 shadow-sm', accent: 'bg-bgfi-accent text-white hover:bg-emerald-600 shadow-md hover:shadow-lg', danger: 'bg-red-500 text-white hover:bg-red-600 shadow-md', ghost: 'text-gray-600 hover:bg-gray-100 hover:text-gray-900' };
             const sizes = { sm: 'px-3 py-1.5 text-sm', md: 'px-4 py-2 text-sm', lg: 'px-6 py-3 text-base' };
-            return <button onClick={onClick} disabled={disabled} className={`${baseClasses} ${variants[variant]} ${sizes[size]} ${className}`}>{Icon && <Icon />}{children}</button>;
+            return <button type={type} onClick={onClick} disabled={disabled} className={`${baseClasses} ${variants[variant]} ${sizes[size]} ${className}`}>{Icon && <Icon />}{children}</button>;
         };
 
         const Card = ({ children, className = '', title, action }) => (
@@ -159,13 +182,68 @@
 
         const StatCard = ({ title, value, change, changeType = 'positive', icon: Icon, color = 'blue' }) => {
             const colors = { blue: 'bg-blue-50 text-blue-600', green: 'bg-emerald-50 text-emerald-600', amber: 'bg-amber-50 text-amber-600', purple: 'bg-purple-50 text-purple-600', red: 'bg-red-50 text-red-600' };
-            return <Card className="h-full"><div className="flex items-start justify-between"><div><p className="text-sm font-medium text-gray-600">{title}</p><p className="text-2xl font-bold text-gray-900 mt-1">{value}</p>{change && <div className="flex items-center mt-2"><span className={`text-sm font-medium ${changeType === 'positive' ? 'text-emerald-600' : 'text-red-600'}`}>{`${changeType === 'positive' ? '+' : ''}${change}%`}</span><span className="text-sm text-gray-500 ml-1">vs mois dernier</span></div>}</div>{Icon && <div className={`p-3 rounded-xl ${colors[color]}`}><Icon /></div>}</div></Card>;
+            return <Card className="h-full"><div className="flex items-start justify-between"><div><p className="text-sm font-medium text-gray-600">{title}</p><p className="text-2xl font-bold text-gray-900 mt-1">{value}</p>{change !== undefined && <div className="flex items-center mt-2"><span className={`text-sm font-medium ${changeType === 'positive' ? 'text-emerald-600' : 'text-red-600'}`}>{changeType === 'positive' ? '+' : ''}{change}%</span><span className="text-sm text-gray-500 ml-1">vs mois dernier</span></div>}</div>{Icon && <div className={`p-3 rounded-xl ${colors[color]}`}><Icon /></div>}</div></Card>;
         };
 
+        const Spinner = () => <div className="flex items-center justify-center p-12"><div className="w-10 h-10 border-4 border-bgfi-primary border-t-transparent rounded-full animate-spin" /></div>;
+
+        const ErrorBox = ({ message, onRetry }) => (
+            <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
+                <p className="text-red-700 mb-3">{message}</p>
+                {onRetry && <Button variant="danger" size="sm" onClick={onRetry}>Reessayer</Button>}
+            </div>
+        );
+
+        // =============================================
+        // Login Page
+        // =============================================
+        const LoginPage = ({ onLogin }) => {
+            const [email, setEmail] = useState('');
+            const [password, setPassword] = useState('');
+            const [error, setError] = useState('');
+            const [loading, setLoading] = useState(false);
+
+            const handleSubmit = async (e) => {
+                e.preventDefault(); setError(''); setLoading(true);
+                try {
+                    const data = await api('/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) });
+                    authStore.setToken(data.token); authStore.setUser(data.user);
+                    onLogin(data.user);
+                } catch (err) { setError(err.message || 'Identifiants invalides'); }
+                finally { setLoading(false); }
+            };
+
+            return (
+                <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+                    <div className="max-w-md w-full">
+                        <div className="text-center mb-8">
+                            <div className="w-16 h-16 gradient-bg rounded-2xl flex items-center justify-center mx-auto mb-4"><span className="text-white font-bold text-2xl">B</span></div>
+                            <h1 className="text-2xl font-bold text-gray-900">BGFI Marketing</h1>
+                            <p className="text-gray-500 mt-1">WhatsApp SaaS Platform</p>
+                        </div>
+                        <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-lg p-8 space-y-6">
+                            {error && <div className="bg-red-50 text-red-700 px-4 py-3 rounded-xl text-sm">{error}</div>}
+                            <Input label="Email" type="email" placeholder="admin@bgfi.ga" value={email} onChange={setEmail} icon={Icons.Mail} />
+                            <Input label="Mot de passe" type="password" placeholder="********" value={password} onChange={setPassword} />
+                            <Button type="submit" className="w-full" size="lg" disabled={loading}>{loading ? 'Connexion...' : 'Se connecter'}</Button>
+                        </form>
+                        <p className="text-center text-xs text-gray-400 mt-6">BGFI WhatsApp Marketing SaaS v1.0</p>
+                    </div>
+                </div>
+            );
+        };
+
+        // =============================================
         // Main App
+        // =============================================
         const BGFIWhatsAppSaaS = () => {
+            const [user, setUser] = useState(authStore.getUser());
             const [activeTab, setActiveTab] = useState('dashboard');
             const [sidebarOpen, setSidebarOpen] = useState(true);
+
+            if (!user) return <LoginPage onLogin={setUser} />;
+
+            const handleLogout = () => { authStore.clear(); setUser(null); };
 
             const menuItems = [
                 { id: 'dashboard', label: 'Tableau de bord', icon: Icons.LayoutDashboard },
@@ -174,19 +252,19 @@
                 { id: 'contacts', label: 'Contacts', icon: Icons.Users },
                 { id: 'templates', label: 'Templates', icon: Icons.FileText },
                 { id: 'analytics', label: 'Analytics', icon: Icons.BarChart3 },
-                { id: 'settings', label: 'Paramètres', icon: Icons.Settings },
+                { id: 'settings', label: 'Parametres', icon: Icons.Settings },
             ];
 
             const renderContent = () => {
                 switch (activeTab) {
-                    case 'dashboard': return <DashboardView />;
+                    case 'dashboard': return <DashboardView onNavigate={setActiveTab} />;
                     case 'campaigns': return <CampaignsView />;
                     case 'chatbot': return <ChatbotView />;
                     case 'contacts': return <ContactsView />;
                     case 'templates': return <TemplatesView />;
                     case 'analytics': return <AnalyticsView />;
                     case 'settings': return <SettingsView />;
-                    default: return <DashboardView />;
+                    default: return <DashboardView onNavigate={setActiveTab} />;
                 }
             };
 
@@ -202,15 +280,16 @@
                         </div>
                         <nav className="p-4 space-y-1">
                             {menuItems.map(item => (
-                                <button key={item.id} onClick={() => setActiveTab(item.id)} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${activeTab === item.id ? 'bg-bgfi-primary text-white shadow-md' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'}`}>
+                                <button key={item.id} onClick={() => { setActiveTab(item.id); setSidebarOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${activeTab === item.id ? 'bg-bgfi-primary text-white shadow-md' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'}`}>
                                     <item.icon />{item.label}
                                 </button>
                             ))}
                         </nav>
                         <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200">
                             <div className="flex items-center gap-3 px-4 py-3 bg-gray-50 rounded-xl">
-                                <div className="w-10 h-10 bg-bgfi-accent rounded-full flex items-center justify-center text-white font-semibold">AD</div>
-                                <div className="flex-1 min-w-0"><p className="text-sm font-medium text-gray-900 truncate">Admin BGFI</p><p className="text-xs text-gray-500 truncate">admin@bgfi.ga</p></div>
+                                <div className="w-10 h-10 bg-bgfi-accent rounded-full flex items-center justify-center text-white font-semibold">{(user.name || 'U').substring(0, 2).toUpperCase()}</div>
+                                <div className="flex-1 min-w-0"><p className="text-sm font-medium text-gray-900 truncate">{user.name}</p><p className="text-xs text-gray-500 truncate">{user.email}</p></div>
+                                <button onClick={handleLogout} className="p-1.5 text-gray-400 hover:text-red-500 rounded-lg hover:bg-red-50" title="Deconnexion"><Icons.LogOut /></button>
                             </div>
                         </div>
                     </aside>
@@ -223,85 +302,102 @@
                             </div>
                             <div className="flex items-center gap-3">
                                 <button className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg relative"><Icons.MessageSquare /><span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" /></button>
-                                <button className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg"><Icons.Settings /></button>
+                                <button onClick={() => setActiveTab('settings')} className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg"><Icons.Settings /></button>
                             </div>
                         </header>
-
-                        <main className="flex-1 overflow-auto p-4 lg:p-8">
-                            <div className="max-w-7xl mx-auto animate-fade-in">{renderContent()}</div>
-                        </main>
+                        <main className="flex-1 overflow-auto p-4 lg:p-8"><div className="max-w-7xl mx-auto animate-fade-in">{renderContent()}</div></main>
                     </div>
                 </div>
             );
         };
 
+        // =============================================
         // Dashboard View
-        const DashboardView = () => {
+        // =============================================
+        const DashboardView = ({ onNavigate }) => {
+            const { data: dash, loading, error, refetch } = useApi('/analytics/dashboard');
+            const chartsRef = useRef({});
+
             useEffect(() => {
+                if (!dash) return;
+                // Destroy old charts
+                Object.values(chartsRef.current).forEach(c => c.destroy && c.destroy());
+                chartsRef.current = {};
                 const ctx1 = document.getElementById('campaignsChart');
                 const ctx2 = document.getElementById('engagementChart');
                 if (ctx1) {
-                    new Chart(ctx1, { type: 'line', data: { labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin'], datasets: [{ label: 'Messages Envoyés', data: [15000, 22000, 18000, 25000, 28000, 32000], borderColor: '#1e3a5f', backgroundColor: 'rgba(30, 58, 95, 0.1)', fill: true, tension: 0.4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } });
+                    const stats = dash.messageStats || {};
+                    const months = ['Jan', 'Fev', 'Mar', 'Avr', 'Mai', 'Juin'];
+                    chartsRef.current.c1 = new Chart(ctx1, { type: 'line', data: { labels: months, datasets: [{ label: 'Messages', data: [stats.SENT || 0, stats.DELIVERED || 0, stats.READ || 0, 0, 0, 0], borderColor: '#1e3a5f', backgroundColor: 'rgba(30, 58, 95, 0.1)', fill: true, tension: 0.4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } });
                 }
                 if (ctx2) {
-                    new Chart(ctx2, { type: 'doughnut', data: { labels: ['Lus', 'Non lus', 'Échoués'], datasets: [{ data: [78, 15, 7], backgroundColor: ['#00a86b', '#f59e0b', '#ef4444'] }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '70%' } });
+                    const o = dash.overview || {};
+                    const readPct = o.openRate || 0;
+                    const failPct = 100 - (o.deliveryRate || 100);
+                    const unreadPct = Math.max(0, 100 - readPct - failPct);
+                    chartsRef.current.c2 = new Chart(ctx2, { type: 'doughnut', data: { labels: ['Lus', 'Non lus', 'Echoues'], datasets: [{ data: [readPct, unreadPct, failPct], backgroundColor: ['#00a86b', '#f59e0b', '#ef4444'] }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '70%' } });
                 }
-            }, []);
+            }, [dash]);
+
+            if (loading) return <Spinner />;
+            if (error) return <ErrorBox message={error} onRetry={refetch} />;
+            if (!dash) return null;
+
+            const o = dash.overview || {};
+            const c = dash.campaigns || {};
+            const recent = dash.recentCampaigns || [];
 
             return (
                 <div className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        <StatCard title="Campagnes Actives" value="3" change="50" icon={Icons.Send} color="blue" />
-                        <StatCard title="Messages Envoyés" value="64.2K" change="23" icon={Icons.MessageSquare} color="green" />
-                        <StatCard title="Taux d'Ouverture" value="78.2%" change="5.2" icon={Icons.Eye} color="purple" />
-                        <StatCard title="Taux de Clic" value="22.4%" change="8.1" icon={Icons.MousePointer} color="amber" />
+                        <StatCard title="Campagnes Actives" value={c.active || 0} icon={Icons.Send} color="blue" />
+                        <StatCard title="Messages Envoyes" value={formatNum(o.totalMessages || 0)} icon={Icons.MessageSquare} color="green" />
+                        <StatCard title="Taux d'Ouverture" value={(o.openRate || 0).toFixed(1) + '%'} icon={Icons.Eye} color="purple" />
+                        <StatCard title="Taux de Clic" value={(o.clickRate || 0).toFixed(1) + '%'} icon={Icons.MousePointer} color="amber" />
                     </div>
-
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <Card title="Évolution des Campagnes" className="lg:col-span-2" action={<Button variant="ghost" size="sm" icon={Icons.Download}>Exporter</Button>}>
-                            <div className="h-64"><canvas id="campaignsChart" /></div>
-                        </Card>
+                        <Card title="Evolution des Campagnes" className="lg:col-span-2" action={<Button variant="ghost" size="sm" icon={Icons.Download}>Exporter</Button>}><div className="h-64"><canvas id="campaignsChart" /></div></Card>
                         <Card title="Engagement">
                             <div className="h-48"><canvas id="engagementChart" /></div>
                             <div className="mt-4 space-y-2">
-                                <div className="flex justify-between text-sm"><span className="text-gray-600">Lus</span><span className="font-medium text-emerald-600">78%</span></div>
-                                <div className="flex justify-between text-sm"><span className="text-gray-600">Non lus</span><span className="font-medium text-amber-600">15%</span></div>
-                                <div className="flex justify-between text-sm"><span className="text-gray-600">Échoués</span><span className="font-medium text-red-600">7%</span></div>
+                                <div className="flex justify-between text-sm"><span className="text-gray-600">Taux lecture</span><span className="font-medium text-emerald-600">{(o.openRate || 0).toFixed(0)}%</span></div>
+                                <div className="flex justify-between text-sm"><span className="text-gray-600">Taux delivrance</span><span className="font-medium text-blue-600">{(o.deliveryRate || 0).toFixed(0)}%</span></div>
+                                <div className="flex justify-between text-sm"><span className="text-gray-600">Taux clic</span><span className="font-medium text-amber-600">{(o.clickRate || 0).toFixed(0)}%</span></div>
                             </div>
                         </Card>
                     </div>
-
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <Card title="Campagnes Récentes" action={<Button variant="ghost" size="sm">Voir tout</Button>}>
+                        <Card title="Campagnes Recentes" action={<Button variant="ghost" size="sm" onClick={() => onNavigate('campaigns')}>Voir tout</Button>}>
                             <div className="space-y-4">
-                                {mockCampaigns.slice(0, 3).map(campaign => (
+                                {recent.length === 0 && <p className="text-sm text-gray-500 text-center py-4">Aucune campagne recente</p>}
+                                {recent.slice(0, 3).map(campaign => (
                                     <div key={campaign.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
                                         <div className="flex items-center gap-4">
-                                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${campaign.status === 'completed' ? 'bg-emerald-100 text-emerald-600' : campaign.status === 'running' ? 'bg-blue-100 text-blue-600' : campaign.status === 'scheduled' ? 'bg-amber-100 text-amber-600' : 'bg-gray-100 text-gray-600'}`}>
-                                                {campaign.status === 'completed' ? <Icons.CheckCircle /> : campaign.status === 'running' ? <Icons.Play /> : campaign.status === 'scheduled' ? <Icons.Clock /> : <Icons.FileText />}
+                                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${campaign.status === 'COMPLETED' ? 'bg-emerald-100 text-emerald-600' : campaign.status === 'RUNNING' ? 'bg-blue-100 text-blue-600' : campaign.status === 'SCHEDULED' ? 'bg-amber-100 text-amber-600' : 'bg-gray-100 text-gray-600'}`}>
+                                                {campaign.status === 'COMPLETED' ? <Icons.CheckCircle /> : campaign.status === 'RUNNING' ? <Icons.Play /> : campaign.status === 'SCHEDULED' ? <Icons.Clock /> : <Icons.FileText />}
                                             </div>
-                                            <div><p className="font-medium text-gray-900">{campaign.name}</p><p className="text-sm text-gray-500">{campaign.sent.toLocaleString()} envoyés • {campaign.date}</p></div>
+                                            <div><p className="font-medium text-gray-900">{campaign.name}</p><p className="text-sm text-gray-500">{new Date(campaign.createdAt).toLocaleDateString('fr-FR')}</p></div>
                                         </div>
-                                        <Badge variant={campaign.status === 'completed' ? 'success' : campaign.status === 'running' ? 'info' : campaign.status === 'scheduled' ? 'warning' : 'default'}>{campaign.status === 'completed' ? 'Terminée' : campaign.status === 'running' ? 'En cours' : campaign.status === 'scheduled' ? 'Planifiée' : 'Brouillon'}</Badge>
+                                        <Badge variant={statusVariant[campaign.status] || 'default'}>{statusMap[campaign.status] || campaign.status}</Badge>
                                     </div>
                                 ))}
                             </div>
                         </Card>
                         <Card title="Actions Rapides">
                             <div className="grid grid-cols-2 gap-4">
-                                <button className="p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl text-left hover:shadow-md transition-all group">
+                                <button onClick={() => onNavigate('campaigns')} className="p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl text-left hover:shadow-md transition-all group">
                                     <div className="w-12 h-12 bg-bgfi-primary rounded-xl flex items-center justify-center text-white mb-4 group-hover:scale-110 transition-transform"><Icons.Plus /></div>
-                                    <p className="font-semibold text-gray-900">Nouvelle Campagne</p><p className="text-sm text-gray-600 mt-1">Créer une campagne WhatsApp</p>
+                                    <p className="font-semibold text-gray-900">Nouvelle Campagne</p><p className="text-sm text-gray-600 mt-1">Creer une campagne WhatsApp</p>
                                 </button>
-                                <button className="p-6 bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl text-left hover:shadow-md transition-all group">
+                                <button onClick={() => onNavigate('contacts')} className="p-6 bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl text-left hover:shadow-md transition-all group">
                                     <div className="w-12 h-12 bg-bgfi-accent rounded-xl flex items-center justify-center text-white mb-4 group-hover:scale-110 transition-transform"><Icons.Upload /></div>
                                     <p className="font-semibold text-gray-900">Importer Contacts</p><p className="text-sm text-gray-600 mt-1">CSV ou Excel</p>
                                 </button>
-                                <button className="p-6 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl text-left hover:shadow-md transition-all group">
+                                <button onClick={() => onNavigate('chatbot')} className="p-6 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl text-left hover:shadow-md transition-all group">
                                     <div className="w-12 h-12 bg-purple-600 rounded-xl flex items-center justify-center text-white mb-4 group-hover:scale-110 transition-transform"><Icons.Bot /></div>
                                     <p className="font-semibold text-gray-900">Configurer Chatbot</p><p className="text-sm text-gray-600 mt-1">RAG & Base de connaissances</p>
                                 </button>
-                                <button className="p-6 bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl text-left hover:shadow-md transition-all group">
+                                <button onClick={() => onNavigate('templates')} className="p-6 bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl text-left hover:shadow-md transition-all group">
                                     <div className="w-12 h-12 bg-amber-600 rounded-xl flex items-center justify-center text-white mb-4 group-hover:scale-110 transition-transform"><Icons.FileText /></div>
                                     <p className="font-semibold text-gray-900">Nouveau Template</p><p className="text-sm text-gray-600 mt-1">Message WhatsApp</p>
                                 </button>
@@ -312,35 +408,58 @@
             );
         };
 
+        // =============================================
         // Campaigns View
+        // =============================================
         const CampaignsView = () => {
             const [showCreateModal, setShowCreateModal] = useState(false);
+            const { data, loading, error, refetch } = useApi('/campaigns?limit=50');
+            const { data: tplData } = useApi('/templates?status=APPROVED&limit=100');
+            const [form, setForm] = useState({ name: '', type: '', templateId: '', segment: '', scheduledAt: '' });
+            const [creating, setCreating] = useState(false);
+
+            const campaigns = data?.data || [];
+            const templates = tplData?.data || [];
+
+            const handleCreate = async () => {
+                setCreating(true);
+                try {
+                    await api('/campaigns', { method: 'POST', body: JSON.stringify(form) });
+                    setShowCreateModal(false); setForm({ name: '', type: '', templateId: '', segment: '', scheduledAt: '' });
+                    refetch();
+                } catch (err) { alert(err.message); }
+                finally { setCreating(false); }
+            };
+
+            const handleSend = async (id) => {
+                if (!confirm('Lancer cette campagne ?')) return;
+                try { await api('/campaigns/' + id + '/send', { method: 'POST' }); refetch(); }
+                catch (err) { alert(err.message); }
+            };
+
+            if (loading) return <Spinner />;
+            if (error) return <ErrorBox message={error} onRetry={refetch} />;
 
             return (
                 <div className="space-y-6">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                        <div className="flex items-center gap-4">
-                            <Input placeholder="Rechercher une campagne..." icon={Icons.Search} className="w-64" />
-                            <Button variant="secondary" size="sm" icon={Icons.Filter}>Filtrer</Button>
-                        </div>
+                        <div className="flex items-center gap-4"><Input placeholder="Rechercher une campagne..." icon={Icons.Search} className="w-64" /></div>
                         <Button onClick={() => setShowCreateModal(true)} icon={Icons.Plus}>Nouvelle Campagne</Button>
                     </div>
-
                     <Card>
                         <div className="overflow-x-auto">
                             <table className="w-full">
-                                <thead><tr className="border-b border-gray-200"><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Campagne</th><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Statut</th><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Envoyés</th><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Délivrés</th><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Lus</th><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Clics</th><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Date</th><th className="text-right py-3 px-4 text-sm font-medium text-gray-500">Actions</th></tr></thead>
+                                <thead><tr className="border-b border-gray-200"><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Campagne</th><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Statut</th><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Type</th><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Segment</th><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Date</th><th className="text-right py-3 px-4 text-sm font-medium text-gray-500">Actions</th></tr></thead>
                                 <tbody className="divide-y divide-gray-100">
-                                    {mockCampaigns.map(campaign => (
-                                        <tr key={campaign.id} className="hover:bg-gray-50">
-                                            <td className="py-4 px-4"><div className="flex items-center gap-3"><div className="w-10 h-10 bg-bgfi-primary/10 rounded-xl flex items-center justify-center text-bgfi-primary"><Icons.Send /></div><div><p className="font-medium text-gray-900">{campaign.name}</p><p className="text-sm text-gray-500">{campaign.type}</p></div></div></td>
-                                            <td className="py-4 px-4"><Badge variant={campaign.status === 'completed' ? 'success' : campaign.status === 'running' ? 'info' : campaign.status === 'scheduled' ? 'warning' : 'default'}>{campaign.status === 'completed' ? 'Terminée' : campaign.status === 'running' ? 'En cours' : campaign.status === 'scheduled' ? 'Planifiée' : 'Brouillon'}</Badge></td>
-                                            <td className="py-4 px-4 text-sm text-gray-900">{campaign.sent.toLocaleString()}</td>
-                                            <td className="py-4 px-4 text-sm text-gray-900">{campaign.delivered.toLocaleString()}</td>
-                                            <td className="py-4 px-4 text-sm text-gray-900">{campaign.read.toLocaleString()}</td>
-                                            <td className="py-4 px-4 text-sm text-gray-900">{campaign.clicked.toLocaleString()}</td>
-                                            <td className="py-4 px-4 text-sm text-gray-500">{campaign.date || '-'}</td>
-                                            <td className="py-4 px-4 text-right"><div className="flex items-center justify-end gap-2">{campaign.status === 'draft' && <Button variant="ghost" size="sm" icon={Icons.Play} />}<Button variant="ghost" size="sm" icon={Icons.Edit} /><Button variant="ghost" size="sm" icon={Icons.MoreVertical} /></div></td>
+                                    {campaigns.length === 0 && <tr><td colSpan="6" className="py-8 text-center text-gray-500">Aucune campagne</td></tr>}
+                                    {campaigns.map(c => (
+                                        <tr key={c.id} className="hover:bg-gray-50">
+                                            <td className="py-4 px-4"><div className="flex items-center gap-3"><div className="w-10 h-10 bg-bgfi-primary/10 rounded-xl flex items-center justify-center text-bgfi-primary"><Icons.Send /></div><div><p className="font-medium text-gray-900">{c.name}</p><p className="text-sm text-gray-500">{c.template?.name || '-'}</p></div></div></td>
+                                            <td className="py-4 px-4"><Badge variant={statusVariant[c.status] || 'default'}>{statusMap[c.status] || c.status}</Badge></td>
+                                            <td className="py-4 px-4 text-sm text-gray-600">{catMap[c.type] || c.type}</td>
+                                            <td className="py-4 px-4 text-sm text-gray-600">{segmentMap[c.segment] || c.segment || '-'}</td>
+                                            <td className="py-4 px-4 text-sm text-gray-500">{c.createdAt ? new Date(c.createdAt).toLocaleDateString('fr-FR') : '-'}</td>
+                                            <td className="py-4 px-4 text-right"><div className="flex items-center justify-end gap-2">{c.status === 'DRAFT' && <Button variant="accent" size="sm" icon={Icons.Play} onClick={() => handleSend(c.id)}>Lancer</Button>}<Button variant="ghost" size="sm" icon={Icons.Eye} /></div></td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -356,24 +475,19 @@
                                     <button onClick={() => setShowCreateModal(false)} className="text-gray-400 hover:text-gray-600"><Icons.X /></button>
                                 </div>
                                 <div className="p-6 space-y-6">
-                                    <Input label="Nom de la campagne" placeholder="Ex: Relance App Mobile - Février" />
+                                    <Input label="Nom de la campagne" placeholder="Ex: Relance App Mobile - Fevrier" value={form.name} onChange={v => setForm({...form, name: v})} />
                                     <div className="grid grid-cols-2 gap-4">
-                                        <Select label="Type de campagne" options={[{ value: '', label: 'Sélectionner...' }, { value: 'reactivation', label: 'Réactivation' }, { value: 'tutorial', label: 'Tutoriel' }, { value: 'notification', label: 'Notification' }, { value: 'feature', label: 'Nouvelle fonctionnalité' }]} />
-                                        <Select label="Template" options={[{ value: '', label: 'Sélectionner...' }, { value: '1', label: 'Relance Connexion' }, { value: '2', label: 'Nouveau Tutoriel' }, { value: '3', label: 'Maintenance Info' }]} />
+                                        <Select label="Type" value={form.type} onChange={v => setForm({...form, type: v})} options={[{ value: '', label: 'Selectionner...' }, { value: 'REACTIVATION', label: 'Reactivation' }, { value: 'PROMOTIONAL', label: 'Promotion' }, { value: 'NOTIFICATION', label: 'Notification' }]} />
+                                        <Select label="Template" value={form.templateId} onChange={v => setForm({...form, templateId: v})} options={[{ value: '', label: 'Selectionner...' }, ...templates.map(t => ({ value: t.id, label: t.displayName || t.name }))]} />
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
-                                        <Select label="Segment" options={[{ value: '', label: 'Sélectionner...' }, { value: 'all', label: 'Tous les contacts' }, { value: 'inactif', label: 'Inactifs' }, { value: 'actif', label: 'Actifs' }, { value: 'nouveau', label: 'Nouveaux' }]} />
-                                        <Input label="Date d'envoi" type="datetime-local" />
+                                        <Select label="Segment" value={form.segment} onChange={v => setForm({...form, segment: v})} options={[{ value: '', label: 'Tous les contacts' }, { value: 'ACTIVE', label: 'Actifs' }, { value: 'INACTIVE', label: 'Inactifs' }, { value: 'NEW', label: 'Nouveaux' }, { value: 'VIP', label: 'VIP' }]} />
+                                        <Input label="Date d'envoi" type="datetime-local" value={form.scheduledAt} onChange={v => setForm({...form, scheduledAt: v})} />
                                     </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">Message</label>
-                                        <textarea className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-bgfi-primary focus:ring-bgfi-primary sm:text-sm px-4 py-3 border" rows="4" placeholder="Bonjour {{nom}} ! Votre application BGFI vous attend..." defaultValue="Bonjour {{nom}} ! Votre application BGFI vous attend. Reconnectez-vous en 1 clic : {{lien}}" />
-                                    </div>
-                                    <div className="bg-blue-50 p-4 rounded-xl"><p className="text-sm text-blue-800"><strong>Aperçu :</strong> Cette campagne ciblera environ <strong>25,000 contacts</strong> du segment sélectionné.</p></div>
                                 </div>
                                 <div className="p-6 border-t border-gray-200 flex justify-end gap-3">
                                     <Button variant="secondary" onClick={() => setShowCreateModal(false)}>Annuler</Button>
-                                    <Button onClick={() => setShowCreateModal(false)} icon={Icons.CheckCircle}>Créer la campagne</Button>
+                                    <Button onClick={handleCreate} disabled={creating || !form.name} icon={Icons.CheckCircle}>{creating ? 'Creation...' : 'Creer la campagne'}</Button>
                                 </div>
                             </div>
                         </div>
@@ -382,38 +496,50 @@
             );
         };
 
+        // =============================================
         // Chatbot RAG View
+        // =============================================
         const ChatbotView = () => {
-            const [messages, setMessages] = useState(mockChatHistory);
+            const [messages, setMessages] = useState([]);
             const [inputMessage, setInputMessage] = useState('');
             const [isTyping, setIsTyping] = useState(false);
             const [activeTab, setActiveTab] = useState('chat');
-            const [uploadedFiles, setUploadedFiles] = useState(mockKnowledgeBase);
+            const { data: knowledgeData, refetch: refetchKB } = useApi('/chatbot/knowledge');
+            const [sessionId, setSessionId] = useState(null);
             const messagesEndRef = useRef(null);
+
+            const uploadedFiles = knowledgeData?.documents || [];
 
             useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
 
-            const handleSendMessage = () => {
+            const handleSendMessage = async () => {
                 if (!inputMessage.trim()) return;
-                const newMessage = { id: Date.now(), role: 'user', content: inputMessage, timestamp: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) };
-                setMessages(prev => [...prev, newMessage]);
-                setInputMessage('');
-                setIsTyping(true);
-                setTimeout(() => {
-                    const botResponses = ['Je comprends votre demande. Laissez-moi consulter la base de connaissances BGFI...', "D'apres notre documentation, voici la procedure :\n\n1. Connectez-vous a l'application\n2. Allez dans 'Parametres'\n3. Selectionnez 'Securite'\n4. Cliquez sur 'Modifier mon code'", 'Pour plus d\'informations, je vous invite a consulter notre FAQ ou a contacter le service client au 0770 12 34 56.'];
-                    const botMessage = { id: Date.now() + 1, role: 'bot', content: botResponses[Math.floor(Math.random() * botResponses.length)], timestamp: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) };
-                    setMessages(prev => [...prev, botMessage]);
-                    setIsTyping(false);
-                }, 1500);
+                const userMsg = { id: Date.now(), role: 'user', content: inputMessage, timestamp: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) };
+                setMessages(prev => [...prev, userMsg]);
+                const msgText = inputMessage;
+                setInputMessage(''); setIsTyping(true);
+                try {
+                    const res = await api('/chatbot/message', { method: 'POST', body: JSON.stringify({ message: msgText, sessionId }) });
+                    if (res.sessionId) setSessionId(res.sessionId);
+                    setMessages(prev => [...prev, { id: Date.now()+1, role: 'bot', content: res.response || res.message || 'Pas de reponse', timestamp: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) }]);
+                } catch (err) {
+                    setMessages(prev => [...prev, { id: Date.now()+1, role: 'bot', content: 'Erreur: ' + err.message, timestamp: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) }]);
+                } finally { setIsTyping(false); }
             };
 
-            const handleFileUpload = (e) => {
+            const handleFileUpload = async (e) => {
                 const files = Array.from(e.target.files);
-                files.forEach(file => {
-                    const newFile = { id: Date.now(), name: file.name, type: file.name.split('.').pop(), size: (file.size / 1024 / 1024).toFixed(2) + ' MB', uploadedAt: new Date().toISOString().split('T')[0], status: 'processing' };
-                    setUploadedFiles(prev => [newFile, ...prev]);
-                    setTimeout(() => { setUploadedFiles(prev => prev.map(f => f.id === newFile.id ? { ...f, status: 'indexed' } : f)); }, 3000);
-                });
+                for (const file of files) {
+                    const fd = new FormData(); fd.append('file', file);
+                    try { await api('/chatbot/knowledge/upload', { method: 'POST', body: fd }); refetchKB(); }
+                    catch (err) { alert('Erreur upload: ' + err.message); }
+                }
+            };
+
+            const handleDeleteDoc = async (id) => {
+                if (!confirm('Supprimer ce document ?')) return;
+                try { await api('/chatbot/knowledge/' + id, { method: 'DELETE' }); refetchKB(); }
+                catch (err) { alert(err.message); }
             };
 
             return (
@@ -428,6 +554,7 @@
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                             <Card className="lg:col-span-2" title="Conversation de Test">
                                 <div className="h-96 overflow-y-auto space-y-4 mb-4 pr-2">
+                                    {messages.length === 0 && <p className="text-center text-gray-400 py-16">Envoyez un message pour tester le chatbot</p>}
                                     {messages.map(msg => (
                                         <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                                             <div className={`max-w-[80%] rounded-2xl px-4 py-3 ${msg.role === 'user' ? 'bg-bgfi-primary text-white rounded-br-md' : 'bg-gray-100 text-gray-900 rounded-bl-md'}`}>
@@ -440,22 +567,14 @@
                                     <div ref={messagesEndRef} />
                                 </div>
                                 <div className="flex gap-2">
-                                    <input type="text" value={inputMessage} onChange={(e) => setInputMessage(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()} placeholder="Écrivez votre message..." className="flex-1 rounded-xl border-gray-300 shadow-sm focus:border-bgfi-primary focus:ring-bgfi-primary px-4 py-3 border" />
-                                    <Button onClick={handleSendMessage} icon={Icons.Send}>Envoyer</Button>
+                                    <input type="text" value={inputMessage} onChange={(e) => setInputMessage(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()} placeholder="Ecrivez votre message..." className="flex-1 rounded-xl border-gray-300 shadow-sm focus:border-bgfi-primary focus:ring-bgfi-primary px-4 py-3 border" />
+                                    <Button onClick={handleSendMessage} disabled={isTyping} icon={Icons.Send}>Envoyer</Button>
                                 </div>
                             </Card>
-
                             <div className="space-y-6">
-                                <Card title="Statistiques du Bot">
-                                    <div className="space-y-4">
-                                        <div><div className="flex justify-between text-sm mb-1"><span className="text-gray-600">Précision RAG</span><span className="font-medium text-gray-900">94.2%</span></div><ProgressBar value={94.2} color="bg-emerald-500" /></div>
-                                        <div><div className="flex justify-between text-sm mb-1"><span className="text-gray-600">Taux de Satisfaction</span><span className="font-medium text-gray-900">87.5%</span></div><ProgressBar value={87.5} color="bg-blue-500" /></div>
-                                        <div><div className="flex justify-between text-sm mb-1"><span className="text-gray-600">Documents Indexés</span><span className="font-medium text-gray-900">42</span></div><ProgressBar value={84} max={50} color="bg-purple-500" /></div>
-                                    </div>
-                                </Card>
                                 <Card title="Suggestions Rapides">
                                     <div className="space-y-2">
-                                        {['Comment récupérer mes identifiants ?', 'Quels sont les frais de virement ?', 'Comment activer la biométrie ?', 'Comment faire un retrait ?'].map((suggestion, i) => (
+                                        {['Comment recuperer mes identifiants ?', 'Quels sont les frais de virement ?', 'Comment activer la biometrie ?', 'Comment faire un retrait ?'].map((suggestion, i) => (
                                             <button key={i} onClick={() => setInputMessage(suggestion)} className="w-full text-left px-4 py-3 text-sm text-gray-700 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">{suggestion}</button>
                                         ))}
                                     </div>
@@ -467,10 +586,7 @@
                     {activeTab === 'knowledge' && (
                         <div className="space-y-6">
                             <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-4">
-                                    <Input placeholder="Rechercher un document..." icon={Icons.Search} className="w-80" />
-                                    <Select options={[{ value: '', label: 'Tous les types' }, { value: 'pdf', label: 'PDF' }, { value: 'excel', label: 'Excel' }, { value: 'word', label: 'Word' }]} />
-                                </div>
+                                <Input placeholder="Rechercher un document..." icon={Icons.Search} className="w-80" />
                                 <div>
                                     <input type="file" multiple onChange={handleFileUpload} className="hidden" id="file-upload" accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.csv" />
                                     <label htmlFor="file-upload"><Button variant="primary" icon={Icons.Upload} onClick={() => document.getElementById('file-upload').click()}>Uploader un document</Button></label>
@@ -479,16 +595,15 @@
                             <Card>
                                 <div className="overflow-x-auto">
                                     <table className="w-full">
-                                        <thead><tr className="border-b border-gray-200"><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Document</th><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Type</th><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Taille</th><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Uploadé le</th><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Statut</th><th className="text-right py-3 px-4 text-sm font-medium text-gray-500">Actions</th></tr></thead>
+                                        <thead><tr className="border-b border-gray-200"><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Document</th><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Type</th><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Date</th><th className="text-right py-3 px-4 text-sm font-medium text-gray-500">Actions</th></tr></thead>
                                         <tbody className="divide-y divide-gray-100">
+                                            {uploadedFiles.length === 0 && <tr><td colSpan="4" className="py-8 text-center text-gray-500">Aucun document dans la base</td></tr>}
                                             {uploadedFiles.map(file => (
                                                 <tr key={file.id} className="hover:bg-gray-50">
-                                                    <td className="py-4 px-4"><div className="flex items-center gap-3"><div className={`w-10 h-10 rounded-xl flex items-center justify-center ${file.type === 'pdf' ? 'bg-red-100 text-red-600' : file.type === 'excel' ? 'bg-emerald-100 text-emerald-600' : 'bg-blue-100 text-blue-600'}`}><Icons.FileText /></div><span className="font-medium text-gray-900">{file.name}</span></div></td>
-                                                    <td className="py-4 px-4 text-sm text-gray-600 uppercase">{file.type}</td>
-                                                    <td className="py-4 px-4 text-sm text-gray-600">{file.size}</td>
-                                                    <td className="py-4 px-4 text-sm text-gray-600">{file.uploadedAt}</td>
-                                                    <td className="py-4 px-4"><Badge variant={file.status === 'indexed' ? 'success' : 'warning'}>{file.status === 'indexed' ? 'Indexé' : 'En cours...'}</Badge></td>
-                                                    <td className="py-4 px-4 text-right"><div className="flex items-center justify-end gap-2"><Button variant="ghost" size="sm" icon={Icons.Eye} /><Button variant="ghost" size="sm" icon={Icons.Trash2} /></div></td>
+                                                    <td className="py-4 px-4"><div className="flex items-center gap-3"><div className="w-10 h-10 bg-red-100 text-red-600 rounded-xl flex items-center justify-center"><Icons.FileText /></div><span className="font-medium text-gray-900">{file.name}</span></div></td>
+                                                    <td className="py-4 px-4 text-sm text-gray-600 uppercase">{file.type || '-'}</td>
+                                                    <td className="py-4 px-4 text-sm text-gray-600">{file.uploadedAt ? new Date(file.uploadedAt).toLocaleDateString('fr-FR') : '-'}</td>
+                                                    <td className="py-4 px-4 text-right"><Button variant="ghost" size="sm" icon={Icons.Trash2} onClick={() => handleDeleteDoc(file.id)} /></td>
                                                 </tr>
                                             ))}
                                         </tbody>
@@ -500,21 +615,20 @@
 
                     {activeTab === 'config' && (
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            <Card title="Paramètres RAG">
+                            <Card title="Parametres RAG">
                                 <div className="space-y-6">
-                                    <div><label className="block text-sm font-medium text-gray-700 mb-2">Modèle LLM</label><Select value="gpt-4" options={[{ value: 'gpt-4', label: 'GPT-4 (Recommandé)' }, { value: 'gpt-3.5', label: 'GPT-3.5 Turbo' }, { value: 'claude', label: 'Claude 3' }, { value: 'local', label: 'Modèle Local (LLaMA)' }]} /></div>
+                                    <Select label="Modele LLM" value="gpt-4" options={[{ value: 'gpt-4', label: 'GPT-4 (Recommande)' }, { value: 'gpt-3.5', label: 'GPT-3.5 Turbo' }]} />
                                     <div><label className="block text-sm font-medium text-gray-700 mb-2">Nombre de chunks (contexte)</label><input type="range" min="1" max="10" defaultValue="5" className="w-full" /><div className="flex justify-between text-xs text-gray-500 mt-1"><span>1</span><span>5</span><span>10</span></div></div>
-                                    <div><label className="block text-sm font-medium text-gray-700 mb-2">Seuil de similarité</label><input type="range" min="0" max="100" defaultValue="75" className="w-full" /><div className="flex justify-between text-xs text-gray-500 mt-1"><span>0%</span><span>75%</span><span>100%</span></div></div>
+                                    <div><label className="block text-sm font-medium text-gray-700 mb-2">Seuil de similarite</label><input type="range" min="0" max="100" defaultValue="75" className="w-full" /><div className="flex justify-between text-xs text-gray-500 mt-1"><span>0%</span><span>75%</span><span>100%</span></div></div>
                                     <div className="flex items-center gap-3"><input type="checkbox" id="citations" defaultChecked className="w-4 h-4 text-bgfi-primary rounded" /><label htmlFor="citations" className="text-sm text-gray-700">Inclure les citations des sources</label></div>
-                                    <div className="flex items-center gap-3"><input type="checkbox" id="fallback" defaultChecked className="w-4 h-4 text-bgfi-primary rounded" /><label htmlFor="fallback" className="text-sm text-gray-700">Réponse de secours si aucune source trouvée</label></div>
+                                    <div className="flex items-center gap-3"><input type="checkbox" id="fallback" defaultChecked className="w-4 h-4 text-bgfi-primary rounded" /><label htmlFor="fallback" className="text-sm text-gray-700">Reponse de secours si aucune source trouvee</label></div>
                                 </div>
                             </Card>
                             <Card title="Personnalisation du Bot">
                                 <div className="space-y-6">
-                                    <Input label="Nom du Bot" value="Cassiopée" />
-                                    <div><label className="block text-sm font-medium text-gray-700 mb-2">Message d'accueil</label><textarea className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-bgfi-primary focus:ring-bgfi-primary sm:text-sm px-4 py-3 border" rows="3" defaultValue="Bonjour ! Je suis Cassiopée, votre assistant BGFI disponible 24/7. Comment puis-je vous aider aujourd'hui ?" /></div>
-                                    <div><label className="block text-sm font-medium text-gray-700 mb-2">Instructions système (prompt)</label><textarea className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-bgfi-primary focus:ring-bgfi-primary sm:text-sm px-4 py-3 border font-mono text-xs" rows="6" defaultValue={`Tu es Cassiopée, l'assistant virtuel de BGFI Bank.\n\nRÈGLES:\n- Réponds uniquement en français\n- Base-toi UNIQUEMENT sur la documentation fournie\n- Si tu ne trouves pas la réponse, oriente vers le service client\n- Sois professionnel, chaleureux et concis\n- Ne partage JAMAIS d'informations sensibles`} /></div>
-                                    <Button icon={Icons.Sparkles}>Générer avec l'IA</Button>
+                                    <Input label="Nom du Bot" value="Cassiopee" />
+                                    <div><label className="block text-sm font-medium text-gray-700 mb-2">Message d'accueil</label><textarea className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-bgfi-primary focus:ring-bgfi-primary sm:text-sm px-4 py-3 border" rows="3" defaultValue="Bonjour ! Je suis Cassiopee, votre assistant BGFI disponible 24/7. Comment puis-je vous aider aujourd'hui ?" /></div>
+                                    <div><label className="block text-sm font-medium text-gray-700 mb-2">Instructions systeme (prompt)</label><textarea className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-bgfi-primary focus:ring-bgfi-primary sm:text-sm px-4 py-3 border font-mono text-xs" rows="6" defaultValue={`Tu es Cassiopee, l'assistant virtuel de BGFI Bank.\n\nREGLES:\n- Reponds uniquement en francais\n- Base-toi UNIQUEMENT sur la documentation fournie\n- Si tu ne trouves pas la reponse, oriente vers le service client\n- Sois professionnel, chaleureux et concis\n- Ne partage JAMAIS d'informations sensibles`} /></div>
                                 </div>
                             </Card>
                         </div>
@@ -523,43 +637,105 @@
             );
         };
 
+        // =============================================
         // Contacts View
+        // =============================================
         const ContactsView = () => {
             const [showImportModal, setShowImportModal] = useState(false);
+            const [showAddModal, setShowAddModal] = useState(false);
+            const [search, setSearch] = useState('');
+            const [segmentFilter, setSegmentFilter] = useState('');
+            const { data, loading, error, refetch } = useApi('/contacts?limit=50' + (search ? '&search=' + encodeURIComponent(search) : '') + (segmentFilter ? '&segment=' + segmentFilter : ''));
+            const [form, setForm] = useState({ name: '', phone: '', email: '', segment: 'ACTIVE' });
+            const [creating, setCreating] = useState(false);
+
+            const contacts = data?.data || [];
+
+            const handleCreate = async () => {
+                setCreating(true);
+                try {
+                    await api('/contacts', { method: 'POST', body: JSON.stringify(form) });
+                    setShowAddModal(false); setForm({ name: '', phone: '', email: '', segment: 'ACTIVE' }); refetch();
+                } catch (err) { alert(err.message); }
+                finally { setCreating(false); }
+            };
+
+            const handleDelete = async (id) => {
+                if (!confirm('Supprimer ce contact ?')) return;
+                try { await api('/contacts/' + id, { method: 'DELETE' }); refetch(); }
+                catch (err) { alert(err.message); }
+            };
+
+            const handleImport = async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const fd = new FormData(); fd.append('file', file);
+                try {
+                    const res = await api('/contacts/import', { method: 'POST', body: fd });
+                    alert('Importes: ' + (res.imported || 0) + ' | Echoues: ' + (res.failed || 0));
+                    setShowImportModal(false); refetch();
+                } catch (err) { alert('Erreur import: ' + err.message); }
+            };
+
+            if (loading) return <Spinner />;
+            if (error) return <ErrorBox message={error} onRetry={refetch} />;
 
             return (
                 <div className="space-y-6">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                         <div className="flex items-center gap-4">
-                            <Input placeholder="Rechercher un contact..." icon={Icons.Search} className="w-64" />
-                            <Select options={[{ value: '', label: 'Tous les segments' }, { value: 'inactif', label: 'Inactifs' }, { value: 'actif', label: 'Actifs' }, { value: 'nouveau', label: 'Nouveaux' }]} />
+                            <Input placeholder="Rechercher un contact..." icon={Icons.Search} className="w-64" value={search} onChange={setSearch} />
+                            <Select value={segmentFilter} onChange={setSegmentFilter} options={[{ value: '', label: 'Tous les segments' }, { value: 'ACTIVE', label: 'Actifs' }, { value: 'INACTIVE', label: 'Inactifs' }, { value: 'NEW', label: 'Nouveaux' }, { value: 'VIP', label: 'VIP' }]} />
                         </div>
                         <div className="flex gap-2">
                             <Button variant="secondary" onClick={() => setShowImportModal(true)} icon={Icons.Upload}>Importer</Button>
-                            <Button icon={Icons.Plus}>Ajouter</Button>
+                            <Button icon={Icons.Plus} onClick={() => setShowAddModal(true)}>Ajouter</Button>
                         </div>
                     </div>
 
                     <Card>
                         <div className="overflow-x-auto">
                             <table className="w-full">
-                                <thead><tr className="border-b border-gray-200"><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Contact</th><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Téléphone</th><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Email</th><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Segment</th><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Dernière activité</th><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Statut</th><th className="text-right py-3 px-4 text-sm font-medium text-gray-500">Actions</th></tr></thead>
+                                <thead><tr className="border-b border-gray-200"><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Contact</th><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Telephone</th><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Email</th><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Segment</th><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Derniere activite</th><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Opt-in</th><th className="text-right py-3 px-4 text-sm font-medium text-gray-500">Actions</th></tr></thead>
                                 <tbody className="divide-y divide-gray-100">
-                                    {mockContacts.map(contact => (
+                                    {contacts.length === 0 && <tr><td colSpan="7" className="py-8 text-center text-gray-500">Aucun contact</td></tr>}
+                                    {contacts.map(contact => (
                                         <tr key={contact.id} className="hover:bg-gray-50">
-                                            <td className="py-4 px-4"><div className="flex items-center gap-3"><div className="w-10 h-10 bg-bgfi-primary/10 rounded-full flex items-center justify-center text-bgfi-primary font-semibold">{contact.name.split(' ').map(n => n[0]).join('')}</div><span className="font-medium text-gray-900">{contact.name}</span></div></td>
+                                            <td className="py-4 px-4"><div className="flex items-center gap-3"><div className="w-10 h-10 bg-bgfi-primary/10 rounded-full flex items-center justify-center text-bgfi-primary font-semibold">{(contact.name || '?').split(' ').map(n => n[0]).join('').substring(0,2)}</div><span className="font-medium text-gray-900">{contact.name || '-'}</span></div></td>
                                             <td className="py-4 px-4 text-sm text-gray-600">{contact.phone}</td>
-                                            <td className="py-4 px-4 text-sm text-gray-600">{contact.email}</td>
-                                            <td className="py-4 px-4"><Badge variant={contact.segment === 'actif' ? 'success' : contact.segment === 'nouveau' ? 'info' : 'warning'}>{contact.segment}</Badge></td>
-                                            <td className="py-4 px-4 text-sm text-gray-600">{contact.lastActivity}</td>
-                                            <td className="py-4 px-4"><Badge variant={contact.status === 'active' ? 'success' : 'danger'}>{contact.status === 'active' ? 'Actif' : 'Désabonné'}</Badge></td>
-                                            <td className="py-4 px-4 text-right"><div className="flex items-center justify-end gap-2"><Button variant="ghost" size="sm" icon={Icons.Edit} /><Button variant="ghost" size="sm" icon={Icons.Trash2} /></div></td>
+                                            <td className="py-4 px-4 text-sm text-gray-600">{contact.email || '-'}</td>
+                                            <td className="py-4 px-4"><Badge variant={segmentVariant[contact.segment] || 'default'}>{segmentMap[contact.segment] || contact.segment}</Badge></td>
+                                            <td className="py-4 px-4 text-sm text-gray-600">{contact.lastActivity ? new Date(contact.lastActivity).toLocaleDateString('fr-FR') : '-'}</td>
+                                            <td className="py-4 px-4"><Badge variant={contact.optedIn ? 'success' : 'danger'}>{contact.optedIn ? 'Oui' : 'Non'}</Badge></td>
+                                            <td className="py-4 px-4 text-right"><div className="flex items-center justify-end gap-2"><Button variant="ghost" size="sm" icon={Icons.Trash2} onClick={() => handleDelete(contact.id)} /></div></td>
                                         </tr>
                                     ))}
                                 </tbody>
                             </table>
                         </div>
+                        {data?.pagination && <div className="mt-4 text-sm text-gray-500 text-center">{data.pagination.total} contacts au total</div>}
                     </Card>
+
+                    {showAddModal && (
+                        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                            <div className="bg-white rounded-2xl max-w-lg w-full">
+                                <div className="p-6 border-b border-gray-200 flex items-center justify-between">
+                                    <h2 className="text-xl font-semibold text-gray-900">Ajouter un Contact</h2>
+                                    <button onClick={() => setShowAddModal(false)} className="text-gray-400 hover:text-gray-600"><Icons.X /></button>
+                                </div>
+                                <div className="p-6 space-y-4">
+                                    <Input label="Nom" placeholder="Jean Dupont" value={form.name} onChange={v => setForm({...form, name: v})} />
+                                    <Input label="Telephone" placeholder="+24174000001" value={form.phone} onChange={v => setForm({...form, phone: v})} icon={Icons.Phone} />
+                                    <Input label="Email" placeholder="jean@email.com" value={form.email} onChange={v => setForm({...form, email: v})} icon={Icons.Mail} />
+                                    <Select label="Segment" value={form.segment} onChange={v => setForm({...form, segment: v})} options={[{ value: 'ACTIVE', label: 'Actif' }, { value: 'INACTIVE', label: 'Inactif' }, { value: 'NEW', label: 'Nouveau' }, { value: 'VIP', label: 'VIP' }]} />
+                                </div>
+                                <div className="p-6 border-t border-gray-200 flex justify-end gap-3">
+                                    <Button variant="secondary" onClick={() => setShowAddModal(false)}>Annuler</Button>
+                                    <Button onClick={handleCreate} disabled={creating || !form.phone} icon={Icons.CheckCircle}>{creating ? 'Ajout...' : 'Ajouter'}</Button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
                     {showImportModal && (
                         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -569,19 +745,16 @@
                                     <button onClick={() => setShowImportModal(false)} className="text-gray-400 hover:text-gray-600"><Icons.X /></button>
                                 </div>
                                 <div className="p-6 space-y-6">
-                                    <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-bgfi-primary hover:bg-blue-50 transition-colors cursor-pointer">
+                                    <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-bgfi-primary hover:bg-blue-50 transition-colors cursor-pointer" onClick={() => document.getElementById('csv-upload').click()}>
+                                        <input type="file" id="csv-upload" className="hidden" accept=".csv,.xlsx" onChange={handleImport} />
                                         <div className="w-16 h-16 bg-bgfi-primary/10 rounded-full flex items-center justify-center text-bgfi-primary mx-auto mb-4"><Icons.Upload /></div>
-                                        <p className="font-medium text-gray-900">Déposez votre fichier ici</p>
-                                        <p className="text-sm text-gray-500 mt-1">CSV, Excel ou JSON (max 10MB)</p>
+                                        <p className="font-medium text-gray-900">Deposez votre fichier ici</p>
+                                        <p className="text-sm text-gray-500 mt-1">CSV ou Excel (max 10MB)</p>
                                     </div>
-                                    <div className="bg-gray-50 p-4 rounded-xl">
-                                        <p className="text-sm font-medium text-gray-700 mb-2">Format attendu :</p>
-                                        <code className="text-xs text-gray-600 block">nom, telephone, email, segment</code>
-                                    </div>
+                                    <div className="bg-gray-50 p-4 rounded-xl"><p className="text-sm font-medium text-gray-700 mb-2">Format attendu :</p><code className="text-xs text-gray-600 block">phone, name, email, segment</code></div>
                                 </div>
                                 <div className="p-6 border-t border-gray-200 flex justify-end gap-3">
-                                    <Button variant="secondary" onClick={() => setShowImportModal(false)}>Annuler</Button>
-                                    <Button icon={Icons.Upload}>Importer</Button>
+                                    <Button variant="secondary" onClick={() => setShowImportModal(false)}>Fermer</Button>
                                 </div>
                             </div>
                         </div>
@@ -590,34 +763,57 @@
             );
         };
 
+        // =============================================
         // Templates View
+        // =============================================
         const TemplatesView = () => {
             const [showCreateModal, setShowCreateModal] = useState(false);
+            const { data, loading, error, refetch } = useApi('/templates?limit=50');
+            const [form, setForm] = useState({ name: '', displayName: '', category: '', content: '', language: 'fr' });
+            const [creating, setCreating] = useState(false);
+
+            const templates = data?.data || [];
+
+            const handleCreate = async () => {
+                setCreating(true);
+                try {
+                    await api('/templates', { method: 'POST', body: JSON.stringify(form) });
+                    setShowCreateModal(false); setForm({ name: '', displayName: '', category: '', content: '', language: 'fr' }); refetch();
+                } catch (err) { alert(err.message); }
+                finally { setCreating(false); }
+            };
+
+            const handleDelete = async (id) => {
+                if (!confirm('Supprimer ce template ?')) return;
+                try { await api('/templates/' + id, { method: 'DELETE' }); refetch(); }
+                catch (err) { alert(err.message); }
+            };
+
+            if (loading) return <Spinner />;
+            if (error) return <ErrorBox message={error} onRetry={refetch} />;
 
             return (
                 <div className="space-y-6">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                        <div className="flex items-center gap-4">
-                            <Input placeholder="Rechercher un template..." icon={Icons.Search} className="w-64" />
-                            <Select options={[{ value: '', label: 'Toutes les catégories' }, { value: 'marketing', label: 'Marketing' }, { value: 'utility', label: 'Utilitaire' }, { value: 'authentication', label: 'Authentification' }]} />
-                        </div>
+                        <div className="flex items-center gap-4"><Input placeholder="Rechercher un template..." icon={Icons.Search} className="w-64" /></div>
                         <Button onClick={() => setShowCreateModal(true)} icon={Icons.Plus}>Nouveau Template</Button>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {mockTemplates.map(template => (
+                        {templates.length === 0 && <div className="col-span-2 text-center text-gray-500 py-8">Aucun template</div>}
+                        {templates.map(template => (
                             <Card key={template.id}>
                                 <div className="flex items-start justify-between mb-4">
                                     <div className="flex items-center gap-3">
-                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${template.category === 'marketing' ? 'bg-purple-100 text-purple-600' : template.category === 'utility' ? 'bg-blue-100 text-blue-600' : 'bg-emerald-100 text-emerald-600'}`}><Icons.FileText /></div>
-                                        <div><p className="font-medium text-gray-900">{template.name}</p><p className="text-sm text-gray-500 capitalize">{template.category}</p></div>
+                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${template.category === 'MARKETING' ? 'bg-purple-100 text-purple-600' : template.category === 'UTILITY' ? 'bg-blue-100 text-blue-600' : 'bg-emerald-100 text-emerald-600'}`}><Icons.FileText /></div>
+                                        <div><p className="font-medium text-gray-900">{template.displayName || template.name}</p><p className="text-sm text-gray-500">{catMap[template.category] || template.category}</p></div>
                                     </div>
-                                    <Badge variant={template.status === 'approved' ? 'success' : 'warning'}>{template.status === 'approved' ? 'Approuvé' : 'En attente'}</Badge>
+                                    <Badge variant={tplStatusVariant[template.status] || 'default'}>{tplStatusMap[template.status] || template.status}</Badge>
                                 </div>
                                 <div className="bg-gray-50 p-4 rounded-xl mb-4"><p className="text-sm text-gray-700 whitespace-pre-line">{template.content}</p></div>
+                                {template.variables && template.variables.length > 0 && <div className="mb-4 flex gap-1 flex-wrap">{template.variables.map((v, i) => <span key={i} className="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded-full">{'{{'}{v}{'}}'}</span>)}</div>}
                                 <div className="flex gap-2">
-                                    <Button variant="secondary" size="sm" icon={Icons.Edit} className="flex-1">Modifier</Button>
-                                    <Button variant="ghost" size="sm" icon={Icons.Trash2} />
+                                    <Button variant="ghost" size="sm" icon={Icons.Trash2} onClick={() => handleDelete(template.id)} />
                                 </div>
                             </Card>
                         ))}
@@ -632,19 +828,20 @@
                                 </div>
                                 <div className="p-6 space-y-6">
                                     <div className="grid grid-cols-2 gap-4">
-                                        <Input label="Nom du template" placeholder="Ex: Relance_Connexion" />
-                                        <Select label="Catégorie" options={[{ value: '', label: 'Sélectionner...' }, { value: 'marketing', label: 'Marketing' }, { value: 'utility', label: 'Utilitaire' }, { value: 'authentication', label: 'Authentification' }]} />
+                                        <Input label="Nom technique" placeholder="relance_connexion" value={form.name} onChange={v => setForm({...form, name: v})} />
+                                        <Input label="Nom d'affichage" placeholder="Relance Connexion" value={form.displayName} onChange={v => setForm({...form, displayName: v})} />
                                     </div>
+                                    <Select label="Categorie" value={form.category} onChange={v => setForm({...form, category: v})} options={[{ value: '', label: 'Selectionner...' }, { value: 'MARKETING', label: 'Marketing' }, { value: 'UTILITY', label: 'Utilitaire' }, { value: 'AUTHENTICATION', label: 'Authentification' }]} />
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-2">Contenu du message</label>
-                                        <textarea className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-bgfi-primary focus:ring-bgfi-primary sm:text-sm px-4 py-3 border" rows="6" placeholder="Bonjour {{1}} ! ..." />
+                                        <textarea className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-bgfi-primary focus:ring-bgfi-primary sm:text-sm px-4 py-3 border" rows="6" placeholder="Bonjour {{1}} ! ..." value={form.content} onChange={(e) => setForm({...form, content: e.target.value})} />
                                         <p className="text-xs text-gray-500 mt-2">Utilisez {'{{1}}'}, {'{{2}}'}, etc. pour les variables.</p>
                                     </div>
-                                    <div className="bg-blue-50 p-4 rounded-xl"><p className="text-sm text-blue-800"><strong>Note :</strong> Les templates doivent être approuvés par Meta avant utilisation. Le délai est généralement de 24-48h.</p></div>
+                                    <div className="bg-blue-50 p-4 rounded-xl"><p className="text-sm text-blue-800"><strong>Note :</strong> Les templates doivent etre approuves par Meta avant utilisation (24-48h).</p></div>
                                 </div>
                                 <div className="p-6 border-t border-gray-200 flex justify-end gap-3">
                                     <Button variant="secondary" onClick={() => setShowCreateModal(false)}>Annuler</Button>
-                                    <Button onClick={() => setShowCreateModal(false)} icon={Icons.CheckCircle}>Soumettre pour approbation</Button>
+                                    <Button onClick={handleCreate} disabled={creating || !form.name || !form.content} icon={Icons.CheckCircle}>{creating ? 'Creation...' : 'Soumettre pour approbation'}</Button>
                                 </div>
                             </div>
                         </div>
@@ -653,42 +850,58 @@
             );
         };
 
+        // =============================================
         // Analytics View
+        // =============================================
         const AnalyticsView = () => {
+            const { data: dash, loading, error, refetch } = useApi('/analytics/dashboard');
+            const { data: campaignStats } = useApi('/analytics/campaigns?groupBy=month');
+            const chartsRef = useRef({});
+
             useEffect(() => {
+                if (!campaignStats?.data) return;
+                Object.values(chartsRef.current).forEach(c => c.destroy && c.destroy());
+                chartsRef.current = {};
                 const ctx1 = document.getElementById('performanceChart');
                 const ctx2 = document.getElementById('channelsChart');
-                if (ctx1) { new Chart(ctx1, { type: 'bar', data: { labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin'], datasets: [{ label: 'Envoyés', data: [15000, 22000, 18000, 25000, 28000, 32000], backgroundColor: '#1e3a5f' }, { label: 'Délivrés', data: [14500, 21300, 17400, 24200, 27100, 31000], backgroundColor: '#00a86b' }, { label: 'Lus', data: [11000, 16500, 13500, 18900, 21000, 24000], backgroundColor: '#3b82f6' }] }, options: { responsive: true, maintainAspectRatio: false } }); }
-                if (ctx2) { new Chart(ctx2, { type: 'pie', data: { labels: ['WhatsApp', 'Email', 'SMS'], datasets: [{ data: [65, 25, 10], backgroundColor: ['#00a86b', '#3b82f6', '#f59e0b'] }] }, options: { responsive: true, maintainAspectRatio: false } }); }
-            }, []);
+                if (ctx1) {
+                    const items = campaignStats.data.slice(-6);
+                    const labels = items.map(d => d.date || '-');
+                    chartsRef.current.c1 = new Chart(ctx1, { type: 'bar', data: { labels, datasets: [{ label: 'Envoyes', data: items.map(d => d.sent || 0), backgroundColor: '#1e3a5f' }, { label: 'Delivres', data: items.map(d => d.delivered || 0), backgroundColor: '#00a86b' }, { label: 'Lus', data: items.map(d => d.read || 0), backgroundColor: '#3b82f6' }] }, options: { responsive: true, maintainAspectRatio: false } });
+                }
+                if (ctx2 && dash) {
+                    const o = dash.overview || {};
+                    chartsRef.current.c2 = new Chart(ctx2, { type: 'pie', data: { labels: ['WhatsApp'], datasets: [{ data: [100], backgroundColor: ['#00a86b'] }] }, options: { responsive: true, maintainAspectRatio: false } });
+                }
+            }, [campaignStats, dash]);
+
+            if (loading) return <Spinner />;
+            if (error) return <ErrorBox message={error} onRetry={refetch} />;
+            if (!dash) return null;
+
+            const o = dash.overview || {};
 
             return (
                 <div className="space-y-6">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                            <Button variant="secondary" size="sm">7 jours</Button>
-                            <Button variant="ghost" size="sm">30 jours</Button>
+                            <Button variant="secondary" size="sm">30 jours</Button>
                             <Button variant="ghost" size="sm">90 jours</Button>
-                            <Button variant="ghost" size="sm" icon={Icons.Calendar}>Personnalisé</Button>
                         </div>
-                        <Button variant="secondary" size="sm" icon={Icons.Download}>Exporter le rapport</Button>
+                        <Button variant="secondary" size="sm" icon={Icons.Download} onClick={async () => { try { const blob = await api('/analytics/export?format=csv'); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'analytics.csv'; a.click(); } catch(e) { alert(e.message); } }}>Exporter le rapport</Button>
                     </div>
-
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        <StatCard title="Total Messages" value="164.2K" change="23" icon={Icons.MessageSquare} color="blue" />
-                        <StatCard title="Taux de Délivrance" value="96.8%" change="1.2" icon={Icons.CheckCircle} color="green" />
-                        <StatCard title="Taux d'Ouverture" value="78.2%" change="5.2" icon={Icons.Eye} color="purple" />
-                        <StatCard title="Taux de Conversion" value="12.4%" change="2.8" icon={Icons.TrendingUp} color="amber" />
+                        <StatCard title="Total Messages" value={formatNum(o.totalMessages || 0)} icon={Icons.MessageSquare} color="blue" />
+                        <StatCard title="Taux de Delivrance" value={(o.deliveryRate || 0).toFixed(1) + '%'} icon={Icons.CheckCircle} color="green" />
+                        <StatCard title="Taux d'Ouverture" value={(o.openRate || 0).toFixed(1) + '%'} icon={Icons.Eye} color="purple" />
+                        <StatCard title="Taux de Conversion" value={(o.clickRate || 0).toFixed(1) + '%'} icon={Icons.TrendingUp} color="amber" />
                     </div>
-
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         <Card className="lg:col-span-2" title="Performance des Campagnes"><div className="h-72"><canvas id="performanceChart" /></div></Card>
-                        <Card title="Répartition par Canal">
+                        <Card title="Canal Principal">
                             <div className="h-48"><canvas id="channelsChart" /></div>
                             <div className="mt-4 space-y-2">
-                                <div className="flex justify-between text-sm"><span className="text-gray-600">WhatsApp</span><span className="font-medium text-emerald-600">65%</span></div>
-                                <div className="flex justify-between text-sm"><span className="text-gray-600">Email</span><span className="font-medium text-blue-600">25%</span></div>
-                                <div className="flex justify-between text-sm"><span className="text-gray-600">SMS</span><span className="font-medium text-amber-600">10%</span></div>
+                                <div className="flex justify-between text-sm"><span className="text-gray-600">WhatsApp</span><span className="font-medium text-emerald-600">100%</span></div>
                             </div>
                         </Card>
                     </div>
@@ -696,38 +909,51 @@
             );
         };
 
+        // =============================================
         // Settings View
-        const SettingsView = () => (
-            <div className="space-y-6">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <Card title="Informations Générales">
-                        <div className="space-y-4">
-                            <Input label="Nom de l'organisation" value="BGFI Bank" />
-                            <Input label="Email de contact" value="marketing@bgfi.ga" />
-                            <Input label="Téléphone" value="+241 01 74 12 34" />
-                            <div><label className="block text-sm font-medium text-gray-700 mb-2">Adresse</label><textarea className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-bgfi-primary focus:ring-bgfi-primary sm:text-sm px-4 py-3 border" rows="3" defaultValue="Boulevard Triomphal, Libreville, Gabon" /></div>
-                        </div>
-                    </Card>
+        // =============================================
+        const SettingsView = () => {
+            const { data: health } = useApi('/health');
+
+            return (
+                <div className="space-y-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <Card title="Informations Generales">
+                            <div className="space-y-4">
+                                <Input label="Nom de l'organisation" value="BGFI Bank" />
+                                <Input label="Email de contact" value="marketing@bgfi.ga" />
+                                <Input label="Telephone" value="+241 01 74 12 34" />
+                                <div><label className="block text-sm font-medium text-gray-700 mb-2">Adresse</label><textarea className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-bgfi-primary focus:ring-bgfi-primary sm:text-sm px-4 py-3 border" rows="3" defaultValue="Boulevard Triomphal, Libreville, Gabon" /></div>
+                            </div>
+                        </Card>
+                        <Card title="Etat des Services">
+                            <div className="space-y-3">
+                                {health?.services && Object.entries(health.services).map(([name, ok]) => (
+                                    <div key={name} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                                        <span className="text-sm font-medium text-gray-700 capitalize">{name}</span>
+                                        <Badge variant={ok ? 'success' : 'danger'}>{ok ? 'Connecte' : 'Non configure'}</Badge>
+                                    </div>
+                                ))}
+                                {health && <div className="mt-3 p-3 bg-blue-50 rounded-xl"><p className="text-xs text-blue-700">Version: {health.version} | Env: {health.environment} | {health.timestamp ? new Date(health.timestamp).toLocaleString('fr-FR') : ''}</p></div>}
+                            </div>
+                        </Card>
+                    </div>
                     <Card title="Configuration WhatsApp">
                         <div className="space-y-4">
-                            <Input label="Numéro WhatsApp Business" value="+241 77 12 34 56" />
-                            <Input label="ID Business Account" value="123456789012345" />
-                            <div className="flex items-center justify-between p-4 bg-emerald-50 rounded-xl">
+                            <div className="flex items-center justify-between p-4 rounded-xl" style={{ background: health?.services?.respondio ? '#ecfdf5' : '#fef2f2' }}>
                                 <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 bg-emerald-500 rounded-full flex items-center justify-center text-white"><Icons.CheckCircle /></div>
-                                    <div><p className="font-medium text-gray-900">Connecté à Respond.io</p><p className="text-sm text-gray-500">Dernière sync: il y a 5 min</p></div>
+                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white ${health?.services?.respondio ? 'bg-emerald-500' : 'bg-red-400'}`}>{health?.services?.respondio ? <Icons.CheckCircle /> : <Icons.X />}</div>
+                                    <div><p className="font-medium text-gray-900">{health?.services?.respondio ? 'Connecte a Respond.io' : 'Respond.io non configure'}</p><p className="text-sm text-gray-500">{health?.services?.respondio ? 'API connectee' : 'Configurez RESPOND_IO_API_KEY dans Netlify'}</p></div>
                                 </div>
-                                <Button variant="secondary" size="sm">Reconnecter</Button>
                             </div>
                         </div>
                     </Card>
+                    <div className="flex justify-end gap-3">
+                        <Button icon={Icons.CheckCircle}>Sauvegarder les modifications</Button>
+                    </div>
                 </div>
-                <div className="flex justify-end gap-3">
-                    <Button variant="secondary">Réinitialiser</Button>
-                    <Button icon={Icons.CheckCircle}>Sauvegarder les modifications</Button>
-                </div>
-            </div>
-        );
+            );
+        };
 
         ReactDOM.createRoot(document.getElementById('root')).render(<BGFIWhatsAppSaaS />);
     </script>
