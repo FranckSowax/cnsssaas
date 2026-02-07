@@ -59,6 +59,54 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Test Respond.io connectivity & send test message
+app.post('/api/test/respondio', async (req, res) => {
+  const axios = require('axios');
+  const apiKey = process.env.RESPOND_IO_API_KEY;
+  const channelId = process.env.RESPOND_IO_CHANNEL_ID;
+
+  if (!apiKey) return res.status(500).json({ error: 'RESPOND_IO_API_KEY non configure' });
+  if (!channelId) return res.status(500).json({ error: 'RESPOND_IO_CHANNEL_ID non configure' });
+
+  const client = axios.create({
+    baseURL: 'https://api.respond.io/v1',
+    headers: { 'Authorization': 'Bearer ' + apiKey, 'Content-Type': 'application/json' },
+    timeout: 15000
+  });
+
+  const results = { apiKey: 'set', channelId: channelId };
+
+  // Step 1: Test API connectivity
+  try {
+    const contactsRes = await client.get('/contacts?limit=1');
+    results.apiConnected = true;
+    results.contactsSample = contactsRes.data;
+  } catch (err) {
+    results.apiConnected = false;
+    results.apiError = err.response ? { status: err.response.status, data: err.response.data } : err.message;
+  }
+
+  // Step 2: Send test message if phone provided
+  const { phone, message } = req.body || {};
+  if (phone) {
+    try {
+      const payload = {
+        channelId: channelId,
+        recipient: { type: 'whatsapp', id: phone },
+        message: { type: 'text', text: message || 'Test BGFI WhatsApp SaaS - Connexion OK!' }
+      };
+      const sendRes = await client.post('/messages', payload);
+      results.messageSent = true;
+      results.sendResponse = sendRes.data;
+    } catch (err) {
+      results.messageSent = false;
+      results.sendError = err.response ? { status: err.response.status, data: err.response.data } : err.message;
+    }
+  }
+
+  res.json(results);
+});
+
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/campaigns', campaignRoutes);
