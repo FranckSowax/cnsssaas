@@ -71,45 +71,44 @@ app.post('/api/test/respondio', async (req, res) => {
   const results = { channelId };
   const { phone, message } = req.body || {};
 
-  // Try multiple API base URLs and endpoints
-  const apis = [
-    { name: 'v1', baseURL: 'https://api.respond.io/v1', sendPath: '/messages' },
-    { name: 'v2', baseURL: 'https://api.respond.io/v2', sendPath: '/message/send' },
-    { name: 'app-v1', baseURL: 'https://app.respond.io/api/v1', sendPath: '/message/sendContent' },
-  ];
+  if (!phone) return res.json({ ...results, info: 'Ajoutez "phone" pour tester l envoi' });
 
-  for (const apiDef of apis) {
-    const client = axios.create({
-      baseURL: apiDef.baseURL,
-      headers: { 'Authorization': 'Bearer ' + apiKey, 'Content-Type': 'application/json' },
-      timeout: 10000
-    });
+  const text = message || 'Test BGFI WhatsApp SaaS - Connexion reussie!';
+  const chId = parseInt(channelId);
+  const headers = { 'Authorization': 'Bearer ' + apiKey, 'Content-Type': 'application/json' };
+  const timeout = 10000;
 
-    // Test connectivity with simple GET
-    try {
-      const r = await client.get('/');
-      results[apiDef.name + '_root'] = { status: r.status, data: typeof r.data === 'string' ? r.data.substring(0, 200) : r.data };
-    } catch (err) {
-      results[apiDef.name + '_root'] = err.response ? { status: err.response.status, msg: err.response.data?.message || JSON.stringify(err.response.data).substring(0, 200) } : err.message;
+  // Format 1: v1 /messages with contactId
+  try {
+    const r = await axios.post('https://api.respond.io/v1/messages', { channelId: chId, contactId: phone, message: { type: 'text', text } }, { headers, timeout });
+    results.v1_contactId = { ok: true, data: r.data };
+    return res.json(results);
+  } catch (e) { results.v1_contactId = e.response ? { s: e.response.status, d: e.response.data } : e.message; }
+
+  // Format 2: v1 /messages with recipient
+  try {
+    const r = await axios.post('https://api.respond.io/v1/messages', { channelId: chId, recipient: { type: 'whatsapp', id: phone }, message: { type: 'text', text } }, { headers, timeout });
+    results.v1_recipient = { ok: true, data: r.data };
+    return res.json(results);
+  } catch (e) { results.v1_recipient = e.response ? { s: e.response.status, d: e.response.data } : e.message; }
+
+  // Format 3: v2 /message/send
+  try {
+    const r = await axios.post('https://api.respond.io/v2/message/send', { channelId: chId, contactId: phone, message: { type: 'text', text } }, { headers, timeout });
+    results.v2_send = { ok: true, data: r.data };
+    return res.json(results);
+  } catch (e) { results.v2_send = e.response ? { s: e.response.status, d: e.response.data } : e.message; }
+
+  // Format 4: v2 /contact/create_or_update + message
+  try {
+    const r = await axios.post('https://api.respond.io/v2/contact/create_or_update/phone:' + encodeURIComponent(phone), { firstName: 'Test' }, { headers, timeout });
+    results.v2_contact = { ok: true, data: r.data };
+    if (r.data && r.data.id) {
+      const r2 = await axios.post('https://api.respond.io/v2/message/send', { contactId: r.data.id, message: { type: 'text', text } }, { headers, timeout });
+      results.v2_msg = { ok: true, data: r2.data };
+      return res.json(results);
     }
-
-    // Try send if phone provided
-    if (phone) {
-      const payloads = [
-        { name: 'format1', data: { channelId: parseInt(channelId), contactId: phone, message: { type: 'text', text: message || 'Test BGFI WhatsApp - Connexion OK!' } } },
-        { name: 'format2', data: { channelId: parseInt(channelId), recipient: { type: 'whatsapp', id: phone }, message: { type: 'text', text: message || 'Test BGFI WhatsApp - Connexion OK!' } } },
-      ];
-
-      for (const payload of payloads) {
-        try {
-          const r = await client.post(apiDef.sendPath, payload.data);
-          results[apiDef.name + '_send_' + payload.name] = { success: true, data: r.data };
-        } catch (err) {
-          results[apiDef.name + '_send_' + payload.name] = err.response ? { status: err.response.status, data: err.response.data } : err.message;
-        }
-      }
-    }
-  }
+  } catch (e) { results.v2_contact = e.response ? { s: e.response.status, d: e.response.data } : e.message; }
 
   res.json(results);
 });
