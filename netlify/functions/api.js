@@ -99,33 +99,43 @@ app.post('/api/test/respondio', async (req, res) => {
     return res.json(results);
   } catch (e) { results.v2_send = e.response ? { s: e.response.status, d: e.response.data } : e.message; }
 
-  // Format 4: v2 create contact then get ID then send
+  // Format 4: v2 create contact, get contact by phone, then send
+  let contactNumericId = null;
   try {
     await axios.post('https://api.respond.io/v2/contact/create_or_update/phone:' + encodeURIComponent(phone), { firstName: 'Test BGFI' }, { headers, timeout });
-    // Get contact ID by phone
-    const getR = await axios.get('https://api.respond.io/v2/contact/by_custom_field/phone/' + encodeURIComponent(phone), { headers, timeout });
-    results.v2_getContact = { ok: true, data: getR.data };
-    const contactId = getR.data?.id || getR.data?.contact?.id || getR.data?.data?.id;
-    if (contactId) {
-      const r2 = await axios.post('https://api.respond.io/v2/message/sendContent/' + contactId, { body: [{ type: 'text', text }] }, { headers, timeout });
-      results.v2_sendContent = { ok: true, data: r2.data };
+    results.contact_created = true;
+  } catch (e) { results.contact_created = e.response ? e.response.data : e.message; }
+
+  // Try to get contact ID
+  const getEndpoints = [
+    '/v2/contact/get_by_field',
+    '/v2/contact/phone:' + encodeURIComponent(phone),
+    '/v2/contact/get_by_id/phone:' + encodeURIComponent(phone),
+  ];
+  for (const ep of getEndpoints) {
+    try {
+      const method = ep.includes('get_by_field') ? 'post' : 'get';
+      const data = ep.includes('get_by_field') ? { field: 'phone', value: phone } : undefined;
+      const r = method === 'post' ? await axios.post('https://api.respond.io' + ep, data, { headers, timeout }) : await axios.get('https://api.respond.io' + ep, { headers, timeout });
+      results['get_' + ep.split('/').pop()] = r.data;
+      contactNumericId = r.data?.id || r.data?.contact?.id || r.data?.data?.id;
+      if (contactNumericId) break;
+    } catch (e) { results['get_' + ep.split('/').pop()] = e.response ? { s: e.response.status, d: e.response.data } : e.message; }
+  }
+
+  // Try sending with different message endpoint variants
+  const msgEndpoints = [
+    { path: '/v2/message/send_message', data: { channelId: chId, contactId: contactNumericId || phone, message: { type: 'text', text } } },
+    { path: '/v2/message/send_message', data: { channelId: chId, contactId: phone, message: { type: 'text', text } } },
+    { path: '/v2/contact/' + encodeURIComponent(contactNumericId || phone) + '/message', data: { channelId: chId, type: 'text', text } },
+  ];
+  for (const ep of msgEndpoints) {
+    try {
+      const r = await axios.post('https://api.respond.io' + ep.path, ep.data, { headers, timeout });
+      results['msg_' + ep.path.replace(/\//g, '_')] = { ok: true, data: r.data };
       return res.json(results);
-    }
-  } catch (e) { results.v2_flow = e.response ? { s: e.response.status, d: e.response.data } : e.message; }
-
-  // Format 5: try sendContent with phone as contactId
-  try {
-    const r = await axios.post('https://api.respond.io/v2/message/sendContent/' + encodeURIComponent(phone), { body: [{ type: 'text', text }] }, { headers, timeout });
-    results.v2_sendContent_phone = { ok: true, data: r.data };
-    return res.json(results);
-  } catch (e) { results.v2_sendContent_phone = e.response ? { s: e.response.status, d: e.response.data } : e.message; }
-
-  // Format 6: v2 /message/send with channelId + phone as string contactId
-  try {
-    const r = await axios.post('https://api.respond.io/v2/message/sendContent', { channelId: chId, contactId: phone, body: [{ type: 'text', text }] }, { headers, timeout });
-    results.v2_sendContent_body = { ok: true, data: r.data };
-    return res.json(results);
-  } catch (e) { results.v2_sendContent_body = e.response ? { s: e.response.status, d: e.response.data } : e.message; }
+    } catch (e) { results['msg_' + ep.path.split('/').pop()] = e.response ? { s: e.response.status, d: e.response.data } : e.message; }
+  }
 
   res.json(results);
 });
