@@ -23,6 +23,9 @@ const { apiLimiter } = require('../../backend/src/middleware/rateLimit');
 
 const app = express();
 
+// Trust proxy (required behind Netlify CDN for express-rate-limit)
+app.set('trust proxy', 1);
+
 // Middleware
 app.use(helmet({
   contentSecurityPolicy: false,
