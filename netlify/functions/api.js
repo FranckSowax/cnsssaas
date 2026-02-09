@@ -59,6 +59,33 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Temporary: Test WhatsApp Cloud API connectivity
+app.get('/api/debug/whatsapp-test', async (req, res) => {
+  try {
+    const whatsappService = require('../../backend/src/services/whatsapp');
+    res.json({
+      phoneNumberId: process.env.WHATSAPP_PHONE_NUMBER_ID ? '✓ configured' : '✗ missing',
+      accessToken: process.env.WHATSAPP_ACCESS_TOKEN ? '✓ configured (' + process.env.WHATSAPP_ACCESS_TOKEN.slice(0, 10) + '...)' : '✗ missing',
+      verifyToken: process.env.WHATSAPP_VERIFY_TOKEN ? '✓ configured' : '✗ missing',
+      appSecret: process.env.WHATSAPP_APP_SECRET ? '✓ configured' : '✗ missing',
+      wabaId: process.env.WHATSAPP_BUSINESS_ACCOUNT_ID ? '✓ configured' : '✗ missing'
+    });
+  } catch (error) {
+    res.json({ error: error.message });
+  }
+});
+
+app.post('/api/debug/whatsapp-send', async (req, res) => {
+  try {
+    const whatsappService = require('../../backend/src/services/whatsapp');
+    const { phone, message } = req.body;
+    const result = await whatsappService.sendMessage(phone, message || 'Test depuis BGFI WhatsApp SaaS - WhatsApp Cloud API');
+    res.json(result);
+  } catch (error) {
+    res.json({ success: false, error: error.message });
+  }
+});
+
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/campaigns', campaignRoutes);
