@@ -9,22 +9,19 @@ const prisma = new PrismaClient();
 
 // ============================================
 // Tarification WhatsApp - Region "Rest of Africa" (Gabon)
-// Prix USD par message (source: Meta Business Platform)
-// Conversion FCFA: USD x 2 x 600 = facteur 1200
+// Prix fixes en FCFA (regle: USD x 2 x 600, arrondi)
 // ============================================
-const USD_TO_FCFA = 2 * 600; // = 1200
+const PRICING_FCFA = {
+  MARKETING: 35,
+  UTILITY: 11,
+  AUTHENTICATION: 11,
+  SERVICE: 0
+};
 
 const PRICING_USD = {
   MARKETING: 0.0259,
   UTILITY: 0.0046,
   AUTHENTICATION: 0.0046,
-  SERVICE: 0
-};
-
-const PRICING_FCFA = {
-  MARKETING: Math.round(PRICING_USD.MARKETING * USD_TO_FCFA * 100) / 100,
-  UTILITY: Math.round(PRICING_USD.UTILITY * USD_TO_FCFA * 100) / 100,
-  AUTHENTICATION: Math.round(PRICING_USD.AUTHENTICATION * USD_TO_FCFA * 100) / 100,
   SERVICE: 0
 };
 
