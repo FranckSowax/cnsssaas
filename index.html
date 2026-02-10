@@ -1181,7 +1181,8 @@
             const [sessionsLoading, setSessionsLoading] = useState(false);
             const [sessionsPagination, setSessionsPagination] = useState({ page: 1, total: 0, totalPages: 0 });
             const [selectedSession, setSelectedSession] = useState(null);
-            const [filters, setFilters] = useState({ sentiment: '', intentCategory: '', urgencyLevel: '', resolutionStatus: '', source: '', search: '' });
+            const [filters, setFilters] = useState({ sentiment: '', intentCategory: '', urgencyLevel: '', resolutionStatus: '', source: '', search: '', startDate: '', endDate: '' });
+            const [showFilters, setShowFilters] = useState(false);
             const [reports, setReports] = useState([]);
             const [reportsLoading, setReportsLoading] = useState(false);
             const [selectedReport, setSelectedReport] = useState(null);
@@ -1348,6 +1349,9 @@
 
             const openSegmentModal = () => { fetchAvailableSegments(); setShowSegmentModal(true); };
 
+            const activeFilterCount = [filters.sentiment, filters.intentCategory, filters.urgencyLevel, filters.resolutionStatus, filters.source, filters.startDate, filters.endDate].filter(Boolean).length;
+            const clearFilters = () => { setFilters({ sentiment: '', intentCategory: '', urgencyLevel: '', resolutionStatus: '', source: '', search: '', startDate: '', endDate: '' }); };
+
             const handleSelectReport = async (r) => {
                 setSelectedReport(r);
                 try { const full = await api('/chatbot/reports/' + r.id); setSelectedReport(full); } catch(e) { console.error(e); }
@@ -1382,39 +1386,140 @@
                     {/* ===== HISTORIQUE TAB ===== */}
                     {convTab === 'historique' && (
                         <div className="space-y-4">
-                            {/* Filters */}
-                            <Card className="p-4">
-                                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
-                                    <select className="rounded-lg border-gray-300 text-sm" value={filters.sentiment} onChange={e => setFilters(f => ({ ...f, sentiment: e.target.value }))}>
-                                        <option value="">Sentiment</option>
-                                        {Object.entries(sentimentLabels).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-                                    </select>
-                                    <select className="rounded-lg border-gray-300 text-sm" value={filters.intentCategory} onChange={e => setFilters(f => ({ ...f, intentCategory: e.target.value }))}>
-                                        <option value="">Intention</option>
-                                        {Object.entries(intentLabels).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-                                    </select>
-                                    <select className="rounded-lg border-gray-300 text-sm" value={filters.urgencyLevel} onChange={e => setFilters(f => ({ ...f, urgencyLevel: e.target.value }))}>
-                                        <option value="">Urgence</option>
-                                        <option value="LOW">Basse</option>
-                                        <option value="MEDIUM">Moyenne</option>
-                                        <option value="HIGH">Haute</option>
-                                        <option value="CRITICAL">Critique</option>
-                                    </select>
-                                    <select className="rounded-lg border-gray-300 text-sm" value={filters.resolutionStatus} onChange={e => setFilters(f => ({ ...f, resolutionStatus: e.target.value }))}>
-                                        <option value="">Resolution</option>
-                                        {Object.entries(resolutionLabels).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-                                    </select>
-                                    <select className="rounded-lg border-gray-300 text-sm" value={filters.source} onChange={e => setFilters(f => ({ ...f, source: e.target.value }))}>
-                                        <option value="">Source</option>
-                                        <option value="whatsapp">WhatsApp</option>
-                                        <option value="web">Web</option>
-                                    </select>
-                                    <div className="flex gap-2">
-                                        <input type="text" placeholder="Rechercher..." className="rounded-lg border-gray-300 text-sm flex-1" value={filters.search} onChange={e => setFilters(f => ({ ...f, search: e.target.value }))} onKeyDown={e => e.key === 'Enter' && fetchSessions()} />
-                                        <Button variant="primary" size="sm" onClick={() => fetchSessions()}>Filtrer</Button>
+                            {/* Search + Filters */}
+                            <div className="bg-white rounded-xl card-shadow overflow-hidden">
+                                {/* Search bar */}
+                                <div className="p-4 flex gap-3 items-center">
+                                    <div className="relative flex-1">
+                                        <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400 pointer-events-none"><Icons.Search /></span>
+                                        <input type="text" placeholder="Rechercher par besoin client..."
+                                            className="w-full pl-10 pr-4 py-2.5 rounded-xl border-0 bg-gray-50 text-sm focus:ring-2 focus:ring-bgfi-primary/20 focus:bg-white transition-all"
+                                            value={filters.search}
+                                            onChange={e => setFilters(f => ({ ...f, search: e.target.value }))}
+                                            onKeyDown={e => e.key === 'Enter' && fetchSessions()} />
                                     </div>
+                                    <button onClick={() => setShowFilters(f => !f)}
+                                        className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium border transition-all ${showFilters || activeFilterCount > 0 ? 'bg-bgfi-primary text-white border-bgfi-primary' : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-gray-300'}`}>
+                                        <Icons.Filter />
+                                        Filtres
+                                        {activeFilterCount > 0 && (
+                                            <span className="bg-white/20 text-white text-xs font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center">{activeFilterCount}</span>
+                                        )}
+                                    </button>
+                                    <Button variant="primary" size="sm" onClick={() => fetchSessions()} className="py-2.5">Rechercher</Button>
                                 </div>
-                            </Card>
+
+                                {/* Active filter badges */}
+                                {activeFilterCount > 0 && !showFilters && (
+                                    <div className="px-4 pb-3 flex flex-wrap gap-1.5">
+                                        {filters.sentiment && (
+                                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-bgfi-primary/10 text-bgfi-primary">
+                                                {sentimentLabels[filters.sentiment]}
+                                                <button onClick={() => setFilters(f => ({ ...f, sentiment: '' }))} className="hover:text-red-500 ml-0.5">&times;</button>
+                                            </span>
+                                        )}
+                                        {filters.intentCategory && (
+                                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
+                                                {intentLabels[filters.intentCategory]}
+                                                <button onClick={() => setFilters(f => ({ ...f, intentCategory: '' }))} className="hover:text-red-500 ml-0.5">&times;</button>
+                                            </span>
+                                        )}
+                                        {filters.urgencyLevel && (
+                                            <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${urgencyColors[filters.urgencyLevel]}`}>
+                                                Urgence: {filters.urgencyLevel}
+                                                <button onClick={() => setFilters(f => ({ ...f, urgencyLevel: '' }))} className="hover:text-red-500 ml-0.5">&times;</button>
+                                            </span>
+                                        )}
+                                        {filters.resolutionStatus && (
+                                            <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${resolutionColors[filters.resolutionStatus]}`}>
+                                                {resolutionLabels[filters.resolutionStatus]}
+                                                <button onClick={() => setFilters(f => ({ ...f, resolutionStatus: '' }))} className="hover:text-red-500 ml-0.5">&times;</button>
+                                            </span>
+                                        )}
+                                        {filters.source && (
+                                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-purple-50 text-purple-700">
+                                                {filters.source === 'whatsapp' ? 'WhatsApp' : 'Web'}
+                                                <button onClick={() => setFilters(f => ({ ...f, source: '' }))} className="hover:text-red-500 ml-0.5">&times;</button>
+                                            </span>
+                                        )}
+                                        {(filters.startDate || filters.endDate) && (
+                                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
+                                                {filters.startDate && new Date(filters.startDate).toLocaleDateString('fr-FR')}{filters.startDate && filters.endDate && ' - '}{filters.endDate && new Date(filters.endDate).toLocaleDateString('fr-FR')}
+                                                <button onClick={() => setFilters(f => ({ ...f, startDate: '', endDate: '' }))} className="hover:text-red-500 ml-0.5">&times;</button>
+                                            </span>
+                                        )}
+                                        <button onClick={() => { clearFilters(); fetchSessions(); }} className="text-xs text-gray-400 hover:text-red-500 ml-1 transition-colors">Tout effacer</button>
+                                    </div>
+                                )}
+
+                                {/* Expanded filter panel */}
+                                {showFilters && (
+                                    <div className="px-4 pb-4 border-t border-gray-100 pt-4 space-y-4">
+                                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                                            <div>
+                                                <label className="block text-xs font-medium text-gray-500 mb-1.5">Sentiment</label>
+                                                <select className={`w-full rounded-lg text-sm border transition-all ${filters.sentiment ? 'border-bgfi-primary bg-bgfi-primary/5 text-bgfi-primary font-medium' : 'border-gray-200 text-gray-700'}`}
+                                                    value={filters.sentiment} onChange={e => setFilters(f => ({ ...f, sentiment: e.target.value }))}>
+                                                    <option value="">Tous</option>
+                                                    {Object.entries(sentimentLabels).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label className="block text-xs font-medium text-gray-500 mb-1.5">Intention</label>
+                                                <select className={`w-full rounded-lg text-sm border transition-all ${filters.intentCategory ? 'border-bgfi-primary bg-bgfi-primary/5 text-bgfi-primary font-medium' : 'border-gray-200 text-gray-700'}`}
+                                                    value={filters.intentCategory} onChange={e => setFilters(f => ({ ...f, intentCategory: e.target.value }))}>
+                                                    <option value="">Toutes</option>
+                                                    {Object.entries(intentLabels).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label className="block text-xs font-medium text-gray-500 mb-1.5">Urgence</label>
+                                                <select className={`w-full rounded-lg text-sm border transition-all ${filters.urgencyLevel ? 'border-orange-400 bg-orange-50 text-orange-700 font-medium' : 'border-gray-200 text-gray-700'}`}
+                                                    value={filters.urgencyLevel} onChange={e => setFilters(f => ({ ...f, urgencyLevel: e.target.value }))}>
+                                                    <option value="">Toutes</option>
+                                                    <option value="LOW">Basse</option>
+                                                    <option value="MEDIUM">Moyenne</option>
+                                                    <option value="HIGH">Haute</option>
+                                                    <option value="CRITICAL">Critique</option>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label className="block text-xs font-medium text-gray-500 mb-1.5">Resolution</label>
+                                                <select className={`w-full rounded-lg text-sm border transition-all ${filters.resolutionStatus ? 'border-green-400 bg-green-50 text-green-700 font-medium' : 'border-gray-200 text-gray-700'}`}
+                                                    value={filters.resolutionStatus} onChange={e => setFilters(f => ({ ...f, resolutionStatus: e.target.value }))}>
+                                                    <option value="">Toutes</option>
+                                                    {Object.entries(resolutionLabels).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label className="block text-xs font-medium text-gray-500 mb-1.5">Source</label>
+                                                <select className={`w-full rounded-lg text-sm border transition-all ${filters.source ? 'border-purple-400 bg-purple-50 text-purple-700 font-medium' : 'border-gray-200 text-gray-700'}`}
+                                                    value={filters.source} onChange={e => setFilters(f => ({ ...f, source: e.target.value }))}>
+                                                    <option value="">Toutes</option>
+                                                    <option value="whatsapp">WhatsApp</option>
+                                                    <option value="web">Web</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div className="flex flex-wrap items-end gap-3">
+                                            <div>
+                                                <label className="block text-xs font-medium text-gray-500 mb-1.5">Date debut</label>
+                                                <input type="date" className="rounded-lg border-gray-200 text-sm" value={filters.startDate} onChange={e => setFilters(f => ({ ...f, startDate: e.target.value }))} />
+                                            </div>
+                                            <div>
+                                                <label className="block text-xs font-medium text-gray-500 mb-1.5">Date fin</label>
+                                                <input type="date" className="rounded-lg border-gray-200 text-sm" value={filters.endDate} onChange={e => setFilters(f => ({ ...f, endDate: e.target.value }))} />
+                                            </div>
+                                            <div className="flex gap-2 ml-auto">
+                                                {activeFilterCount > 0 && (
+                                                    <button onClick={() => { clearFilters(); fetchSessions(); }} className="px-3 py-2 text-sm text-gray-500 hover:text-red-500 transition-colors">Reinitialiser</button>
+                                                )}
+                                                <Button variant="primary" size="sm" onClick={() => { fetchSessions(); setShowFilters(false); }}>Appliquer les filtres</Button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
 
                             {/* Sessions list - grouped by contact phone */}
                             {sessionsLoading ? (
