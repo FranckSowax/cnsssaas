@@ -113,6 +113,58 @@ router.delete('/knowledge/:id', authenticate, async (req, res) => {
 });
 
 // ============================================
+// GET /api/chatbot/status - Statut du chatbot (env vars)
+// ============================================
+router.get('/status', authenticate, async (req, res) => {
+  try {
+    const autoReply = process.env.CHATBOT_AUTO_REPLY !== 'false';
+    const ragUrl = process.env.RAG_SERVICE_URL;
+    const openaiKey = process.env.OPENAI_API_KEY;
+    const model = process.env.OPENAI_MODEL || 'gpt-4';
+    const systemPrompt = process.env.CHATBOT_SYSTEM_PROMPT ||
+      "Tu es Cassiopee, l'assistant virtuel de BGFI Bank Gabon sur WhatsApp...";
+    const fallbackMessage = process.env.CHATBOT_FALLBACK_MESSAGE ||
+      'Merci pour votre message. Un conseiller BGFI Bank vous repondra dans les plus brefs delais. Service client : 011 76 32 29';
+
+    // Check RAG service connectivity
+    let ragStatus = 'not_configured';
+    if (ragUrl) {
+      try {
+        await axios.get(`${ragUrl}/health`, { timeout: 5000 });
+        ragStatus = 'connected';
+      } catch {
+        ragStatus = 'unreachable';
+      }
+    }
+
+    // Count recent sessions (last 24h)
+    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const recentSessions = await prisma.chatSession.count({
+      where: { createdAt: { gte: oneDayAgo } }
+    }).catch(() => 0);
+
+    res.json({
+      enabled: autoReply,
+      ragService: {
+        configured: !!ragUrl,
+        status: ragStatus,
+        url: ragUrl ? ragUrl.replace(/\/\/(.+?)@/, '//*****@') : null
+      },
+      openai: {
+        configured: !!openaiKey,
+        model
+      },
+      systemPromptPreview: systemPrompt.substring(0, 150) + (systemPrompt.length > 150 ? '...' : ''),
+      fallbackMessage,
+      recentSessions
+    });
+  } catch (error) {
+    logger.error('Error fetching chatbot status', { error: error.message });
+    res.status(500).json({ error: 'Erreur lors de la recuperation du statut' });
+  }
+});
+
+// ============================================
 // GET /api/chatbot/config - Configuration RAG
 // ============================================
 router.get('/config', authenticate, async (req, res) => {
