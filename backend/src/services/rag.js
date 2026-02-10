@@ -49,9 +49,9 @@ async function initialize() {
     await prisma.$queryRawUnsafe(`
       CREATE TABLE IF NOT EXISTS rag_config (
         id INT PRIMARY KEY DEFAULT 1 CHECK (id = 1),
-        bot_name VARCHAR(100) DEFAULT 'Cassiopee',
-        welcome_message TEXT DEFAULT 'Bonjour ! Je suis Cassiopee, votre assistant BGFI disponible 24/7. Comment puis-je vous aider aujourd''hui ?',
-        system_prompt TEXT DEFAULT 'Tu es Cassiopee, l''assistant virtuel de BGFI Bank Gabon sur WhatsApp. Tu reponds de maniere concise, professionnelle et chaleureuse en francais. Tu aides les clients avec leurs questions bancaires (comptes, cartes, virements, agences, horaires, produits). Si tu ne connais pas la reponse, oriente le client vers le service client au 011 76 32 29. Ne fournis jamais d''informations sensibles sur les comptes. Reponds en 2-3 phrases maximum.',
+        bot_name VARCHAR(100) DEFAULT 'Stelle',
+        welcome_message TEXT DEFAULT 'Bonjour ! Je suis Stelle, votre assistant BGFI disponible 24/7. Comment puis-je vous aider aujourd''hui ?',
+        system_prompt TEXT DEFAULT 'Tu es Stelle, l''assistant virtuel de BGFI Bank Gabon sur WhatsApp. Tu reponds de maniere concise, professionnelle et chaleureuse en francais. Tu aides les clients avec leurs questions bancaires (comptes, cartes, virements, agences, horaires, produits). Si tu ne connais pas la reponse, oriente le client vers le service client au 011 76 32 29. Ne fournis jamais d''informations sensibles sur les comptes. Reponds en 2-3 phrases maximum.',
         model VARCHAR(50) DEFAULT 'gpt-4',
         chunk_count INT DEFAULT 5,
         similarity_threshold FLOAT DEFAULT 0.7,
@@ -261,7 +261,7 @@ async function chat(message, contactId = null) {
 
   // Prompt systeme
   const systemPrompt = (config.system_prompt ||
-    "Tu es Cassiopee, l'assistant virtuel de BGFI Bank Gabon sur WhatsApp. Tu reponds de maniere concise, professionnelle et chaleureuse en francais.") +
+    "Tu es Stelle, l'assistant virtuel de BGFI Bank Gabon sur WhatsApp. Tu reponds de maniere concise, professionnelle et chaleureuse en francais.") +
     context;
 
   // Appel OpenAI
@@ -336,9 +336,9 @@ async function getConfig() {
   const ready = await initialize();
   if (!ready) {
     return {
-      botName: 'Cassiopee',
-      systemPrompt: "Tu es Cassiopee, l'assistant virtuel de BGFI Bank Gabon sur WhatsApp. Tu reponds de maniere concise, professionnelle et chaleureuse en francais. Tu aides les clients avec leurs questions bancaires. Si tu ne connais pas la reponse, oriente le client vers le service client au 011 76 32 29. Ne fournis jamais d'informations sensibles sur les comptes. Reponds en 2-3 phrases maximum.",
-      system_prompt: "Tu es Cassiopee, l'assistant virtuel de BGFI Bank Gabon sur WhatsApp.",
+      botName: 'Stelle',
+      systemPrompt: "Tu es Stelle, l'assistant virtuel de BGFI Bank Gabon sur WhatsApp. Tu reponds de maniere concise, professionnelle et chaleureuse en francais. Tu aides les clients avec leurs questions bancaires. Si tu ne connais pas la reponse, oriente le client vers le service client au 011 76 32 29. Ne fournis jamais d'informations sensibles sur les comptes. Reponds en 2-3 phrases maximum.",
+      system_prompt: "Tu es Stelle, l'assistant virtuel de BGFI Bank Gabon sur WhatsApp.",
       model: 'gpt-4',
       chunkCount: 5, chunk_count: 5,
       similarityThreshold: 0.7, similarity_threshold: 0.7,
@@ -350,7 +350,7 @@ async function getConfig() {
   try {
     rows = await prisma.$queryRawUnsafe(`SELECT * FROM rag_config WHERE id = 1`);
   } catch {
-    return { botName: 'Cassiopee', model: 'gpt-4', chunkCount: 5, chunk_count: 5, similarityThreshold: 0.7, similarity_threshold: 0.7, includeSources: true, include_sources: true, fallbackResponse: true };
+    return { botName: 'Stelle', model: 'gpt-4', chunkCount: 5, chunk_count: 5, similarityThreshold: 0.7, similarity_threshold: 0.7, includeSources: true, include_sources: true, fallbackResponse: true };
   }
   if (!rows[0]) return {};
 

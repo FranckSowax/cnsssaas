@@ -1,0 +1,1437 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guide Utilisateur - BGFI WhatsApp Marketing SaaS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1e3a5f;
+            --secondary: #2d5a87;
+            --accent: #00a86b;
+            --dark: #0f172a;
+            --gray-50: #f8fafc;
+            --gray-100: #f1f5f9;
+            --gray-200: #e2e8f0;
+            --gray-300: #cbd5e1;
+            --gray-400: #94a3b8;
+            --gray-500: #64748b;
+            --gray-600: #475569;
+            --gray-700: #334155;
+            --gray-800: #1e293b;
+            --gray-900: #0f172a;
+            --blue: #3b82f6;
+            --amber: #f59e0b;
+            --red: #ef4444;
+            --purple: #8b5cf6;
+        }
+
+        @page {
+            size: A4;
+            margin: 20mm 18mm 25mm 18mm;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            color: var(--gray-800);
+            line-height: 1.7;
+            font-size: 11pt;
+            background: white;
+        }
+
+        /* ===== COVER PAGE ===== */
+        .cover-page {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background: linear-gradient(160deg, var(--primary) 0%, var(--secondary) 40%, #1a4a70 100%);
+            color: white;
+            padding: 60px 40px;
+            page-break-after: always;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cover-page::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -30%;
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.03);
+        }
+
+        .cover-page::after {
+            content: '';
+            position: absolute;
+            bottom: -40%;
+            left: -20%;
+            width: 500px;
+            height: 500px;
+            border-radius: 50%;
+            background: rgba(0, 168, 107, 0.08);
+        }
+
+        .cover-logo {
+            width: 80px;
+            height: 80px;
+            background: white;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .cover-logo-text {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--primary);
+            letter-spacing: -1px;
+        }
+
+        .cover-title {
+            font-size: 38pt;
+            font-weight: 800;
+            letter-spacing: -1px;
+            margin-bottom: 12px;
+            line-height: 1.1;
+        }
+
+        .cover-subtitle {
+            font-size: 16pt;
+            font-weight: 300;
+            opacity: 0.85;
+            margin-bottom: 50px;
+        }
+
+        .cover-badge {
+            display: inline-block;
+            background: var(--accent);
+            color: white;
+            padding: 10px 28px;
+            border-radius: 50px;
+            font-size: 11pt;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            margin-bottom: 60px;
+        }
+
+        .cover-info {
+            font-size: 9pt;
+            opacity: 0.6;
+            line-height: 1.8;
+        }
+
+        .cover-info strong {
+            opacity: 0.9;
+        }
+
+        /* ===== TABLE OF CONTENTS ===== */
+        .toc-page {
+            page-break-after: always;
+            padding: 40px 0;
+        }
+
+        .toc-title {
+            font-size: 22pt;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+
+        .toc-line {
+            width: 60px;
+            height: 4px;
+            background: var(--accent);
+            border-radius: 2px;
+            margin-bottom: 30px;
+        }
+
+        .toc-section {
+            margin-bottom: 6px;
+        }
+
+        .toc-section a {
+            display: flex;
+            align-items: baseline;
+            text-decoration: none;
+            color: var(--gray-700);
+            padding: 8px 0;
+            border-bottom: 1px solid var(--gray-100);
+            transition: color 0.2s;
+        }
+
+        .toc-section a:hover {
+            color: var(--primary);
+        }
+
+        .toc-number {
+            width: 32px;
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 12pt;
+            flex-shrink: 0;
+        }
+
+        .toc-label {
+            flex: 1;
+            font-weight: 500;
+            font-size: 11pt;
+        }
+
+        .toc-sub {
+            padding-left: 32px;
+        }
+
+        .toc-sub a {
+            border-bottom-color: var(--gray-50);
+            padding: 5px 0;
+        }
+
+        .toc-sub .toc-number {
+            font-size: 10pt;
+            color: var(--gray-400);
+            font-weight: 500;
+        }
+
+        .toc-sub .toc-label {
+            font-weight: 400;
+            font-size: 10pt;
+            color: var(--gray-500);
+        }
+
+        /* ===== SECTIONS ===== */
+        .section {
+            page-break-before: always;
+            padding-top: 10px;
+        }
+
+        .section:first-of-type {
+            page-break-before: auto;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 24px;
+        }
+
+        .section-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .section-icon svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        .section-icon.blue { background: #dbeafe; color: var(--blue); }
+        .section-icon.green { background: #dcfce7; color: var(--accent); }
+        .section-icon.purple { background: #ede9fe; color: var(--purple); }
+        .section-icon.amber { background: #fef3c7; color: var(--amber); }
+        .section-icon.red { background: #fee2e2; color: var(--red); }
+        .section-icon.navy { background: #dbeafe; color: var(--primary); }
+
+        .section-number {
+            font-size: 9pt;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--gray-400);
+            font-weight: 600;
+        }
+
+        .section-title {
+            font-size: 20pt;
+            font-weight: 700;
+            color: var(--primary);
+            line-height: 1.2;
+        }
+
+        h3 {
+            font-size: 13pt;
+            font-weight: 700;
+            color: var(--gray-800);
+            margin: 28px 0 12px 0;
+            padding-bottom: 6px;
+            border-bottom: 2px solid var(--gray-100);
+        }
+
+        h4 {
+            font-size: 11pt;
+            font-weight: 600;
+            color: var(--gray-700);
+            margin: 18px 0 8px 0;
+        }
+
+        p {
+            margin-bottom: 10px;
+            color: var(--gray-600);
+        }
+
+        /* ===== CONTENT ELEMENTS ===== */
+        .tip-box {
+            background: #f0fdf4;
+            border-left: 4px solid var(--accent);
+            padding: 14px 18px;
+            border-radius: 0 10px 10px 0;
+            margin: 16px 0;
+            font-size: 10pt;
+        }
+
+        .tip-box .tip-title {
+            font-weight: 700;
+            color: #166534;
+            margin-bottom: 4px;
+            font-size: 10pt;
+        }
+
+        .tip-box p {
+            color: #15803d;
+            margin: 0;
+        }
+
+        .warning-box {
+            background: #fffbeb;
+            border-left: 4px solid var(--amber);
+            padding: 14px 18px;
+            border-radius: 0 10px 10px 0;
+            margin: 16px 0;
+            font-size: 10pt;
+        }
+
+        .warning-box .tip-title {
+            font-weight: 700;
+            color: #92400e;
+            margin-bottom: 4px;
+        }
+
+        .warning-box p {
+            color: #a16207;
+            margin: 0;
+        }
+
+        .info-box {
+            background: #eff6ff;
+            border-left: 4px solid var(--blue);
+            padding: 14px 18px;
+            border-radius: 0 10px 10px 0;
+            margin: 16px 0;
+            font-size: 10pt;
+        }
+
+        .info-box .tip-title {
+            font-weight: 700;
+            color: #1e40af;
+            margin-bottom: 4px;
+        }
+
+        .info-box p {
+            color: #1d4ed8;
+            margin: 0;
+        }
+
+        .steps {
+            counter-reset: step-counter;
+            list-style: none;
+            padding: 0;
+            margin: 14px 0;
+        }
+
+        .steps li {
+            counter-increment: step-counter;
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--gray-100);
+        }
+
+        .steps li:last-child {
+            border-bottom: none;
+        }
+
+        .steps li::before {
+            content: counter(step-counter);
+            background: var(--primary);
+            color: white;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 700;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .steps li .step-content {
+            flex: 1;
+        }
+
+        .steps li strong {
+            color: var(--gray-800);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 14px 0;
+            font-size: 10pt;
+        }
+
+        thead th {
+            background: var(--gray-50);
+            color: var(--gray-600);
+            font-weight: 600;
+            text-align: left;
+            padding: 10px 14px;
+            border-bottom: 2px solid var(--gray-200);
+            font-size: 9pt;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        tbody td {
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--gray-100);
+            color: var(--gray-700);
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: 9pt;
+            font-weight: 600;
+        }
+
+        .badge-green { background: #dcfce7; color: #166534; }
+        .badge-blue { background: #dbeafe; color: #1e40af; }
+        .badge-amber { background: #fef3c7; color: #92400e; }
+        .badge-red { background: #fee2e2; color: #991b1b; }
+        .badge-purple { background: #ede9fe; color: #6b21a8; }
+        .badge-gray { background: var(--gray-100); color: var(--gray-600); }
+
+        code {
+            background: var(--gray-100);
+            padding: 2px 7px;
+            border-radius: 5px;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 9pt;
+            color: var(--primary);
+        }
+
+        .code-block {
+            background: var(--gray-900);
+            color: #e2e8f0;
+            padding: 16px 20px;
+            border-radius: 10px;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 9pt;
+            line-height: 1.6;
+            margin: 14px 0;
+            overflow-x: auto;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin: 14px 0;
+        }
+
+        .feature-card {
+            background: var(--gray-50);
+            border: 1px solid var(--gray-200);
+            border-radius: 12px;
+            padding: 16px;
+        }
+
+        .feature-card h5 {
+            font-size: 10pt;
+            font-weight: 700;
+            color: var(--gray-800);
+            margin-bottom: 6px;
+        }
+
+        .feature-card p {
+            font-size: 9pt;
+            color: var(--gray-500);
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        .stepper-visual {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0;
+            margin: 20px 0;
+            padding: 16px;
+            background: var(--gray-50);
+            border-radius: 12px;
+        }
+
+        .stepper-step {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stepper-dot {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .stepper-label {
+            font-size: 9pt;
+            font-weight: 500;
+            color: var(--gray-700);
+            white-space: nowrap;
+        }
+
+        .stepper-line {
+            width: 30px;
+            height: 2px;
+            background: var(--gray-300);
+            margin: 0 4px;
+        }
+
+        .key-value {
+            display: flex;
+            gap: 10px;
+            padding: 6px 0;
+            font-size: 10pt;
+        }
+
+        .key-value .key {
+            color: var(--gray-500);
+            min-width: 140px;
+            font-weight: 500;
+        }
+
+        .key-value .value {
+            color: var(--gray-800);
+            font-weight: 600;
+        }
+
+        ul {
+            margin: 8px 0 12px 20px;
+            color: var(--gray-600);
+        }
+
+        li {
+            margin-bottom: 4px;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 40px 0 20px;
+            color: var(--gray-400);
+            font-size: 8pt;
+            border-top: 1px solid var(--gray-100);
+            margin-top: 40px;
+        }
+
+        .page-break {
+            page-break-before: always;
+        }
+
+        .avoid-break {
+            page-break-inside: avoid;
+        }
+
+        @media print {
+            body { font-size: 10pt; }
+            .cover-page { min-height: 100vh; }
+            .section { page-break-before: always; }
+            .tip-box, .warning-box, .info-box, table, .feature-grid, .steps { page-break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ===================================================== -->
+<!-- COVER PAGE -->
+<!-- ===================================================== -->
+<div class="cover-page">
+    <div class="cover-logo">
+        <span class="cover-logo-text">B</span>
+    </div>
+    <h1 class="cover-title">Guide Utilisateur</h1>
+    <p class="cover-subtitle">BGFI WhatsApp Marketing SaaS</p>
+    <div class="cover-badge">Plateforme de Marketing WhatsApp</div>
+    <div class="cover-info">
+        <strong>BGFI Bank Gabon</strong><br>
+        Version 1.0 &mdash; Fevrier 2026<br>
+        Application : bgfiwacbt.netlify.app<br><br>
+        Document confidentiel &mdash; Usage interne uniquement
+    </div>
+</div>
+
+<!-- ===================================================== -->
+<!-- TABLE OF CONTENTS -->
+<!-- ===================================================== -->
+<div class="toc-page">
+    <h2 class="toc-title">Sommaire</h2>
+    <div class="toc-line"></div>
+
+    <div class="toc-section">
+        <a href="#intro"><span class="toc-number">1</span><span class="toc-label">Introduction & Connexion</span></a>
+    </div>
+    <div class="toc-sub">
+        <a href="#intro"><span class="toc-number">1.1</span><span class="toc-label">Presentation de la plateforme</span></a>
+        <a href="#connexion"><span class="toc-number">1.2</span><span class="toc-label">Se connecter</span></a>
+        <a href="#navigation"><span class="toc-number">1.3</span><span class="toc-label">Navigation dans l'interface</span></a>
+    </div>
+
+    <div class="toc-section">
+        <a href="#dashboard"><span class="toc-number">2</span><span class="toc-label">Tableau de Bord</span></a>
+    </div>
+
+    <div class="toc-section">
+        <a href="#contacts"><span class="toc-number">3</span><span class="toc-label">Gestion des Contacts</span></a>
+    </div>
+    <div class="toc-sub">
+        <a href="#contacts-list"><span class="toc-number">3.1</span><span class="toc-label">Liste & recherche</span></a>
+        <a href="#contacts-add"><span class="toc-number">3.2</span><span class="toc-label">Ajouter un contact</span></a>
+        <a href="#contacts-edit"><span class="toc-number">3.3</span><span class="toc-label">Modifier un contact</span></a>
+        <a href="#contacts-import"><span class="toc-number">3.4</span><span class="toc-label">Importer des contacts (CSV)</span></a>
+    </div>
+
+    <div class="toc-section">
+        <a href="#segments"><span class="toc-number">4</span><span class="toc-label">Segments & Ciblage</span></a>
+    </div>
+    <div class="toc-sub">
+        <a href="#segments-list"><span class="toc-number">4.1</span><span class="toc-label">Gerer les segments</span></a>
+        <a href="#segment-builder"><span class="toc-number">4.2</span><span class="toc-label">Le Segment Builder</span></a>
+    </div>
+
+    <div class="toc-section">
+        <a href="#templates"><span class="toc-number">5</span><span class="toc-label">Templates WhatsApp</span></a>
+    </div>
+    <div class="toc-sub">
+        <a href="#templates-create"><span class="toc-number">5.1</span><span class="toc-label">Creer un template</span></a>
+        <a href="#templates-sync"><span class="toc-number">5.2</span><span class="toc-label">Synchroniser avec Meta</span></a>
+    </div>
+
+    <div class="toc-section">
+        <a href="#campaigns"><span class="toc-number">6</span><span class="toc-label">Campagnes Marketing</span></a>
+    </div>
+    <div class="toc-sub">
+        <a href="#campaign-wizard"><span class="toc-number">6.1</span><span class="toc-label">Assistant de creation (5 etapes)</span></a>
+        <a href="#campaign-manage"><span class="toc-number">6.2</span><span class="toc-label">Gerer les campagnes</span></a>
+        <a href="#campaign-stats"><span class="toc-number">6.3</span><span class="toc-label">Statistiques de campagne</span></a>
+    </div>
+
+    <div class="toc-section">
+        <a href="#chatbot"><span class="toc-number">7</span><span class="toc-label">Chatbot RAG (IA)</span></a>
+    </div>
+
+    <div class="toc-section">
+        <a href="#analytics"><span class="toc-number">8</span><span class="toc-label">Analytics & Rapports</span></a>
+    </div>
+
+    <div class="toc-section">
+        <a href="#billing"><span class="toc-number">9</span><span class="toc-label">Tarification & Couts</span></a>
+    </div>
+
+    <div class="toc-section">
+        <a href="#settings"><span class="toc-number">10</span><span class="toc-label">Parametres</span></a>
+    </div>
+
+    <div class="toc-section">
+        <a href="#faq"><span class="toc-number">11</span><span class="toc-label">FAQ & Depannage</span></a>
+    </div>
+</div>
+
+<!-- ===================================================== -->
+<!-- SECTION 1: INTRODUCTION -->
+<!-- ===================================================== -->
+<div class="section" id="intro">
+    <div class="section-header">
+        <div class="section-icon navy">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+        </div>
+        <div>
+            <div class="section-number">Section 1</div>
+            <h2 class="section-title">Introduction & Connexion</h2>
+        </div>
+    </div>
+
+    <h3>1.1 Presentation de la plateforme</h3>
+    <p>
+        <strong>BGFI WhatsApp Marketing SaaS</strong> est une plateforme de marketing automation concu pour BGFI Bank Gabon.
+        Elle permet de gerer vos contacts bancaires, creer des campagnes de messages WhatsApp ciblees,
+        et piloter un chatbot intelligent (RAG) pour le service client.
+    </p>
+
+    <div class="feature-grid avoid-break">
+        <div class="feature-card">
+            <h5>Campagnes WhatsApp</h5>
+            <p>Creez et envoyez des campagnes marketing, notifications et alertes via WhatsApp Business API.</p>
+        </div>
+        <div class="feature-card">
+            <h5>Segmentation avancee</h5>
+            <p>Ciblez vos clients avec un moteur de regles dynamique (ville, type de compte, age, score d'engagement...).</p>
+        </div>
+        <div class="feature-card">
+            <h5>Chatbot IA (RAG)</h5>
+            <p>Un assistant intelligent qui repond aux questions clients en se basant sur votre base de connaissances.</p>
+        </div>
+        <div class="feature-card">
+            <h5>Suivi des couts</h5>
+            <p>Comptabilite en temps reel des couts d'envoi WhatsApp en FCFA, par campagne et par type de message.</p>
+        </div>
+    </div>
+
+    <h3 id="connexion">1.2 Se connecter</h3>
+    <p>Accedez a la plateforme via votre navigateur a l'adresse <code>bgfiwacbt.netlify.app</code>.</p>
+
+    <ol class="steps">
+        <li><div class="step-content"><strong>Saisissez votre email</strong> dans le champ prevu (ex: admin@bgfi.ga).</div></li>
+        <li><div class="step-content"><strong>Saisissez votre mot de passe</strong> puis cliquez sur <strong>Se connecter</strong>.</div></li>
+        <li><div class="step-content">Vous etes redirige vers le <strong>Tableau de bord</strong>.</div></li>
+    </ol>
+
+    <div class="info-box avoid-break">
+        <div class="tip-title">Roles utilisateur</div>
+        <p><strong>ADMIN</strong> : acces complet a toutes les fonctionnalites (campagnes, contacts, templates, parametres).<br>
+        <strong>OPERATOR</strong> : acces aux campagnes et contacts, mais pas a la configuration systeme.</p>
+    </div>
+
+    <h3 id="navigation">1.3 Navigation dans l'interface</h3>
+    <p>L'interface se compose d'une <strong>barre laterale gauche</strong> (menu principal) et d'une <strong>zone de contenu</strong> a droite.</p>
+
+    <table class="avoid-break">
+        <thead>
+            <tr><th>Menu</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><strong>Tableau de bord</strong></td><td>Vue d'ensemble avec indicateurs cles, graphiques et actions rapides</td></tr>
+            <tr><td><strong>Campagnes</strong></td><td>Creer, gerer et suivre les campagnes de messages</td></tr>
+            <tr><td><strong>Segments</strong></td><td>Creer des groupes de ciblage dynamiques</td></tr>
+            <tr><td><strong>Chatbot RAG</strong></td><td>Configurer et tester le chatbot IA</td></tr>
+            <tr><td><strong>Contacts</strong></td><td>Gerer la base de contacts clients</td></tr>
+            <tr><td><strong>Templates</strong></td><td>Gerer les modeles de messages WhatsApp</td></tr>
+            <tr><td><strong>Analytics</strong></td><td>Rapports de performance et exportation</td></tr>
+            <tr><td><strong>Parametres</strong></td><td>Configuration generale, couts et etat des services</td></tr>
+        </tbody>
+    </table>
+
+    <div class="tip-box avoid-break">
+        <div class="tip-title">Astuce</div>
+        <p>Votre profil est visible en bas de la barre laterale. Cliquez sur le bouton de deconnexion (icone fleche) pour vous deconnecter.</p>
+    </div>
+</div>
+
+<!-- ===================================================== -->
+<!-- SECTION 2: DASHBOARD -->
+<!-- ===================================================== -->
+<div class="section" id="dashboard">
+    <div class="section-header">
+        <div class="section-icon blue">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        </div>
+        <div>
+            <div class="section-number">Section 2</div>
+            <h2 class="section-title">Tableau de Bord</h2>
+        </div>
+    </div>
+
+    <p>Le tableau de bord vous offre une vue d'ensemble en temps reel de votre activite marketing WhatsApp.</p>
+
+    <h3>Indicateurs cles (KPI)</h3>
+    <p>Quatre cartes en haut de page affichent les metriques principales :</p>
+
+    <table class="avoid-break">
+        <thead>
+            <tr><th>Indicateur</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><strong>Campagnes Actives</strong></td><td>Nombre de campagnes actuellement en cours d'execution</td></tr>
+            <tr><td><strong>Messages Envoyes</strong></td><td>Total cumule de messages envoyes (format 1.2K, 5.3M...)</td></tr>
+            <tr><td><strong>Taux d'Ouverture</strong></td><td>Pourcentage de messages lus par les destinataires</td></tr>
+            <tr><td><strong>Taux de Clic</strong></td><td>Pourcentage de clics sur les liens dans les messages</td></tr>
+        </tbody>
+    </table>
+
+    <h3>Graphique : Activite des Messages</h3>
+    <p>Un graphique interactif en aires affiche l'evolution des messages sur la periode selectionnee :</p>
+    <ul>
+        <li><strong>Envoyes</strong> (bleu marine) : messages envoyes via WhatsApp</li>
+        <li><strong>Delivres</strong> (vert) : messages bien recus par le destinataire</li>
+        <li><strong>Lus</strong> (bleu) : messages ouverts et lus</li>
+    </ul>
+    <p>Utilisez le <strong>selecteur de periode</strong> en haut a droite : 7 jours (par defaut), 30 jours ou 3 mois.</p>
+
+    <h3>Graphique : Contacts par Categorie</h3>
+    <p>Un diagramme circulaire (donut) montre la repartition de vos contacts par categorie :</p>
+    <table class="avoid-break">
+        <thead><tr><th>Categorie</th><th>Couleur</th><th>Description</th></tr></thead>
+        <tbody>
+            <tr><td>Actifs</td><td><span class="badge badge-green">Vert</span></td><td>Clients avec une activite recente</td></tr>
+            <tr><td>VIP</td><td><span class="badge badge-blue">Bleu marine</span></td><td>Clients a haute valeur</td></tr>
+            <tr><td>Premium</td><td><span class="badge badge-blue">Bleu</span></td><td>Clients premium</td></tr>
+            <tr><td>Nouveaux</td><td><span class="badge badge-amber">Ambre</span></td><td>Clients recemment inscrits</td></tr>
+            <tr><td>Inactifs</td><td><span class="badge badge-red">Rouge</span></td><td>Clients sans activite recente</td></tr>
+        </tbody>
+    </table>
+    <p>Survolez un secteur pour voir le detail. La legende en dessous est egalement interactive.</p>
+
+    <h3>Actions rapides</h3>
+    <p>Quatre boutons en bas du tableau de bord vous permettent d'acceder rapidement aux taches courantes :</p>
+    <ul>
+        <li><strong>Nouvelle Campagne</strong> &mdash; Ouvre l'assistant de creation de campagne</li>
+        <li><strong>Importer Contacts</strong> &mdash; Ouvre la page Contacts avec le dialogue d'import</li>
+        <li><strong>Configurer Chatbot</strong> &mdash; Accede a la configuration du chatbot IA</li>
+        <li><strong>Nouveau Template</strong> &mdash; Cree un nouveau modele de message</li>
+    </ul>
+</div>
+
+<!-- ===================================================== -->
+<!-- SECTION 3: CONTACTS -->
+<!-- ===================================================== -->
+<div class="section" id="contacts">
+    <div class="section-header">
+        <div class="section-icon green">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+        <div>
+            <div class="section-number">Section 3</div>
+            <h2 class="section-title">Gestion des Contacts</h2>
+        </div>
+    </div>
+
+    <p>La base de contacts est enrichie avec des champs bancaires specifiques a BGFI : ville, type de compte, tranche d'age, genre, score d'engagement, etc.</p>
+
+    <h3 id="contacts-list">3.1 Liste & Recherche</h3>
+    <p>La vue Contacts presente un tableau avec les colonnes suivantes :</p>
+
+    <table class="avoid-break">
+        <thead><tr><th>Colonne</th><th>Description</th></tr></thead>
+        <tbody>
+            <tr><td><strong>Contact</strong></td><td>Avatar (initiales), nom et email</td></tr>
+            <tr><td><strong>Telephone</strong></td><td>Numero au format international (+241...)</td></tr>
+            <tr><td><strong>Ville</strong></td><td>Ville de residence (Libreville, Port-Gentil...)</td></tr>
+            <tr><td><strong>Age</strong></td><td>Tranche d'age (18-25, 26-35, 36-45, 46-55, 56+)</td></tr>
+            <tr><td><strong>Categorie</strong></td><td>Badge colore : Actif, VIP, Premium, Nouveau, Inactif</td></tr>
+            <tr><td><strong>Compte</strong></td><td>Type de compte bancaire (Epargne, Courant, Pro, Jeune)</td></tr>
+            <tr><td><strong>Engagement</strong></td><td>Barre de progression coloree + score de 0 a 100</td></tr>
+            <tr><td><strong>Opt-in</strong></td><td>Indique si le contact a accepte de recevoir des messages WhatsApp</td></tr>
+            <tr><td><strong>Actions</strong></td><td>Boutons Modifier et Supprimer</td></tr>
+        </tbody>
+    </table>
+
+    <h4>Filtres disponibles</h4>
+    <ul>
+        <li><strong>Recherche</strong> : par nom, email ou numero de telephone</li>
+        <li><strong>Categorie</strong> : filtrer par categorie de contact</li>
+        <li><strong>Type de compte</strong> : Epargne, Courant, Professionnel, Jeune</li>
+        <li><strong>Ville</strong> : recherche textuelle</li>
+    </ul>
+
+    <h3 id="contacts-add">3.2 Ajouter un contact</h3>
+    <ol class="steps">
+        <li><div class="step-content">Cliquez sur le bouton <strong>+ Ajouter</strong> en haut a droite.</div></li>
+        <li><div class="step-content">Renseignez le <strong>numero de telephone</strong> (obligatoire), le nom, l'email et les champs bancaires.</div></li>
+        <li><div class="step-content">Selectionnez la <strong>categorie</strong> (Actif, VIP, Premium, Nouveau, Inactif).</div></li>
+        <li><div class="step-content">Cliquez sur <strong>Ajouter</strong> pour enregistrer.</div></li>
+    </ol>
+
+    <div class="warning-box avoid-break">
+        <div class="tip-title">Important</div>
+        <p>Le numero de telephone doit etre unique. Si un contact avec ce numero existe deja, un message d'erreur s'affichera.</p>
+    </div>
+
+    <h3 id="contacts-edit">3.3 Modifier un contact</h3>
+    <ol class="steps">
+        <li><div class="step-content">Dans la colonne Actions, cliquez sur l'icone <strong>crayon</strong> (Modifier).</div></li>
+        <li><div class="step-content">Le formulaire d'edition s'ouvre avec les informations pre-remplies.</div></li>
+        <li><div class="step-content">Modifiez les champs souhaites (nom, email, ville, type de compte, categorie...).</div></li>
+        <li><div class="step-content">Cliquez sur <strong>Sauvegarder</strong> pour enregistrer les modifications.</div></li>
+    </ol>
+
+    <h3 id="contacts-import">3.4 Importer des contacts (CSV)</h3>
+    <ol class="steps">
+        <li><div class="step-content">Cliquez sur le bouton <strong>Importer</strong>.</div></li>
+        <li><div class="step-content">Glissez-deposez votre fichier CSV ou cliquez pour le selectionner (max 10 Mo).</div></li>
+        <li><div class="step-content">Le systeme traitera le fichier et affichera un resume : nombre importes, nombre echoues.</div></li>
+    </ol>
+
+    <p>Format CSV attendu :</p>
+    <div class="code-block">phone, name, email, category, city, accountType, ageRange, gender</div>
+
+    <div class="tip-box avoid-break">
+        <div class="tip-title">Astuce</div>
+        <p>Les contacts existants (meme numero) seront mis a jour avec les nouvelles donnees du CSV, pas dupliques.</p>
+    </div>
+</div>
+
+<!-- ===================================================== -->
+<!-- SECTION 4: SEGMENTS -->
+<!-- ===================================================== -->
+<div class="section" id="segments">
+    <div class="section-header">
+        <div class="section-icon purple">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        </div>
+        <div>
+            <div class="section-number">Section 4</div>
+            <h2 class="section-title">Segments & Ciblage</h2>
+        </div>
+    </div>
+
+    <p>Les segments permettent de definir des groupes de contacts cibles selon des criteres dynamiques. Un segment se reevalue automatiquement : si un nouveau contact correspond aux criteres, il est inclus.</p>
+
+    <h3 id="segments-list">4.1 Gerer les segments</h3>
+    <p>La vue Segments affiche vos segments sous forme de cartes :</p>
+    <ul>
+        <li><strong>Nom du segment</strong> et description</li>
+        <li><strong>Type</strong> : Dynamique, Criteres Bancaires ou Statique</li>
+        <li><strong>Nombre de contacts</strong> correspondants</li>
+        <li><strong>Derniere evaluation</strong> : date de la derniere mise a jour du compteur</li>
+    </ul>
+
+    <h4>Actions disponibles</h4>
+    <ul>
+        <li><strong>Re-evaluer</strong> (icone rafraichir) : recalcule le nombre de contacts correspondants</li>
+        <li><strong>Supprimer</strong> : supprime le segment (uniquement s'il n'est utilise dans aucune campagne)</li>
+    </ul>
+
+    <h3 id="segment-builder">4.2 Le Segment Builder</h3>
+    <p>Le constructeur de segments est un outil visuel pour definir des criteres de ciblage.</p>
+
+    <h4>Champs disponibles</h4>
+    <table class="avoid-break">
+        <thead><tr><th>Champ</th><th>Type</th><th>Valeurs possibles</th></tr></thead>
+        <tbody>
+            <tr><td>Categorie</td><td>Selection</td><td>ALL, ACTIVE, INACTIVE, NEW, PREMIUM, VIP</td></tr>
+            <tr><td>Ville</td><td>Texte</td><td>Saisie libre (Libreville, Port-Gentil...)</td></tr>
+            <tr><td>Pays</td><td>Texte</td><td>Saisie libre</td></tr>
+            <tr><td>Tranche d'age</td><td>Selection</td><td>18-25, 26-35, 36-45, 46-55, 56+</td></tr>
+            <tr><td>Genre</td><td>Selection</td><td>M, F, AUTRE</td></tr>
+            <tr><td>Langue</td><td>Selection</td><td>fr, en, es</td></tr>
+            <tr><td>Type de compte</td><td>Selection</td><td>EPARGNE, COURANT, PROFESSIONNEL, JEUNE</td></tr>
+            <tr><td>Score engagement</td><td>Nombre</td><td>0 a 100</td></tr>
+            <tr><td>Statut</td><td>Selection</td><td>ACTIVE, UNSUBSCRIBED, BLOCKED</td></tr>
+        </tbody>
+    </table>
+
+    <h4>Operateurs logiques</h4>
+    <p>Combinez vos regles avec :</p>
+    <ul>
+        <li><strong>ET (AND)</strong> : toutes les conditions doivent etre remplies</li>
+        <li><strong>OU (OR)</strong> : au moins une condition doit etre remplie</li>
+    </ul>
+
+    <h4>Exemple de segment</h4>
+    <p><em>"Clients actifs de Libreville avec un score d'engagement superieur a 50"</em></p>
+    <div class="code-block">
+Operateur : ET (AND)
+  Regle 1 : Categorie = ACTIVE
+  Regle 2 : Ville = Libreville
+  Regle 3 : Score engagement >= 50</div>
+
+    <div class="tip-box avoid-break">
+        <div class="tip-title">Preview en direct</div>
+        <p>Le nombre de contacts correspondant a vos criteres s'affiche en temps reel sous le builder. Cela vous permet d'affiner vos criteres avant de sauvegarder.</p>
+    </div>
+</div>
+
+<!-- ===================================================== -->
+<!-- SECTION 5: TEMPLATES -->
+<!-- ===================================================== -->
+<div class="section" id="templates">
+    <div class="section-header">
+        <div class="section-icon amber">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        </div>
+        <div>
+            <div class="section-number">Section 5</div>
+            <h2 class="section-title">Templates WhatsApp</h2>
+        </div>
+    </div>
+
+    <p>Les templates (modeles de messages) sont des messages pre-approuves par Meta (WhatsApp). Ils sont obligatoires pour initier une conversation avec un client.</p>
+
+    <div class="warning-box avoid-break">
+        <div class="tip-title">Regle WhatsApp</div>
+        <p>Un template doit etre <strong>approuve par Meta</strong> avant d'etre utilisable. Le delai d'approbation est de 24 a 48 heures. Seuls les templates au statut "Approuve" peuvent etre utilises dans une campagne.</p>
+    </div>
+
+    <h3>Categories de templates</h3>
+    <table class="avoid-break">
+        <thead><tr><th>Categorie</th><th>Usage</th><th>Cout</th></tr></thead>
+        <tbody>
+            <tr><td><span class="badge badge-purple">MARKETING</span></td><td>Promotions, offres, relances commerciales</td><td>35 FCFA/msg</td></tr>
+            <tr><td><span class="badge badge-blue">UTILITY</span></td><td>Notifications de service, confirmations</td><td>11 FCFA/msg</td></tr>
+            <tr><td><span class="badge badge-green">AUTHENTICATION</span></td><td>Codes OTP, verification d'identite</td><td>11 FCFA/msg</td></tr>
+        </tbody>
+    </table>
+
+    <h3 id="templates-create">5.1 Creer un template</h3>
+    <ol class="steps">
+        <li><div class="step-content">Cliquez sur <strong>+ Nouveau Template</strong>.</div></li>
+        <li><div class="step-content">Saisissez le <strong>nom technique</strong> (sans espaces ni caracteres speciaux) et le <strong>nom d'affichage</strong>.</div></li>
+        <li><div class="step-content">Selectionnez la <strong>categorie</strong> (Marketing, Utilitaire ou Authentification).</div></li>
+        <li><div class="step-content">Redigez le <strong>contenu du message</strong>. Utilisez <code>{{1}}</code>, <code>{{2}}</code>, etc. pour les variables dynamiques.</div></li>
+        <li><div class="step-content">Cliquez sur <strong>Soumettre pour approbation</strong>.</div></li>
+    </ol>
+
+    <h4>Exemple de template avec variables</h4>
+    <div class="code-block">
+Bonjour {{1}}, votre virement de {{2}} FCFA a ete effectue
+avec succes sur votre compte {{3}}. Ref: {{4}}</div>
+
+    <h3 id="templates-sync">5.2 Synchroniser avec Meta</h3>
+    <p>Pour recuperer les templates deja crees sur votre compte Meta Business :</p>
+    <ol class="steps">
+        <li><div class="step-content">Cliquez sur le bouton <strong>Sync Meta</strong> (icone rafraichir).</div></li>
+        <li><div class="step-content">Le systeme recupere automatiquement les templates depuis l'API WhatsApp.</div></li>
+        <li><div class="step-content">Un message de confirmation indique le nombre de templates synchronises.</div></li>
+    </ol>
+
+    <div class="tip-box avoid-break">
+        <div class="tip-title">Dupliquer un template</div>
+        <p>Cliquez sur l'icone de copie sur un template existant pour creer une variante. Le contenu est pre-rempli, vous n'avez qu'a modifier ce qui change.</p>
+    </div>
+</div>
+
+<!-- ===================================================== -->
+<!-- SECTION 6: CAMPAIGNS -->
+<!-- ===================================================== -->
+<div class="section" id="campaigns">
+    <div class="section-header">
+        <div class="section-icon blue">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </div>
+        <div>
+            <div class="section-number">Section 6</div>
+            <h2 class="section-title">Campagnes Marketing</h2>
+        </div>
+    </div>
+
+    <p>Les campagnes permettent d'envoyer des messages WhatsApp a grande echelle, de facon ciblee et tracee.</p>
+
+    <h3 id="campaign-wizard">6.1 Assistant de creation (5 etapes)</h3>
+    <p>La creation d'une campagne se fait via un assistant guide en 5 etapes :</p>
+
+    <div class="stepper-visual avoid-break">
+        <div class="stepper-step">
+            <div class="stepper-dot">1</div>
+            <span class="stepper-label">Configuration</span>
+        </div>
+        <div class="stepper-line"></div>
+        <div class="stepper-step">
+            <div class="stepper-dot">2</div>
+            <span class="stepper-label">Ciblage</span>
+        </div>
+        <div class="stepper-line"></div>
+        <div class="stepper-step">
+            <div class="stepper-dot">3</div>
+            <span class="stepper-label">Contenu</span>
+        </div>
+        <div class="stepper-line"></div>
+        <div class="stepper-step">
+            <div class="stepper-dot">4</div>
+            <span class="stepper-label">Planification</span>
+        </div>
+        <div class="stepper-line"></div>
+        <div class="stepper-step">
+            <div class="stepper-dot">5</div>
+            <span class="stepper-label">Recapitulatif</span>
+        </div>
+    </div>
+
+    <div class="page-break"></div>
+
+    <h4>Etape 1 : Configuration</h4>
+    <ul>
+        <li>Saisissez le <strong>nom de la campagne</strong></li>
+        <li>Choisissez le <strong>type</strong> : Reactivation, Marketing, Notification ou Alerte</li>
+    </ul>
+
+    <h4>Etape 2 : Ciblage</h4>
+    <p>Trois modes de ciblage sont proposes :</p>
+
+    <div class="feature-grid avoid-break">
+        <div class="feature-card">
+            <h5>Tous les contacts</h5>
+            <p>Envoie le message a tous les contacts actifs ayant accepte le opt-in WhatsApp.</p>
+        </div>
+        <div class="feature-card">
+            <h5>Segment sauvegarde</h5>
+            <p>Selectionnez un segment pre-defini dans le menu deroulant. Le nombre de contacts cibles s'affiche.</p>
+        </div>
+    </div>
+    <div class="feature-grid avoid-break" style="grid-template-columns: 1fr">
+        <div class="feature-card">
+            <h5>Criteres avances (Segment Builder)</h5>
+            <p>Construisez un ciblage sur mesure avec le moteur de regles. Combinez ville, type de compte, age, score d'engagement, etc.
+            Vous pouvez cocher "Sauvegarder comme segment reutilisable" pour reutiliser ce ciblage plus tard.</p>
+        </div>
+    </div>
+
+    <h4>Etape 3 : Contenu</h4>
+    <ul>
+        <li>Selectionnez un <strong>template approuve</strong> dans le menu deroulant</li>
+        <li>Un <strong>apercu du message</strong> s'affiche automatiquement</li>
+        <li>Seuls les templates au statut <span class="badge badge-green">Approuve</span> sont disponibles</li>
+    </ul>
+
+    <h4>Etape 4 : Planification</h4>
+    <ul>
+        <li><strong>Envoi immediat</strong> : la campagne est creee en brouillon, prete a etre lancee manuellement</li>
+        <li><strong>Planifier</strong> : choisissez une date et une heure d'envoi automatique</li>
+    </ul>
+
+    <h4>Etape 5 : Recapitulatif</h4>
+    <p>Verifiez tous les parametres avant validation :</p>
+    <ul>
+        <li>Nom et type de la campagne</li>
+        <li>Ciblage (segment + nombre de contacts)</li>
+        <li>Template selectionne</li>
+        <li>Mode de planification</li>
+    </ul>
+    <p>Cliquez sur <strong>Creer la campagne</strong> pour finaliser.</p>
+
+    <h3 id="campaign-manage">6.2 Gerer les campagnes</h3>
+    <p>La liste des campagnes affiche toutes vos campagnes avec leur statut :</p>
+
+    <table class="avoid-break">
+        <thead><tr><th>Statut</th><th>Badge</th><th>Description</th></tr></thead>
+        <tbody>
+            <tr><td>Brouillon</td><td><span class="badge badge-gray">Brouillon</span></td><td>Campagne creee, pas encore lancee</td></tr>
+            <tr><td>Planifiee</td><td><span class="badge badge-amber">Planifiee</span></td><td>Envoi programme a une date/heure</td></tr>
+            <tr><td>En cours</td><td><span class="badge badge-blue">En cours</span></td><td>Envoi des messages en progression</td></tr>
+            <tr><td>Terminee</td><td><span class="badge badge-green">Terminee</span></td><td>Tous les messages ont ete envoyes</td></tr>
+            <tr><td>Annulee</td><td><span class="badge badge-red">Annulee</span></td><td>Campagne arretee avant la fin</td></tr>
+        </tbody>
+    </table>
+
+    <h4>Actions disponibles</h4>
+    <ul>
+        <li><strong>Lancer</strong> (icone lecture verte) : demarre l'envoi d'une campagne brouillon</li>
+        <li><strong>Modifier</strong> (icone crayon) : modifie une campagne en brouillon</li>
+        <li><strong>Statistiques</strong> : cliquez sur la ligne pour voir les details</li>
+        <li><strong>Supprimer</strong> (icone corbeille) : supprime la campagne</li>
+    </ul>
+
+    <h3 id="campaign-stats">6.3 Statistiques de campagne</h3>
+    <p>En cliquant sur une campagne, vous accedez a une vue detaillee avec :</p>
+    <ul>
+        <li><strong>Taux de delivrance</strong> : pourcentage de messages bien recus</li>
+        <li><strong>Taux d'ouverture</strong> : pourcentage de messages lus</li>
+        <li><strong>Taux de clic</strong> : pourcentage de clics sur les liens</li>
+        <li><strong>Liste des messages</strong> : detail par destinataire avec statut individuel</li>
+    </ul>
+
+    <table class="avoid-break">
+        <thead><tr><th>Statut message</th><th>Signification</th></tr></thead>
+        <tbody>
+            <tr><td><span class="badge badge-gray">En attente</span></td><td>Message en file d'attente</td></tr>
+            <tr><td><span class="badge badge-blue">Envoye</span></td><td>Message transmis a WhatsApp</td></tr>
+            <tr><td><span class="badge badge-green">Delivre</span></td><td>Message recu par le destinataire</td></tr>
+            <tr><td><span class="badge badge-purple">Lu</span></td><td>Message ouvert par le destinataire</td></tr>
+            <tr><td><span class="badge badge-red">Echoue</span></td><td>Echec de livraison (numero invalide, opt-out...)</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- ===================================================== -->
+<!-- SECTION 7: CHATBOT -->
+<!-- ===================================================== -->
+<div class="section" id="chatbot">
+    <div class="section-header">
+        <div class="section-icon purple">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8" y2="16"/><line x1="16" y1="16" x2="16" y2="16"/></svg>
+        </div>
+        <div>
+            <div class="section-number">Section 7</div>
+            <h2 class="section-title">Chatbot RAG (IA)</h2>
+        </div>
+    </div>
+
+    <p>Le module Chatbot RAG (Retrieval-Augmented Generation) est un assistant intelligent qui repond aux questions des clients en se basant sur votre base de connaissances interne.</p>
+
+    <h3>Onglet 1 : Test du Chat</h3>
+    <p>Testez les reponses du chatbot en temps reel :</p>
+    <ul>
+        <li>Saisissez une question dans la barre de texte en bas</li>
+        <li>Le bot repond en se basant sur les documents de votre base de connaissances</li>
+        <li>Des <strong>suggestions de questions</strong> sont proposees a droite (ex: "Comment recuperer mes identifiants ?")</li>
+    </ul>
+
+    <h3>Onglet 2 : Base de connaissances</h3>
+    <p>Alimentez le chatbot avec des documents internes :</p>
+    <ol class="steps">
+        <li><div class="step-content">Cliquez sur <strong>Uploader un document</strong>.</div></li>
+        <li><div class="step-content">Selectionnez un fichier (formats acceptes : PDF, Word, Excel, texte, CSV).</div></li>
+        <li><div class="step-content">Le document est indexe automatiquement et devient disponible pour le chatbot.</div></li>
+    </ol>
+
+    <div class="tip-box avoid-break">
+        <div class="tip-title">Bonnes pratiques</div>
+        <p>Uploadez vos FAQ, guides de procedures, et documents produits (tarifs, conditions generales). Plus la base de connaissances est riche, plus le chatbot sera pertinent.</p>
+    </div>
+
+    <h3>Onglet 3 : Configuration RAG</h3>
+
+    <table class="avoid-break">
+        <thead><tr><th>Parametre</th><th>Description</th><th>Valeur par defaut</th></tr></thead>
+        <tbody>
+            <tr><td><strong>Modele LLM</strong></td><td>Intelligence artificielle utilisee pour generer les reponses</td><td>GPT-4</td></tr>
+            <tr><td><strong>Chunks (contexte)</strong></td><td>Nombre de morceaux de documents envoyes au modele</td><td>5</td></tr>
+            <tr><td><strong>Seuil de similarite</strong></td><td>Precision minimale de correspondance avec la question</td><td>75%</td></tr>
+            <tr><td><strong>Citations</strong></td><td>Inclure les references aux documents sources</td><td>Active</td></tr>
+            <tr><td><strong>Reponse de secours</strong></td><td>Repondre meme si aucune source pertinente n'est trouvee</td><td>Active</td></tr>
+        </tbody>
+    </table>
+
+    <h4>Personnalisation du bot</h4>
+    <ul>
+        <li><strong>Nom du bot</strong> : par defaut "Stelle"</li>
+        <li><strong>Message de bienvenue</strong> : texte affiche au debut de la conversation</li>
+        <li><strong>Instructions systeme</strong> : prompt personnalise qui definit le comportement du bot (ton, langue, regles...)</li>
+    </ul>
+</div>
+
+<!-- ===================================================== -->
+<!-- SECTION 8: ANALYTICS -->
+<!-- ===================================================== -->
+<div class="section" id="analytics">
+    <div class="section-header">
+        <div class="section-icon green">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        </div>
+        <div>
+            <div class="section-number">Section 8</div>
+            <h2 class="section-title">Analytics & Rapports</h2>
+        </div>
+    </div>
+
+    <p>La page Analytics presente une vue consolidee de la performance de vos campagnes.</p>
+
+    <h3>Indicateurs affiches</h3>
+    <table class="avoid-break">
+        <thead><tr><th>Indicateur</th><th>Description</th></tr></thead>
+        <tbody>
+            <tr><td><strong>Total Messages</strong></td><td>Nombre cumule de messages envoyes sur la periode</td></tr>
+            <tr><td><strong>Taux de Delivrance</strong></td><td>% de messages recus par les destinataires</td></tr>
+            <tr><td><strong>Taux d'Ouverture</strong></td><td>% de messages lus</td></tr>
+            <tr><td><strong>Taux de Conversion</strong></td><td>% de clics sur les liens ou actions dans les messages</td></tr>
+        </tbody>
+    </table>
+
+    <h3>Graphiques</h3>
+    <ul>
+        <li><strong>Performance des campagnes</strong> : graphique en barres montrant les messages envoyes, delivres et lus sur les 6 derniers mois</li>
+        <li><strong>Canal principal</strong> : diagramme circulaire montrant la repartition par canal (100% WhatsApp)</li>
+    </ul>
+
+    <h3>Exporter un rapport</h3>
+    <ol class="steps">
+        <li><div class="step-content">Selectionnez la <strong>periode</strong> souhaitee (30 ou 90 jours).</div></li>
+        <li><div class="step-content">Cliquez sur <strong>Exporter le rapport</strong> (icone telecharger).</div></li>
+        <li><div class="step-content">Un fichier CSV est telecharge avec les donnees detaillees.</div></li>
+    </ol>
+</div>
+
+<!-- ===================================================== -->
+<!-- SECTION 9: BILLING -->
+<!-- ===================================================== -->
+<div class="section" id="billing">
+    <div class="section-header">
+        <div class="section-icon amber">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        </div>
+        <div>
+            <div class="section-number">Section 9</div>
+            <h2 class="section-title">Tarification & Couts</h2>
+        </div>
+    </div>
+
+    <p>Le module de tarification, accessible depuis les <strong>Parametres</strong>, permet de suivre en temps reel le cout de vos envois WhatsApp en FCFA.</p>
+
+    <h3>Grille tarifaire</h3>
+    <p>Les prix sont calcules selon la region "Rest of Africa" (Gabon) avec la regle : <code>Prix USD x 2 x 600 = Prix FCFA</code></p>
+
+    <table class="avoid-break">
+        <thead><tr><th>Type de message</th><th>Prix USD</th><th>Prix FCFA</th></tr></thead>
+        <tbody>
+            <tr><td><span class="badge badge-purple">Marketing</span></td><td>$0.0259</td><td><strong>35 FCFA</strong></td></tr>
+            <tr><td><span class="badge badge-blue">Utilitaire</span></td><td>$0.0046</td><td><strong>11 FCFA</strong></td></tr>
+            <tr><td><span class="badge badge-green">Authentification</span></td><td>$0.0046</td><td><strong>11 FCFA</strong></td></tr>
+            <tr><td><span class="badge badge-gray">Service</span></td><td>$0.00</td><td><strong>Gratuit</strong></td></tr>
+        </tbody>
+    </table>
+
+    <h3>Suivi des couts</h3>
+    <p>Quatre indicateurs en haut de la section montrent :</p>
+    <ul>
+        <li><strong>Cout Total</strong> : montant cumule en FCFA avec le nombre de messages</li>
+        <li><strong>Delivres</strong> : nombre de messages delivres et taux de delivrance</li>
+        <li><strong>Lus</strong> : nombre de messages lus et taux de lecture</li>
+        <li><strong>Echoues</strong> : nombre d'echecs et taux d'echec</li>
+    </ul>
+
+    <p>Un <strong>detail par campagne</strong> est egalement disponible en tableau, avec le nombre d'envois, de delivres, d'echecs et le cout en FCFA.</p>
+
+    <div class="info-box avoid-break">
+        <div class="tip-title">Calcul du cout</div>
+        <p>Le cout est base sur le nombre de messages envoyes multiplie par le tarif de la categorie du template utilise. Exemple : 1000 messages Marketing = 1000 x 35 = 35 000 FCFA.</p>
+    </div>
+</div>
+
+<!-- ===================================================== -->
+<!-- SECTION 10: SETTINGS -->
+<!-- ===================================================== -->
+<div class="section" id="settings">
+    <div class="section-header">
+        <div class="section-icon navy">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </div>
+        <div>
+            <div class="section-number">Section 10</div>
+            <h2 class="section-title">Parametres</h2>
+        </div>
+    </div>
+
+    <p>La page Parametres regroupe la configuration generale de la plateforme.</p>
+
+    <h3>Informations generales</h3>
+    <ul>
+        <li><strong>Nom de l'organisation</strong> : BGFI Bank</li>
+        <li><strong>Email de contact</strong> : adresse email du service marketing</li>
+        <li><strong>Telephone</strong> : numero de contact</li>
+        <li><strong>Adresse</strong> : adresse physique</li>
+    </ul>
+
+    <h3>Etat des services</h3>
+    <p>Un panneau affiche l'etat de connexion de chaque service :</p>
+    <table class="avoid-break">
+        <thead><tr><th>Service</th><th>Description</th></tr></thead>
+        <tbody>
+            <tr><td><strong>Database</strong></td><td>Connexion a la base de donnees Supabase</td></tr>
+            <tr><td><strong>WhatsApp</strong></td><td>Connexion a l'API WhatsApp Cloud (Meta)</td></tr>
+            <tr><td><strong>OpenAI</strong></td><td>Connexion a l'API OpenAI pour le chatbot</td></tr>
+            <tr><td><strong>Supabase</strong></td><td>Service de stockage et d'authentification</td></tr>
+        </tbody>
+    </table>
+    <p>Chaque service affiche un badge <span class="badge badge-green">Connecte</span> ou <span class="badge badge-red">Non configure</span>.</p>
+
+    <h3>Configuration WhatsApp</h3>
+    <p>Affiche l'etat de la connexion a l'API WhatsApp Cloud de Meta. Si la connexion est active, le message "WhatsApp Cloud API connectee" est affiche en vert.</p>
+</div>
+
+<!-- ===================================================== -->
+<!-- SECTION 11: FAQ -->
+<!-- ===================================================== -->
+<div class="section" id="faq">
+    <div class="section-header">
+        <div class="section-icon red">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </div>
+        <div>
+            <div class="section-number">Section 11</div>
+            <h2 class="section-title">FAQ & Depannage</h2>
+        </div>
+    </div>
+
+    <h3>Questions frequentes</h3>
+
+    <h4>Pourquoi je ne peux pas envoyer de messages a un contact ?</h4>
+    <p>Plusieurs raisons possibles :</p>
+    <ul>
+        <li>Le contact n'a pas le <strong>opt-in WhatsApp</strong> active (badge "Non" dans la colonne Opt-in)</li>
+        <li>Le contact est au statut <strong>Bloque</strong> ou <strong>Desabonne</strong></li>
+        <li>Le <strong>template</strong> utilise n'est pas encore approuve par Meta</li>
+        <li>La <strong>fenetre de 24h</strong> WhatsApp est fermee (le client doit d'abord envoyer un message)</li>
+    </ul>
+
+    <h4>Pourquoi mon template est "En attente" ?</h4>
+    <p>Les templates doivent etre approuves par Meta (WhatsApp). Ce processus prend generalement <strong>24 a 48 heures</strong>. Assurez-vous que le contenu respecte les politiques de Meta (pas de spam, contenu adapte a la categorie choisie).</p>
+
+    <h4>Comment corriger un import CSV echoue ?</h4>
+    <p>Verifiez que votre fichier CSV :</p>
+    <ul>
+        <li>Contient une colonne <code>phone</code> avec des numeros valides</li>
+        <li>Utilise l'encodage <strong>UTF-8</strong></li>
+        <li>Ne depasse pas <strong>10 Mo</strong></li>
+        <li>Les categories utilisees sont valides : ACTIVE, INACTIVE, NEW, PREMIUM, VIP</li>
+    </ul>
+
+    <h4>Comment voir le cout de mes campagnes ?</h4>
+    <p>Rendez-vous dans <strong>Parametres</strong>. La section "Cout des Messages WhatsApp" en haut de la page affiche le cout total en FCFA, la repartition par categorie et le detail par campagne.</p>
+
+    <h4>Mon segment affiche 0 contacts, pourquoi ?</h4>
+    <p>Le systeme ne compte que les contacts qui sont :</p>
+    <ul>
+        <li>Au statut <strong>ACTIVE</strong></li>
+        <li>Avec le <strong>opt-in WhatsApp active</strong></li>
+        <li>Correspondant a <strong>tous les criteres</strong> du segment</li>
+    </ul>
+    <p>Cliquez sur le bouton <strong>Re-evaluer</strong> (icone rafraichir) pour forcer le recalcul.</p>
+
+    <h4>Comment modifier le numero de telephone d'un contact ?</h4>
+    <p>Le numero de telephone est l'identifiant unique d'un contact et <strong>ne peut pas etre modifie</strong>. Pour changer un numero, supprimez l'ancien contact et creez-en un nouveau.</p>
+
+    <h3>Support technique</h3>
+    <p>Pour toute question ou probleme technique, contactez l'equipe de support :</p>
+    <div class="key-value">
+        <span class="key">Email</span>
+        <span class="value">marketing@bgfi.ga</span>
+    </div>
+    <div class="key-value">
+        <span class="key">Telephone</span>
+        <span class="value">+241 01 74 12 34</span>
+    </div>
+    <div class="key-value">
+        <span class="key">Application</span>
+        <span class="value">bgfiwacbt.netlify.app</span>
+    </div>
+</div>
+
+<!-- ===================================================== -->
+<!-- FOOTER -->
+<!-- ===================================================== -->
+<div class="footer">
+    <p>&copy; 2026 BGFI Bank Gabon &mdash; Tous droits reserves</p>
+    <p>Document genere le 10 fevrier 2026 &mdash; Version 1.0</p>
+    <p style="margin-top: 8px; color: #94a3b8;">BGFI WhatsApp Marketing SaaS &mdash; Guide Utilisateur</p>
+</div>
+
+</body>
+</html>
