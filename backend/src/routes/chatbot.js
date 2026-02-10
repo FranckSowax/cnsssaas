@@ -577,6 +577,122 @@ router.post('/reports/feed-to-rag', authenticate, async (req, res) => {
 });
 
 // ============================================
+// POST /api/chatbot/segment-from-sessions - Creer un segment depuis des contacts de conversation
+// ============================================
+router.post('/segment-from-sessions', authenticate, async (req, res) => {
+  try {
+    const { contactIds, sessionIds, segmentName, description } = req.body;
+
+    if (!segmentName?.trim()) {
+      return res.status(400).json({ error: 'Nom du segment requis' });
+    }
+
+    // Collecter les IDs de contacts
+    let cids = contactIds || [];
+    if (sessionIds?.length) {
+      const sessions = await prisma.chatSession.findMany({
+        where: { id: { in: sessionIds } },
+        select: { contactId: true }
+      });
+      cids = [...new Set([...cids, ...sessions.map(s => s.contactId).filter(Boolean)])];
+    }
+
+    if (cids.length === 0) {
+      return res.status(400).json({ error: 'Aucun contact selectionne' });
+    }
+
+    // Generer un tag unique pour ce segment
+    const tagName = 'seg_' + segmentName.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+
+    // Tagger tous les contacts selectionnes
+    for (const cid of cids) {
+      const contact = await prisma.contact.findUnique({ where: { id: cid }, select: { tags: true } });
+      if (contact && !contact.tags.includes(tagName)) {
+        await prisma.contact.update({
+          where: { id: cid },
+          data: { tags: { push: tagName } }
+        });
+      }
+    }
+
+    // Creer le segment avec critere sur le tag
+    const segment = await prisma.segment.create({
+      data: {
+        name: segmentName.toLowerCase().replace(/\s+/g, '_'),
+        description: description || `Segment cree depuis ${cids.length} conversations`,
+        type: 'STATIC',
+        criteria: {
+          operator: 'AND',
+          rules: [{ field: 'tags', op: 'has', value: tagName }]
+        },
+        contactCount: cids.length,
+        lastEvaluatedAt: new Date(),
+        createdBy: req.user.id
+      }
+    });
+
+    logger.info('Segment created from conversations', { segmentId: segment.id, contactCount: cids.length });
+    res.json({ success: true, segment, taggedContacts: cids.length });
+  } catch (error) {
+    logger.error('Error creating segment from sessions', { error: error.message });
+    if (error.code === 'P2002') {
+      return res.status(409).json({ error: 'Un segment avec ce nom existe deja' });
+    }
+    res.status(500).json({ error: error.message || 'Erreur lors de la creation du segment' });
+  }
+});
+
+// ============================================
+// POST /api/chatbot/add-to-segment - Ajouter des contacts a un segment existant
+// ============================================
+router.post('/add-to-segment', authenticate, async (req, res) => {
+  try {
+    const { contactIds, segmentId } = req.body;
+    if (!contactIds?.length || !segmentId) {
+      return res.status(400).json({ error: 'contactIds et segmentId requis' });
+    }
+
+    const segment = await prisma.segment.findUnique({ where: { id: segmentId } });
+    if (!segment) {
+      return res.status(404).json({ error: 'Segment non trouve' });
+    }
+
+    // Trouver le tag du segment
+    const tagRule = segment.criteria?.rules?.find(r => r.field === 'tags');
+    const tagName = tagRule?.value || 'seg_' + segment.name;
+
+    // Tagger les contacts
+    let tagged = 0;
+    for (const cid of contactIds) {
+      const contact = await prisma.contact.findUnique({ where: { id: cid }, select: { tags: true } });
+      if (contact && !contact.tags.includes(tagName)) {
+        await prisma.contact.update({
+          where: { id: cid },
+          data: { tags: { push: tagName } }
+        });
+        tagged++;
+      }
+    }
+
+    // Re-evaluer le nombre de contacts
+    const newCount = await prisma.contact.count({
+      where: { tags: { has: tagName } }
+    });
+
+    await prisma.segment.update({
+      where: { id: segmentId },
+      data: { contactCount: newCount, lastEvaluatedAt: new Date() }
+    });
+
+    logger.info('Contacts added to segment', { segmentId, tagged, newCount });
+    res.json({ success: true, tagged, newCount });
+  } catch (error) {
+    logger.error('Error adding contacts to segment', { error: error.message });
+    res.status(500).json({ error: 'Erreur lors de l\'ajout au segment' });
+  }
+});
+
+// ============================================
 // POST /api/chatbot/setup - Initialiser les tables RAG
 // ============================================
 router.post('/setup', authenticate, async (req, res) => {

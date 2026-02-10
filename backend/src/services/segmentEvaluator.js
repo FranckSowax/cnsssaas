@@ -48,6 +48,8 @@ function buildRuleCondition(rule) {
       return { [field]: { notIn: Array.isArray(value) ? value : [value] } };
     case 'contains':
       return { [field]: { contains: value, mode: 'insensitive' } };
+    case 'has':
+      return { [field]: { has: value } };
     case 'isNull':
       return { [field]: null };
     case 'isNotNull':

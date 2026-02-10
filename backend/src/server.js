@@ -107,4 +107,41 @@ app.listen(PORT, () => {
   logger.info(`Health: http://localhost:${PORT}/api/health`);
 });
 
+// === Tache planifiee : Rapport quotidien a 8h00 (Libreville UTC+1) ===
+const enrichmentService = require('./services/enrichment');
+
+let lastScheduledReportDate = null;
+setInterval(async () => {
+  try {
+    const now = new Date();
+    const librevilleHour = (now.getUTCHours() + 1) % 24;
+    const todayStr = new Date(now.getTime() + 3600000).toISOString().split('T')[0];
+
+    if (librevilleHour === 8 && lastScheduledReportDate !== todayStr) {
+      lastScheduledReportDate = todayStr;
+      logger.info('[CRON] Debut generation rapport quotidien 8h00 Libreville');
+
+      // 1. Enrichir les sessions non-analysees
+      const batchResult = await enrichmentService.enrichBatch(100);
+      logger.info('[CRON] Enrichissement batch termine', batchResult);
+
+      // 2. Generer le rapport de la veille
+      const report = await enrichmentService.generateDailyReport();
+      logger.info('[CRON] Rapport quotidien genere', { reportId: report.id, date: report.date });
+
+      // 3. Alimenter la base RAG automatiquement
+      try {
+        await enrichmentService.feedReportToRag(report.id);
+        logger.info('[CRON] Rapport ajoute a la base RAG');
+      } catch (ragErr) {
+        logger.warn('[CRON] Erreur ajout RAG', { error: ragErr.message });
+      }
+    }
+  } catch (err) {
+    logger.error('[CRON] Erreur tache planifiee', { error: err.message });
+  }
+}, 60 * 1000);
+
+logger.info('Tache planifiee configuree: rapport quotidien a 8h00 (Libreville/UTC+1)');
+
 module.exports = app;
