@@ -4,6 +4,7 @@ const { PrismaClient } = require('@prisma/client');
 
 const whatsappService = require('../services/whatsapp');
 const ragService = require('../services/rag');
+const enrichmentService = require('../services/enrichment');
 const logger = require('../utils/logger');
 
 const prisma = new PrismaClient();
@@ -125,17 +126,26 @@ async function handleIncomingMessage(message, contacts) {
               sources: result.sources
             });
 
-            // Sauvegarder la session de chat
-            await prisma.chatSession.create({
-              data: {
-                contactId: dbContact.id,
-                source: 'whatsapp',
-                messages: [
-                  { role: 'user', content: text, timestamp: new Date() },
-                  { role: 'bot', content: botReply, timestamp: new Date() }
-                ]
-              }
-            }).catch(() => {}); // Non-blocking
+            // Sauvegarder la session de chat + enrichissement async
+            try {
+              const session = await prisma.chatSession.create({
+                data: {
+                  contactId: dbContact.id,
+                  source: 'whatsapp',
+                  messages: [
+                    { role: 'user', content: text, timestamp: new Date() },
+                    { role: 'bot', content: botReply, timestamp: new Date() }
+                  ]
+                }
+              });
+
+              // Enrichissement IA async (fire-and-forget)
+              enrichmentService.enrichConversation(session.id).catch(err => {
+                logger.warn('Enrichment failed for session', { sessionId: session.id, error: err.message });
+              });
+            } catch (saveErr) {
+              logger.warn('Failed to save chat session', { error: saveErr.message });
+            }
           } else {
             logger.warn('No AI response available (check OPENAI_API_KEY)');
           }

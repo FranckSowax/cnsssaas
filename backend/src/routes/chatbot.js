@@ -6,6 +6,7 @@ const { PrismaClient } = require('@prisma/client');
 const { authenticate } = require('../middleware/auth');
 const logger = require('../utils/logger');
 const ragService = require('../services/rag');
+const enrichmentService = require('../services/enrichment');
 
 const prisma = new PrismaClient();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } }); // 10MB max
@@ -270,29 +271,49 @@ router.get('/stats', authenticate, async (req, res) => {
 });
 
 // ============================================
-// GET /api/chatbot/sessions - Sessions de chat
+// GET /api/chatbot/sessions - Sessions de chat avec filtres d'enrichissement
 // ============================================
 router.get('/sessions', authenticate, async (req, res) => {
   try {
-    const { page = 1, limit = 20 } = req.query;
+    const {
+      page = 1, limit = 20,
+      sentiment, intentCategory, urgencyLevel, resolutionStatus,
+      actionRequired, enriched, source,
+      startDate, endDate, search
+    } = req.query;
     const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    const where = {};
+    if (sentiment) where.sentiment = sentiment;
+    if (intentCategory) where.intentCategory = intentCategory;
+    if (urgencyLevel) where.urgencyLevel = urgencyLevel;
+    if (resolutionStatus) where.resolutionStatus = resolutionStatus;
+    if (actionRequired === 'true') where.actionRequired = true;
+    if (enriched === 'true') where.enriched = true;
+    if (enriched === 'false') where.enriched = false;
+    if (source) where.source = source;
+    if (startDate || endDate) {
+      where.createdAt = {};
+      if (startDate) where.createdAt.gte = new Date(startDate);
+      if (endDate) where.createdAt.lte = new Date(endDate);
+    }
+    if (search) {
+      where.customerNeedSummary = { contains: search, mode: 'insensitive' };
+    }
 
     const [sessions, total] = await Promise.all([
       prisma.chatSession.findMany({
+        where,
         include: {
           contact: {
-            select: {
-              id: true,
-              name: true,
-              phone: true
-            }
+            select: { id: true, name: true, phone: true }
           }
         },
-        orderBy: { updatedAt: 'desc' },
+        orderBy: { createdAt: 'desc' },
         skip,
         take: parseInt(limit)
       }),
-      prisma.chatSession.count()
+      prisma.chatSession.count({ where })
     ]);
 
     res.json({
@@ -307,6 +328,251 @@ router.get('/sessions', authenticate, async (req, res) => {
   } catch (error) {
     logger.error('Error fetching chat sessions', { error: error.message });
     res.status(500).json({ error: 'Erreur lors de la recuperation des sessions' });
+  }
+});
+
+// ============================================
+// GET /api/chatbot/sessions/enrichment-stats - Stats d'enrichissement agregees
+// ============================================
+router.get('/sessions/enrichment-stats', authenticate, async (req, res) => {
+  try {
+    const { startDate, endDate } = req.query;
+    const where = { enriched: true };
+    if (startDate || endDate) {
+      where.createdAt = {};
+      if (startDate) where.createdAt.gte = new Date(startDate);
+      if (endDate) where.createdAt.lte = new Date(endDate);
+    }
+
+    const sessions = await prisma.chatSession.findMany({
+      where,
+      select: {
+        intentCategory: true,
+        productMentioned: true,
+        sentiment: true,
+        urgencyLevel: true,
+        resolutionStatus: true,
+        satisfactionScore: true,
+        actionRequired: true,
+        source: true
+      }
+    });
+
+    const totalEnriched = sessions.length;
+
+    // Sentiment breakdown
+    const sentimentBreakdown = {};
+    sessions.forEach(s => {
+      if (s.sentiment) sentimentBreakdown[s.sentiment] = (sentimentBreakdown[s.sentiment] || 0) + 1;
+    });
+
+    // Intent breakdown
+    const intentBreakdown = {};
+    sessions.forEach(s => {
+      if (s.intentCategory) intentBreakdown[s.intentCategory] = (intentBreakdown[s.intentCategory] || 0) + 1;
+    });
+
+    // Product breakdown
+    const productBreakdown = {};
+    sessions.forEach(s => {
+      if (s.productMentioned && s.productMentioned !== 'NONE') {
+        productBreakdown[s.productMentioned] = (productBreakdown[s.productMentioned] || 0) + 1;
+      }
+    });
+
+    // Urgency breakdown
+    const urgencyBreakdown = {};
+    sessions.forEach(s => {
+      if (s.urgencyLevel) urgencyBreakdown[s.urgencyLevel] = (urgencyBreakdown[s.urgencyLevel] || 0) + 1;
+    });
+
+    // Resolution breakdown
+    const resolutionBreakdown = {};
+    sessions.forEach(s => {
+      if (s.resolutionStatus) resolutionBreakdown[s.resolutionStatus] = (resolutionBreakdown[s.resolutionStatus] || 0) + 1;
+    });
+
+    // Average satisfaction
+    const scores = sessions.filter(s => s.satisfactionScore != null).map(s => s.satisfactionScore);
+    const avgSatisfaction = scores.length > 0
+      ? Math.round((scores.reduce((a, b) => a + b, 0) / scores.length) * 10) / 10
+      : null;
+
+    const actionRequiredCount = sessions.filter(s => s.actionRequired).length;
+
+    res.json({
+      totalEnriched,
+      avgSatisfaction,
+      actionRequiredCount,
+      actionRequiredPercent: totalEnriched > 0 ? Math.round(actionRequiredCount / totalEnriched * 100) : 0,
+      resolvedPercent: totalEnriched > 0 ? Math.round((resolutionBreakdown.RESOLVED || 0) / totalEnriched * 100) : 0,
+      sentimentBreakdown,
+      intentBreakdown,
+      productBreakdown,
+      urgencyBreakdown,
+      resolutionBreakdown
+    });
+  } catch (error) {
+    logger.error('Error fetching enrichment stats', { error: error.message });
+    res.status(500).json({ error: 'Erreur lors de la recuperation des statistiques' });
+  }
+});
+
+// ============================================
+// GET /api/chatbot/sessions/:id - Detail d'une session
+// ============================================
+router.get('/sessions/:id', authenticate, async (req, res) => {
+  try {
+    const session = await prisma.chatSession.findUnique({
+      where: { id: req.params.id },
+      include: {
+        contact: {
+          select: { id: true, name: true, phone: true, category: true, city: true, accountType: true }
+        }
+      }
+    });
+
+    if (!session) {
+      return res.status(404).json({ error: 'Session non trouvee' });
+    }
+
+    res.json(session);
+  } catch (error) {
+    logger.error('Error fetching session detail', { error: error.message });
+    res.status(500).json({ error: 'Erreur lors de la recuperation de la session' });
+  }
+});
+
+// ============================================
+// POST /api/chatbot/sessions/:id/enrich - Re-enrichir une session
+// ============================================
+router.post('/sessions/:id/enrich', authenticate, async (req, res) => {
+  try {
+    // Reset enrichment flag to force re-processing
+    await prisma.chatSession.update({
+      where: { id: req.params.id },
+      data: { enriched: false }
+    });
+
+    const result = await enrichmentService.enrichConversation(req.params.id);
+    if (!result) {
+      return res.status(500).json({ error: 'Echec de l\'enrichissement' });
+    }
+
+    res.json({ success: true, session: result });
+  } catch (error) {
+    logger.error('Error enriching session', { error: error.message });
+    res.status(500).json({ error: 'Erreur lors de l\'enrichissement' });
+  }
+});
+
+// ============================================
+// POST /api/chatbot/sessions/enrich-batch - Enrichir les sessions non-enrichies
+// ============================================
+router.post('/sessions/enrich-batch', authenticate, async (req, res) => {
+  try {
+    const { limit = 50 } = req.body;
+    const result = await enrichmentService.enrichBatch(parseInt(limit));
+    res.json({ success: true, ...result });
+  } catch (error) {
+    logger.error('Error in batch enrichment', { error: error.message });
+    res.status(500).json({ error: 'Erreur lors de l\'enrichissement batch' });
+  }
+});
+
+// ============================================
+// POST /api/chatbot/reports/generate - Generer un rapport quotidien
+// ============================================
+router.post('/reports/generate', authenticate, async (req, res) => {
+  try {
+    const { date } = req.body;
+    const report = await enrichmentService.generateDailyReport(date);
+    res.json({ success: true, report });
+  } catch (error) {
+    logger.error('Error generating report', { error: error.message });
+    res.status(500).json({ error: 'Erreur lors de la generation du rapport' });
+  }
+});
+
+// ============================================
+// GET /api/chatbot/reports - Lister les rapports quotidiens
+// ============================================
+router.get('/reports', authenticate, async (req, res) => {
+  try {
+    const { page = 1, limit = 30, startDate, endDate } = req.query;
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    const where = {};
+    if (startDate || endDate) {
+      where.date = {};
+      if (startDate) where.date.gte = new Date(startDate);
+      if (endDate) where.date.lte = new Date(endDate);
+    }
+
+    const [reports, total] = await Promise.all([
+      prisma.dailyReport.findMany({
+        where,
+        orderBy: { date: 'desc' },
+        skip,
+        take: parseInt(limit)
+      }),
+      prisma.dailyReport.count({ where })
+    ]);
+
+    res.json({
+      data: reports,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total,
+        totalPages: Math.ceil(total / parseInt(limit))
+      }
+    });
+  } catch (error) {
+    logger.error('Error fetching reports', { error: error.message });
+    res.status(500).json({ error: 'Erreur lors de la recuperation des rapports' });
+  }
+});
+
+// ============================================
+// GET /api/chatbot/reports/:id - Detail d'un rapport
+// ============================================
+router.get('/reports/:id', authenticate, async (req, res) => {
+  try {
+    const report = await prisma.dailyReport.findUnique({
+      where: { id: req.params.id }
+    });
+
+    if (!report) {
+      return res.status(404).json({ error: 'Rapport non trouve' });
+    }
+
+    res.json(report);
+  } catch (error) {
+    logger.error('Error fetching report detail', { error: error.message });
+    res.status(500).json({ error: 'Erreur lors de la recuperation du rapport' });
+  }
+});
+
+// ============================================
+// POST /api/chatbot/reports/feed-to-rag - Alimenter la base RAG avec un rapport
+// ============================================
+router.post('/reports/feed-to-rag', authenticate, async (req, res) => {
+  try {
+    const { reportId } = req.body;
+    if (!reportId) {
+      return res.status(400).json({ error: 'reportId requis' });
+    }
+
+    const doc = await enrichmentService.feedReportToRag(reportId);
+    res.json({
+      success: true,
+      message: 'Rapport ajoute a la base de connaissances',
+      document: { id: doc.id, title: doc.title, chunks: doc.chunk_count }
+    });
+  } catch (error) {
+    logger.error('Error feeding report to RAG', { error: error.message });
+    res.status(500).json({ error: 'Erreur: ' + error.message });
   }
 });
 

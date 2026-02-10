@@ -8,8 +8,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 // ============================================
@@ -154,6 +155,7 @@ model Contact {
 
   // Relations
   messages      Message[]
+  chatSessions  ChatSession[]
 
   // Timestamps
   createdAt     DateTime        @default(now())
@@ -331,22 +333,85 @@ model ApiKey {
 model ChatSession {
   id          String    @id @default(uuid())
   contactId   String?
-  
+  contact     Contact?  @relation(fields: [contactId], references: [id])
+
   // Messages
   messages    Json[]    @default([])
-  
+
   // Metadata
   source      String    @default("web") // web, whatsapp, api
   userAgent   String?
   ipAddress   String?
-  
+
+  // === Enrichissement IA bancaire ===
+  enriched          Boolean   @default(false)
+  intentCategory    String?   // ACCOUNT_INQUIRY, LOAN_REQUEST, CARD_ISSUE, TRANSFER_HELP, COMPLAINT, PRODUCT_INFO, ACCOUNT_OPENING, FEES_CHARGES, MOBILE_BANKING, GENERAL
+  productMentioned  String?   // SAVINGS_ACCOUNT, CURRENT_ACCOUNT, CREDIT_CARD, PERSONAL_LOAN, MORTGAGE, INSURANCE, MOBILE_BANKING, VISA_CARD, NONE
+  sentiment         String?   // POSITIVE, NEUTRAL, NEGATIVE, FRUSTRATED
+  urgencyLevel      String?   // LOW, MEDIUM, HIGH, CRITICAL
+  resolutionStatus  String?   // RESOLVED, UNRESOLVED, ESCALATION_NEEDED, FOLLOW_UP_REQUIRED
+  satisfactionScore Float?    // 1.0 - 5.0 (AI-estimated)
+  customerNeedSummary String? // Resume du besoin reel du client
+  actionRequired    Boolean   @default(false)
+  actionDescription String?   // Action humaine necessaire
+  topicTags         String[]  @default([])
+  language          String?   @default("fr")
+
   // Timestamps
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
-  
+
   @@index([contactId])
   @@index([createdAt])
+  @@index([intentCategory])
+  @@index([sentiment])
+  @@index([urgencyLevel])
+  @@index([resolutionStatus])
+  @@index([enriched])
   @@map("chat_sessions")
+}
+
+// ============================================
+// Daily Reports (Rapports quotidiens enrichissement)
+// ============================================
+model DailyReport {
+  id                    String    @id @default(uuid())
+  date                  DateTime  @unique
+
+  // Conversation stats
+  totalConversations    Int       @default(0)
+  whatsappConversations Int       @default(0)
+  webConversations      Int       @default(0)
+
+  // Sentiment breakdown
+  sentimentPositive     Int       @default(0)
+  sentimentNeutral      Int       @default(0)
+  sentimentNegative     Int       @default(0)
+  sentimentFrustrated   Int       @default(0)
+
+  // Intent & product breakdown (JSON for flexibility)
+  intentBreakdown       Json      @default("{}")
+  productBreakdown      Json      @default("{}")
+
+  // Resolution stats
+  resolvedCount         Int       @default(0)
+  unresolvedCount       Int       @default(0)
+  escalationCount       Int       @default(0)
+  followUpCount         Int       @default(0)
+
+  // Satisfaction
+  avgSatisfactionScore  Float?
+
+  // AI-generated insights
+  topCustomerNeeds      String[]  @default([])
+  keyInsights           String?
+  recommendations       String?
+
+  // Metadata
+  generatedAt           DateTime  @default(now())
+
+  @@index([date])
+  @@map("daily_reports")
 }
 
 // ============================================
