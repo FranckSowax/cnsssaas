@@ -270,21 +270,37 @@ router.get('/engagement', authenticate, async (req, res) => {
 // ============================================
 router.get('/contacts', authenticate, async (req, res) => {
   try {
-    // Évolution des contacts par segment
-    const bySegment = await prisma.contact.groupBy({
-      by: ['segment'],
-      _count: { segment: true }
+    // Contacts par categorie (renamed from segment)
+    const byCategory = await prisma.contact.groupBy({
+      by: ['category'],
+      _count: { category: true }
     });
 
-    // Évolution des contacts par statut
+    // Contacts par statut
     const byStatus = await prisma.contact.groupBy({
       by: ['status'],
       _count: { status: true }
     });
 
+    // Contacts par ville (top 10)
+    const byCity = await prisma.contact.groupBy({
+      by: ['city'],
+      where: { city: { not: null } },
+      _count: { city: true },
+      orderBy: { _count: { city: 'desc' } },
+      take: 10
+    });
+
+    // Contacts par type de compte
+    const byAccountType = await prisma.contact.groupBy({
+      by: ['accountType'],
+      where: { accountType: { not: null } },
+      _count: { accountType: true }
+    });
+
     // Nouveaux contacts par jour (30 derniers jours)
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-    
+
     const newContacts = await prisma.contact.findMany({
       where: {
         createdAt: { gte: thirtyDaysAgo }
@@ -301,16 +317,31 @@ router.get('/contacts', authenticate, async (req, res) => {
       dailyNewContacts[date] = (dailyNewContacts[date] || 0) + 1;
     });
 
+    // Score d'engagement moyen
+    const engagementAvg = await prisma.contact.aggregate({
+      _avg: { engagementScore: true },
+      where: { status: 'ACTIVE' }
+    });
+
     res.json({
-      bySegment: bySegment.reduce((acc, item) => {
-        acc[item.segment] = item._count.segment;
+      byCategory: byCategory.reduce((acc, item) => {
+        acc[item.category] = item._count.category;
         return acc;
       }, {}),
       byStatus: byStatus.reduce((acc, item) => {
         acc[item.status] = item._count.status;
         return acc;
       }, {}),
+      byCity: byCity.reduce((acc, item) => {
+        if (item.city) acc[item.city] = item._count.city;
+        return acc;
+      }, {}),
+      byAccountType: byAccountType.reduce((acc, item) => {
+        if (item.accountType) acc[item.accountType] = item._count.accountType;
+        return acc;
+      }, {}),
       newContactsDaily: dailyNewContacts,
+      averageEngagement: Math.round(engagementAvg._avg.engagementScore || 0),
       total: await prisma.contact.count()
     });
   } catch (error) {
