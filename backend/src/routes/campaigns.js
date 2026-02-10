@@ -167,6 +167,100 @@ router.post('/', authenticate, authorize(['campaign:create']), async (req, res) 
 });
 
 // ============================================
+// PUT /api/campaigns/:id - Modifier une campagne
+// ============================================
+router.put('/:id', authenticate, authorize(['campaign:create']), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, type, templateId, segment, variables, scheduledAt } = req.body;
+
+    const existing = await prisma.campaign.findUnique({ where: { id } });
+    if (!existing) {
+      return res.status(404).json({ error: 'Campagne non trouvée' });
+    }
+
+    if (!['DRAFT', 'SCHEDULED', 'PAUSED'].includes(existing.status)) {
+      return res.status(400).json({
+        error: 'Modification impossible',
+        message: 'Seules les campagnes en brouillon, planifiées ou en pause peuvent être modifiées.'
+      });
+    }
+
+    // Vérifier le template si changé
+    if (templateId && templateId !== existing.templateId) {
+      const template = await prisma.template.findUnique({ where: { id: templateId } });
+      if (!template) {
+        return res.status(404).json({ error: 'Template non trouvé' });
+      }
+      if (template.status !== 'APPROVED') {
+        return res.status(400).json({ error: 'Le template doit être approuvé avant utilisation' });
+      }
+    }
+
+    const updateData = {};
+    if (name !== undefined) updateData.name = name;
+    if (type !== undefined) updateData.type = type.toUpperCase();
+    if (templateId !== undefined) updateData.templateId = templateId;
+    if (segment !== undefined) updateData.segment = segment.toUpperCase();
+    if (variables !== undefined) updateData.variables = variables;
+    if (scheduledAt !== undefined) {
+      updateData.scheduledAt = scheduledAt ? new Date(scheduledAt) : null;
+      updateData.status = scheduledAt ? 'SCHEDULED' : 'DRAFT';
+    }
+
+    const campaign = await prisma.campaign.update({
+      where: { id },
+      data: updateData,
+      include: { template: true }
+    });
+
+    logger.info('Campaign updated', { campaignId: id, userId: req.user.id });
+    res.json(campaign);
+  } catch (error) {
+    logger.error('Error updating campaign', { error: error.message, campaignId: req.params.id });
+    res.status(500).json({ error: 'Erreur lors de la mise à jour de la campagne' });
+  }
+});
+
+// ============================================
+// DELETE /api/campaigns/:id - Supprimer une campagne
+// ============================================
+router.delete('/:id', authenticate, authorize(['campaign:create']), async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const existing = await prisma.campaign.findUnique({
+      where: { id },
+      include: { _count: { select: { messages: true } } }
+    });
+
+    if (!existing) {
+      return res.status(404).json({ error: 'Campagne non trouvée' });
+    }
+
+    if (existing.status === 'RUNNING') {
+      return res.status(400).json({
+        error: 'Suppression impossible',
+        message: 'Impossible de supprimer une campagne en cours d\'exécution. Annulez-la d\'abord.'
+      });
+    }
+
+    // Supprimer les messages associés d'abord
+    if (existing._count.messages > 0) {
+      await prisma.message.deleteMany({ where: { campaignId: id } });
+    }
+
+    await prisma.campaign.delete({ where: { id } });
+
+    logger.info('Campaign deleted', { campaignId: id, userId: req.user.id });
+    res.json({ success: true, message: 'Campagne supprimée' });
+  } catch (error) {
+    logger.error('Error deleting campaign', { error: error.message, campaignId: req.params.id });
+    res.status(500).json({ error: 'Erreur lors de la suppression de la campagne' });
+  }
+});
+
+// ============================================
 // POST /api/campaigns/:id/send - Lancer une campagne
 // ============================================
 router.post('/:id/send', authenticate, authorize(['campaign:send']), async (req, res) => {

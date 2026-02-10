@@ -438,6 +438,36 @@
                 catch (err) { alert(err.message); }
             };
 
+            const [editModal, setEditModal] = useState(null);
+            const [editForm, setEditForm] = useState({ name: '', type: '', templateId: '', segment: '', scheduledAt: '' });
+            const [saving, setSaving] = useState(false);
+
+            const openEdit = (c) => {
+                setEditForm({
+                    name: c.name,
+                    type: c.type,
+                    templateId: c.templateId || c.template?.id || '',
+                    segment: c.segment,
+                    scheduledAt: c.scheduledAt ? new Date(c.scheduledAt).toISOString().slice(0, 16) : ''
+                });
+                setEditModal(c);
+            };
+
+            const handleEdit = async () => {
+                setSaving(true);
+                try {
+                    await api('/campaigns/' + editModal.id, { method: 'PUT', body: JSON.stringify(editForm) });
+                    setEditModal(null); refetch();
+                } catch (err) { alert(err.message); }
+                finally { setSaving(false); }
+            };
+
+            const handleDelete = async (id) => {
+                if (!confirm('Supprimer cette campagne ? Cette action est irreversible.')) return;
+                try { await api('/campaigns/' + id, { method: 'DELETE' }); refetch(); }
+                catch (err) { alert(err.message); }
+            };
+
             if (loading) return <Spinner />;
             if (error) return <ErrorBox message={error} onRetry={refetch} />;
 
@@ -460,7 +490,7 @@
                                             <td className="py-4 px-4 text-sm text-gray-600">{catMap[c.type] || c.type}</td>
                                             <td className="py-4 px-4 text-sm text-gray-600">{segmentMap[c.segment] || c.segment || '-'}</td>
                                             <td className="py-4 px-4 text-sm text-gray-500">{c.createdAt ? new Date(c.createdAt).toLocaleDateString('fr-FR') : '-'}</td>
-                                            <td className="py-4 px-4 text-right"><div className="flex items-center justify-end gap-2">{c.status === 'DRAFT' && <Button variant="accent" size="sm" icon={Icons.Play} onClick={() => handleSend(c.id)}>Lancer</Button>}<Button variant="ghost" size="sm" icon={Icons.Eye} onClick={() => setSelectedCampaign(c)} /></div></td>
+                                            <td className="py-4 px-4 text-right"><div className="flex items-center justify-end gap-2">{c.status === 'DRAFT' && <Button variant="accent" size="sm" icon={Icons.Play} onClick={() => handleSend(c.id)}>Lancer</Button>}{['DRAFT','SCHEDULED','PAUSED'].includes(c.status) && <Button variant="ghost" size="sm" icon={Icons.Edit} onClick={() => openEdit(c)} title="Modifier" />}<Button variant="ghost" size="sm" icon={Icons.Eye} onClick={() => setSelectedCampaign(c)} title="Details" />{c.status !== 'RUNNING' && <Button variant="ghost" size="sm" icon={Icons.Trash2} onClick={() => handleDelete(c.id)} title="Supprimer" />}</div></td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -565,6 +595,32 @@
                         </div>
                         );
                     })()}
+
+                    {editModal && (
+                        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                            <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-auto">
+                                <div className="p-6 border-b border-gray-200 flex items-center justify-between">
+                                    <h2 className="text-xl font-semibold text-gray-900">Modifier la Campagne</h2>
+                                    <button onClick={() => setEditModal(null)} className="text-gray-400 hover:text-gray-600"><Icons.X /></button>
+                                </div>
+                                <div className="p-6 space-y-6">
+                                    <Input label="Nom de la campagne" value={editForm.name} onChange={v => setEditForm({...editForm, name: v})} />
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <Select label="Type" value={editForm.type} onChange={v => setEditForm({...editForm, type: v})} options={[{ value: 'REACTIVATION', label: 'Reactivation' }, { value: 'PROMOTIONAL', label: 'Promotion' }, { value: 'NOTIFICATION', label: 'Notification' }, { value: 'MARKETING', label: 'Marketing' }]} />
+                                        <Select label="Template" value={editForm.templateId} onChange={v => setEditForm({...editForm, templateId: v})} options={[{ value: '', label: 'Selectionner...' }, ...templates.map(t => ({ value: t.id, label: t.displayName || t.name }))]} />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <Select label="Segment" value={editForm.segment} onChange={v => setEditForm({...editForm, segment: v})} options={[{ value: 'ALL', label: 'Tous les contacts' }, { value: 'ACTIVE', label: 'Actifs' }, { value: 'INACTIVE', label: 'Inactifs' }, { value: 'NEW', label: 'Nouveaux' }, { value: 'VIP', label: 'VIP' }]} />
+                                        <Input label="Date d'envoi" type="datetime-local" value={editForm.scheduledAt} onChange={v => setEditForm({...editForm, scheduledAt: v})} />
+                                    </div>
+                                </div>
+                                <div className="p-6 border-t border-gray-200 flex justify-end gap-3">
+                                    <Button variant="secondary" onClick={() => setEditModal(null)}>Annuler</Button>
+                                    <Button onClick={handleEdit} disabled={saving || !editForm.name} icon={Icons.CheckCircle}>{saving ? 'Enregistrement...' : 'Enregistrer'}</Button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             );
         };
