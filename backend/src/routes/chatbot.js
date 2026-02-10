@@ -108,19 +108,20 @@ router.post('/knowledge/upload', authenticate, upload.single('file'), async (req
         logger.error('PDF parsing error', { error: err.message });
         return res.status(400).json({ error: 'Impossible de lire le PDF: ' + err.message });
       }
+    } else if (fileType === 'docx') {
+      try {
+        const mammoth = require('mammoth');
+        const result = await mammoth.extractRawText({ buffer: file.buffer });
+        content = result.value;
+        logger.info('DOCX extracted', { chars: content.length });
+      } catch (err) {
+        logger.error('DOCX parsing error', { error: err.message });
+        return res.status(400).json({ error: 'Impossible de lire le DOCX: ' + err.message });
+      }
     } else if (['txt', 'csv', 'md'].includes(fileType)) {
       content = file.buffer.toString('utf-8');
-    } else if (['doc', 'docx', 'xls', 'xlsx'].includes(fileType)) {
-      // Pour les formats Office, extraire le texte brut du buffer
-      // Simplification: lire comme texte (fonctionne partiellement pour .doc)
-      content = file.buffer.toString('utf-8').replace(/[^\x20-\x7E\xC0-\xFF\n\r\t]/g, ' ').replace(/\s+/g, ' ').trim();
-      if (content.length < 50) {
-        return res.status(400).json({
-          error: 'Format non supporte. Veuillez convertir en PDF ou TXT avant upload.'
-        });
-      }
     } else {
-      return res.status(400).json({ error: 'Format non supporte. Formats acceptes: PDF, TXT, CSV, MD' });
+      return res.status(400).json({ error: 'Format non supporte. Formats acceptes: PDF, DOCX, TXT, CSV, MD' });
     }
 
     if (!content || content.trim().length < 10) {
