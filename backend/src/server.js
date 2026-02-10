@@ -52,14 +52,25 @@ app.use(express.static(rootDir, {
 }));
 
 // Health check
-app.get('/api/health', (req, res) => {
+app.get('/api/health', async (req, res) => {
+  let dbStatus = 'unknown';
+  try {
+    const { PrismaClient } = require('@prisma/client');
+    const prisma = new PrismaClient();
+    await prisma.$queryRaw`SELECT 1`;
+    dbStatus = 'connected';
+    await prisma.$disconnect();
+  } catch (e) {
+    dbStatus = 'error: ' + e.message;
+  }
+
   res.json({
     status: 'ok',
     timestamp: new Date().toISOString(),
     environment: 'railway',
     version: '1.0.0',
     services: {
-      database: !!process.env.DATABASE_URL,
+      database: dbStatus,
       whatsapp: !!process.env.WHATSAPP_ACCESS_TOKEN,
       openai: !!process.env.OPENAI_API_KEY,
       supabase: !!process.env.SUPABASE_URL,
