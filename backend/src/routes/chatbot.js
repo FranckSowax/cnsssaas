@@ -216,7 +216,7 @@ router.get('/status', authenticate, async (req, res) => {
         configured: !!openaiKey,
         model
       },
-      systemPromptPreview: (config.systemPrompt || "Tu es Stelle, l'assistant virtuel de BGFI Bank Gabon...").substring(0, 150) + '...',
+      systemPromptPreview: (config.systemPrompt || "Tu es Stella, l'assistant virtuel de BGFI Bank Gabon...").substring(0, 150) + '...',
       fallbackMessage: process.env.CHATBOT_FALLBACK_MESSAGE ||
         'Merci pour votre message. Un conseiller BGFI Bank vous repondra dans les plus brefs delais. Service client : 011 76 32 29',
       recentSessions

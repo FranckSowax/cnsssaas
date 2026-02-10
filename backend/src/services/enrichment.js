@@ -19,7 +19,7 @@ const VALID_URGENCY = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'];
 const VALID_RESOLUTION = ['RESOLVED', 'UNRESOLVED', 'ESCALATION_NEEDED', 'FOLLOW_UP_REQUIRED'];
 
 const ENRICHMENT_PROMPT = `Tu es un analyste specialise dans les services bancaires de BGFI Bank Gabon.
-Analyse la conversation suivante entre un client WhatsApp et Stelle (le chatbot IA de BGFI Bank).
+Analyse la conversation suivante entre un client WhatsApp et Stella (le chatbot IA de BGFI Bank).
 
 Retourne UNIQUEMENT un objet JSON valide avec les champs suivants:
 - "intentCategory": une valeur parmi [ACCOUNT_INQUIRY, LOAN_REQUEST, CARD_ISSUE, TRANSFER_HELP, COMPLAINT, PRODUCT_INFO, ACCOUNT_OPENING, FEES_CHARGES, MOBILE_BANKING, GENERAL]
@@ -69,7 +69,7 @@ async function enrichConversation(sessionId) {
   }
 
   const dialogue = messages.map(m => {
-    const role = m.role === 'user' ? 'Client' : 'Stelle (Bot)';
+    const role = m.role === 'user' ? 'Client' : 'Stella (Bot)';
     return `${role}: ${m.content}`;
   }).join('\n');
 
