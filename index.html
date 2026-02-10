@@ -94,8 +94,9 @@
 
         const statusMap = { DRAFT: 'Brouillon', SCHEDULED: 'Planifiee', RUNNING: 'En cours', COMPLETED: 'Terminee', CANCELLED: 'Annulee', SENT: 'Envoye' };
         const statusVariant = { DRAFT: 'default', SCHEDULED: 'warning', RUNNING: 'info', COMPLETED: 'success', CANCELLED: 'danger' };
-        const segmentMap = { ACTIVE: 'Actif', INACTIVE: 'Inactif', VIP: 'VIP', NEW: 'Nouveau', PREMIUM: 'Premium' };
-        const segmentVariant = { ACTIVE: 'success', INACTIVE: 'warning', VIP: 'primary', NEW: 'info', PREMIUM: 'primary' };
+        const categoryMap = { ALL: 'Tous', ACTIVE: 'Actif', INACTIVE: 'Inactif', VIP: 'VIP', NEW: 'Nouveau', PREMIUM: 'Premium' };
+        const categoryVariant = { ALL: 'default', ACTIVE: 'success', INACTIVE: 'warning', VIP: 'primary', NEW: 'info', PREMIUM: 'primary' };
+        const accountTypeMap = { EPARGNE: 'Epargne', COURANT: 'Courant', PROFESSIONNEL: 'Professionnel', JEUNE: 'Jeune' };
         const catMap = { MARKETING: 'Marketing', UTILITY: 'Utilitaire', AUTHENTICATION: 'Authentification', REACTIVATION: 'Reactivation', NOTIFICATION: 'Notification' };
         const tplStatusMap = { PENDING: 'En attente', APPROVED: 'Approuve', REJECTED: 'Rejete' };
         const tplStatusVariant = { PENDING: 'warning', APPROVED: 'success', REJECTED: 'danger' };
@@ -137,6 +138,11 @@
             Copy: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>,
             LogOut: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>,
             ArrowLeft: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12,19 5,12 12,5"/></svg>,
+            Layers: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="12,2 2,7 12,12 22,7"/><polyline points="2,17 12,22 22,17"/><polyline points="2,12 12,17 22,12"/></svg>,
+            MapPin: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>,
+            ChevronRight: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9,18 15,12 9,6"/></svg>,
+            ChevronLeft: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15,18 9,12 15,6"/></svg>,
+            Target: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>,
         };
 
         // =============================================
@@ -249,6 +255,7 @@
             const menuItems = [
                 { id: 'dashboard', label: 'Tableau de bord', icon: Icons.LayoutDashboard },
                 { id: 'campaigns', label: 'Campagnes', icon: Icons.Send },
+                { id: 'segments', label: 'Segments', icon: Icons.Layers },
                 { id: 'chatbot', label: 'Chatbot RAG', icon: Icons.Bot },
                 { id: 'contacts', label: 'Contacts', icon: Icons.Users },
                 { id: 'templates', label: 'Templates', icon: Icons.FileText },
@@ -260,6 +267,7 @@
                 switch (activeTab) {
                     case 'dashboard': return <DashboardView onNavigate={setActiveTab} />;
                     case 'campaigns': return <CampaignsView />;
+                    case 'segments': return <SegmentsView />;
                     case 'chatbot': return <ChatbotView />;
                     case 'contacts': return <ContactsView />;
                     case 'templates': return <TemplatesView />;
@@ -439,7 +447,7 @@
                             <div className="w-12 h-12 bg-bgfi-primary/10 rounded-xl flex items-center justify-center text-bgfi-primary"><Icons.Send /></div>
                             <div>
                                 <h2 className="text-2xl font-bold text-gray-900">{c.name}</h2>
-                                <p className="text-sm text-gray-500">{catMap[c.type] || c.type} - {segmentMap[c.segment] || c.segment || 'Tous'} - Template: {c.template?.displayName || c.template?.name || '-'}</p>
+                                <p className="text-sm text-gray-500">{catMap[c.type] || c.type} - {c.segmentRef?.name || categoryMap[c.legacySegment] || 'Tous'} - Template: {c.template?.displayName || c.template?.name || '-'}</p>
                             </div>
                         </div>
                         <div className="flex items-center gap-3">
@@ -514,26 +522,292 @@
             );
         };
 
-        const CampaignsView = () => {
-            const [showCreateModal, setShowCreateModal] = useState(false);
-            const [selectedCampaign, setSelectedCampaign] = useState(null);
-            const { data, loading, error, refetch } = useApi('/campaigns?limit=50');
-            const { data: tplData } = useApi('/templates?status=APPROVED&limit=100');
-            const [form, setForm] = useState({ name: '', type: '', templateId: '', segment: '', scheduledAt: '' });
-            const [creating, setCreating] = useState(false);
+        // =============================================
+        // Segment Builder Component
+        // =============================================
+        const SEGMENT_FIELDS = [
+            { name: 'category', label: 'Categorie', type: 'select', group: 'PROFIL', options: ['ALL', 'ACTIVE', 'INACTIVE', 'NEW', 'PREMIUM', 'VIP'] },
+            { name: 'city', label: 'Ville', type: 'text', group: 'PROFIL' },
+            { name: 'country', label: 'Pays', type: 'text', group: 'PROFIL' },
+            { name: 'ageRange', label: "Tranche d'age", type: 'select', group: 'PROFIL', options: ['18-25', '26-35', '36-45', '46-55', '56+'] },
+            { name: 'gender', label: 'Genre', type: 'select', group: 'PROFIL', options: ['M', 'F', 'AUTRE'] },
+            { name: 'language', label: 'Langue', type: 'select', group: 'PROFIL', options: ['fr', 'en', 'es'] },
+            { name: 'accountType', label: 'Type de compte', type: 'select', group: 'BANQUE', options: ['EPARGNE', 'COURANT', 'PROFESSIONNEL', 'JEUNE'] },
+            { name: 'engagementScore', label: "Score engagement", type: 'number', group: 'COMPORTEMENT' },
+            { name: 'status', label: 'Statut contact', type: 'select', group: 'PROFIL', options: ['ACTIVE', 'UNSUBSCRIBED', 'BLOCKED'] },
+        ];
+        const OPS_BY_TYPE = {
+            select: [{ v: 'eq', l: '=' }, { v: 'neq', l: '!=' }, { v: 'in', l: 'dans' }],
+            text: [{ v: 'eq', l: '=' }, { v: 'contains', l: 'contient' }],
+            number: [{ v: 'eq', l: '=' }, { v: 'gt', l: '>' }, { v: 'gte', l: '>=' }, { v: 'lt', l: '<' }, { v: 'lte', l: '<=' }],
+            date: [{ v: 'gt', l: 'apres' }, { v: 'lt', l: 'avant' }],
+            boolean: [{ v: 'eq', l: '=' }]
+        };
 
-            const campaigns = data?.data || [];
-            const templates = tplData?.data || [];
+        const RuleRow = ({ rule, onChange, onRemove }) => {
+            const fieldDef = SEGMENT_FIELDS.find(f => f.name === rule.field) || SEGMENT_FIELDS[0];
+            const ops = OPS_BY_TYPE[fieldDef.type] || OPS_BY_TYPE.text;
+            return (
+                <div className="flex items-center gap-2 flex-wrap">
+                    <select className="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white" value={rule.field} onChange={e => { const fd = SEGMENT_FIELDS.find(f => f.name === e.target.value); onChange({ ...rule, field: e.target.value, op: (OPS_BY_TYPE[fd?.type] || OPS_BY_TYPE.text)[0].v, value: '' }); }}>
+                        {SEGMENT_FIELDS.map(f => <option key={f.name} value={f.name}>{f.label}</option>)}
+                    </select>
+                    <select className="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white" value={rule.op} onChange={e => onChange({ ...rule, op: e.target.value })}>
+                        {ops.map(o => <option key={o.v} value={o.v}>{o.l}</option>)}
+                    </select>
+                    {fieldDef.options ? (
+                        <select className="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white" value={rule.value} onChange={e => onChange({ ...rule, value: e.target.value })}>
+                            <option value="">Choisir...</option>
+                            {fieldDef.options.map(o => <option key={o} value={o}>{o}</option>)}
+                        </select>
+                    ) : (
+                        <input type={fieldDef.type === 'number' ? 'number' : 'text'} className="border border-gray-300 rounded-lg px-3 py-2 text-sm w-40" placeholder="Valeur" value={rule.value} onChange={e => onChange({ ...rule, value: fieldDef.type === 'number' ? Number(e.target.value) : e.target.value })} />
+                    )}
+                    <button className="text-red-500 hover:text-red-700 p-1" onClick={onRemove}><Icons.Trash2 /></button>
+                </div>
+            );
+        };
+
+        const SegmentBuilder = ({ criteria, onChange, previewCount }) => {
+            const addRule = () => {
+                const newRules = [...(criteria.rules || []), { field: 'city', op: 'eq', value: '' }];
+                onChange({ ...criteria, rules: newRules });
+            };
+            const updateRule = (idx, rule) => {
+                const newRules = [...criteria.rules]; newRules[idx] = rule;
+                onChange({ ...criteria, rules: newRules });
+            };
+            const removeRule = (idx) => {
+                const newRules = criteria.rules.filter((_, i) => i !== idx);
+                onChange({ ...criteria, rules: newRules });
+            };
+            return (
+                <div className="space-y-4">
+                    <div className="flex items-center gap-2 mb-2">
+                        <span className="text-sm font-medium text-gray-700">Operateur logique :</span>
+                        <button className={'px-3 py-1 rounded-lg text-sm font-medium ' + (criteria.operator === 'AND' ? 'bg-bgfi-primary text-white' : 'bg-gray-100 text-gray-600')} onClick={() => onChange({ ...criteria, operator: 'AND' })}>ET (AND)</button>
+                        <button className={'px-3 py-1 rounded-lg text-sm font-medium ' + (criteria.operator === 'OR' ? 'bg-bgfi-primary text-white' : 'bg-gray-100 text-gray-600')} onClick={() => onChange({ ...criteria, operator: 'OR' })}>OU (OR)</button>
+                    </div>
+                    <div className="space-y-2 pl-4 border-l-2 border-bgfi-primary/30">
+                        {(criteria.rules || []).map((rule, idx) => (
+                            <RuleRow key={idx} rule={rule} onChange={r => updateRule(idx, r)} onRemove={() => removeRule(idx)} />
+                        ))}
+                    </div>
+                    <Button variant="secondary" size="sm" icon={Icons.Plus} onClick={addRule}>Ajouter un critere</Button>
+                    {previewCount !== null && previewCount !== undefined && (
+                        <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 flex items-center gap-2">
+                            <Icons.Users />
+                            <span className="text-sm font-medium text-blue-900">{previewCount} contact(s) correspondent</span>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        // =============================================
+        // Stepper Component
+        // =============================================
+        const Stepper = ({ steps, current }) => (
+            <div className="flex items-center justify-between mb-8">
+                {steps.map((step, i) => (
+                    <React.Fragment key={i}>
+                        <div className="flex items-center gap-2">
+                            <div className={'w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ' + (i < current ? 'bg-green-500 text-white' : i === current ? 'bg-bgfi-primary text-white' : 'bg-gray-200 text-gray-500')}>
+                                {i < current ? '\u2713' : i + 1}
+                            </div>
+                            <span className={'text-sm font-medium hidden sm:inline ' + (i <= current ? 'text-gray-900' : 'text-gray-400')}>{step}</span>
+                        </div>
+                        {i < steps.length - 1 && <div className={'flex-1 h-0.5 mx-2 ' + (i < current ? 'bg-green-500' : 'bg-gray-200')} />}
+                    </React.Fragment>
+                ))}
+            </div>
+        );
+
+        // =============================================
+        // Campaign Wizard (5 steps)
+        // =============================================
+        const CampaignWizard = ({ onClose, onCreated, templates }) => {
+            const [step, setStep] = useState(0);
+            const [creating, setCreating] = useState(false);
+            const [previewCount, setPreviewCount] = useState(null);
+            const { data: segData } = useApi('/segments?limit=100');
+            const segments = segData?.data || [];
+
+            const [form, setForm] = useState({
+                name: '', type: '', description: '',
+                targetMode: 'segment', segmentId: '', inlineCriteria: { operator: 'AND', rules: [] }, saveSegment: false, newSegmentName: '',
+                templateId: '',
+                scheduledAt: ''
+            });
+
+            const stepNames = ['Configuration', 'Ciblage', 'Contenu', 'Planification', 'Recapitulatif'];
+
+            // Debounced preview
+            const previewTimer = React.useRef(null);
+            React.useEffect(() => {
+                if (form.targetMode !== 'builder' || form.inlineCriteria.rules.length === 0) { setPreviewCount(null); return; }
+                clearTimeout(previewTimer.current);
+                previewTimer.current = setTimeout(async () => {
+                    try {
+                        const res = await api('/segments/preview', { method: 'POST', body: JSON.stringify({ criteria: form.inlineCriteria }) });
+                        setPreviewCount(res.contactCount);
+                    } catch { setPreviewCount(null); }
+                }, 500);
+                return () => clearTimeout(previewTimer.current);
+            }, [form.inlineCriteria, form.targetMode]);
 
             const handleCreate = async () => {
                 setCreating(true);
                 try {
-                    await api('/campaigns', { method: 'POST', body: JSON.stringify(form) });
-                    setShowCreateModal(false); setForm({ name: '', type: '', templateId: '', segment: '', scheduledAt: '' });
-                    refetch();
+                    const body = { name: form.name, type: form.type, templateId: form.templateId, scheduledAt: form.scheduledAt || undefined };
+                    if (form.targetMode === 'segment' && form.segmentId) {
+                        body.segmentId = form.segmentId;
+                    } else if (form.targetMode === 'builder') {
+                        if (form.saveSegment && form.newSegmentName) {
+                            const seg = await api('/segments', { method: 'POST', body: JSON.stringify({ name: form.newSegmentName, criteria: form.inlineCriteria }) });
+                            body.segmentId = seg.id;
+                        } else {
+                            body.inlineCriteria = form.inlineCriteria;
+                        }
+                    } else {
+                        body.segment = 'ALL';
+                    }
+                    await api('/campaigns', { method: 'POST', body: JSON.stringify(body) });
+                    onCreated();
                 } catch (err) { alert(err.message); }
                 finally { setCreating(false); }
             };
+
+            const canNext = () => {
+                if (step === 0) return form.name && form.type;
+                if (step === 1) return form.targetMode === 'all' || (form.targetMode === 'segment' && form.segmentId) || (form.targetMode === 'builder' && form.inlineCriteria.rules.length > 0);
+                if (step === 2) return form.templateId;
+                return true;
+            };
+
+            const selTemplate = templates.find(t => t.id === form.templateId);
+            const selSegment = segments.find(s => s.id === form.segmentId);
+
+            return (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-auto">
+                        <div className="p-6 border-b border-gray-200 flex items-center justify-between">
+                            <h2 className="text-xl font-semibold text-gray-900">Nouvelle Campagne WhatsApp</h2>
+                            <button onClick={onClose} className="text-gray-400 hover:text-gray-600"><Icons.X /></button>
+                        </div>
+                        <div className="p-6">
+                            <Stepper steps={stepNames} current={step} />
+
+                            {step === 0 && (
+                                <div className="space-y-4">
+                                    <Input label="Nom de la campagne" placeholder="Ex: Relance App Mobile - Fevrier" value={form.name} onChange={v => setForm({...form, name: v})} />
+                                    <Select label="Type" value={form.type} onChange={v => setForm({...form, type: v})} options={[{ value: '', label: 'Selectionner...' }, { value: 'REACTIVATION', label: 'Reactivation' }, { value: 'MARKETING', label: 'Marketing' }, { value: 'NOTIFICATION', label: 'Notification' }, { value: 'ALERT', label: 'Alerte' }]} />
+                                </div>
+                            )}
+
+                            {step === 1 && (
+                                <div className="space-y-6">
+                                    <div className="grid grid-cols-3 gap-3">
+                                        {[
+                                            { id: 'all', label: 'Tous les contacts', desc: 'Cibler tous les contacts actifs', icon: Icons.Users },
+                                            { id: 'segment', label: 'Segment sauvegarde', desc: 'Utiliser un segment existant', icon: Icons.Layers },
+                                            { id: 'builder', label: 'Criteres avances', desc: 'Construire un ciblage sur mesure', icon: Icons.Target }
+                                        ].map(m => (
+                                            <div key={m.id} className={'border-2 rounded-xl p-4 cursor-pointer transition-all ' + (form.targetMode === m.id ? 'border-bgfi-primary bg-bgfi-primary/5' : 'border-gray-200 hover:border-gray-300')} onClick={() => setForm({...form, targetMode: m.id})}>
+                                                <div className="text-bgfi-primary mb-2"><m.icon /></div>
+                                                <p className="font-medium text-sm text-gray-900">{m.label}</p>
+                                                <p className="text-xs text-gray-500 mt-1">{m.desc}</p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    {form.targetMode === 'segment' && (
+                                        <div className="space-y-3">
+                                            <Select label="Segment" value={form.segmentId} onChange={v => setForm({...form, segmentId: v})} options={[{ value: '', label: 'Selectionner un segment...' }, ...segments.map(s => ({ value: s.id, label: s.name + ' (' + s.contactCount + ' contacts)' }))]} />
+                                            {selSegment?.description && <p className="text-sm text-gray-500">{selSegment.description}</p>}
+                                        </div>
+                                    )}
+                                    {form.targetMode === 'builder' && (
+                                        <div className="space-y-4">
+                                            <SegmentBuilder criteria={form.inlineCriteria} onChange={c => setForm({...form, inlineCriteria: c})} previewCount={previewCount} />
+                                            <div className="flex items-center gap-3 mt-4 p-3 bg-gray-50 rounded-xl">
+                                                <input type="checkbox" id="saveSeg" checked={form.saveSegment} onChange={e => setForm({...form, saveSegment: e.target.checked})} className="rounded" />
+                                                <label htmlFor="saveSeg" className="text-sm text-gray-700">Sauvegarder comme segment reutilisable</label>
+                                                {form.saveSegment && <Input placeholder="Nom du segment" value={form.newSegmentName} onChange={v => setForm({...form, newSegmentName: v})} className="flex-1" />}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {step === 2 && (
+                                <div className="space-y-4">
+                                    <Select label="Template approuve" value={form.templateId} onChange={v => setForm({...form, templateId: v})} options={[{ value: '', label: 'Selectionner un template...' }, ...templates.map(t => ({ value: t.id, label: (t.displayName || t.name) + ' (' + (t.category || '') + ')' }))]} />
+                                    {selTemplate && (
+                                        <div className="bg-gray-50 rounded-xl p-4">
+                                            <p className="text-sm font-medium text-gray-700 mb-2">Apercu :</p>
+                                            <p className="text-sm text-gray-600 whitespace-pre-wrap">{selTemplate.content}</p>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {step === 3 && (
+                                <div className="space-y-4">
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className={'border-2 rounded-xl p-4 cursor-pointer transition-all ' + (!form.scheduledAt ? 'border-bgfi-primary bg-bgfi-primary/5' : 'border-gray-200')} onClick={() => setForm({...form, scheduledAt: ''})}>
+                                            <Icons.Send />
+                                            <p className="font-medium text-sm mt-2">Envoi immediat</p>
+                                            <p className="text-xs text-gray-500">La campagne sera en brouillon, prete a etre lancee</p>
+                                        </div>
+                                        <div className={'border-2 rounded-xl p-4 cursor-pointer transition-all ' + (form.scheduledAt ? 'border-bgfi-primary bg-bgfi-primary/5' : 'border-gray-200')} onClick={() => setForm({...form, scheduledAt: form.scheduledAt || new Date().toISOString().slice(0, 16)})}>
+                                            <Icons.Calendar />
+                                            <p className="font-medium text-sm mt-2">Planifier</p>
+                                            <p className="text-xs text-gray-500">Choisir une date et heure d'envoi</p>
+                                        </div>
+                                    </div>
+                                    {form.scheduledAt && <Input label="Date et heure d'envoi" type="datetime-local" value={form.scheduledAt} onChange={v => setForm({...form, scheduledAt: v})} />}
+                                </div>
+                            )}
+
+                            {step === 4 && (
+                                <div className="space-y-4">
+                                    <div className="bg-gray-50 rounded-xl p-6 space-y-3">
+                                        <div className="flex justify-between"><span className="text-sm text-gray-500">Campagne</span><span className="text-sm font-medium">{form.name}</span></div>
+                                        <div className="flex justify-between"><span className="text-sm text-gray-500">Type</span><span className="text-sm font-medium">{catMap[form.type] || form.type}</span></div>
+                                        <div className="flex justify-between"><span className="text-sm text-gray-500">Ciblage</span><span className="text-sm font-medium">{form.targetMode === 'all' ? 'Tous les contacts' : form.targetMode === 'segment' ? (selSegment?.name || '-') : 'Criteres personnalises' + (previewCount !== null ? ' (' + previewCount + ' contacts)' : '')}</span></div>
+                                        <div className="flex justify-between"><span className="text-sm text-gray-500">Template</span><span className="text-sm font-medium">{selTemplate?.displayName || selTemplate?.name || '-'}</span></div>
+                                        <div className="flex justify-between"><span className="text-sm text-gray-500">Planification</span><span className="text-sm font-medium">{form.scheduledAt ? new Date(form.scheduledAt).toLocaleString('fr-FR') : 'Brouillon (envoi manuel)'}</span></div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                        <div className="p-6 border-t border-gray-200 flex justify-between">
+                            <div>{step > 0 && <Button variant="secondary" icon={Icons.ChevronLeft} onClick={() => setStep(step - 1)}>Retour</Button>}</div>
+                            <div className="flex gap-3">
+                                <Button variant="secondary" onClick={onClose}>Annuler</Button>
+                                {step < 4 ? (
+                                    <Button onClick={() => setStep(step + 1)} disabled={!canNext()} icon={Icons.ChevronRight}>Suivant</Button>
+                                ) : (
+                                    <Button onClick={handleCreate} disabled={creating} icon={Icons.CheckCircle}>{creating ? 'Creation...' : 'Creer la campagne'}</Button>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // =============================================
+        // Campaigns View
+        // =============================================
+        const CampaignsView = () => {
+            const [showWizard, setShowWizard] = useState(false);
+            const [selectedCampaign, setSelectedCampaign] = useState(null);
+            const { data, loading, error, refetch } = useApi('/campaigns?limit=50');
+            const { data: tplData } = useApi('/templates?status=APPROVED&limit=100');
+
+            const campaigns = data?.data || [];
+            const templates = tplData?.data || [];
 
             const handleSend = async (id) => {
                 if (!confirm('Lancer cette campagne ?')) return;
@@ -547,10 +821,9 @@
 
             const openEdit = (c) => {
                 setEditForm({
-                    name: c.name,
-                    type: c.type,
+                    name: c.name, type: c.type,
                     templateId: c.templateId || c.template?.id || '',
-                    segment: c.segment,
+                    segment: c.legacySegment || 'ALL',
                     scheduledAt: c.scheduledAt ? new Date(c.scheduledAt).toISOString().slice(0, 16) : ''
                 });
                 setEditModal(c);
@@ -582,12 +855,12 @@
                 <div className="space-y-6">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                         <div className="flex items-center gap-4"><Input placeholder="Rechercher une campagne..." icon={Icons.Search} className="w-64" /></div>
-                        <Button onClick={() => setShowCreateModal(true)} icon={Icons.Plus}>Nouvelle Campagne</Button>
+                        <Button onClick={() => setShowWizard(true)} icon={Icons.Plus}>Nouvelle Campagne</Button>
                     </div>
                     <Card>
                         <div className="overflow-x-auto">
                             <table className="w-full">
-                                <thead><tr className="border-b border-gray-200"><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Campagne</th><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Statut</th><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Type</th><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Segment</th><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Envoyes</th><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Date</th><th className="text-right py-3 px-4 text-sm font-medium text-gray-500">Actions</th></tr></thead>
+                                <thead><tr className="border-b border-gray-200"><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Campagne</th><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Statut</th><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Type</th><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Ciblage</th><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Envoyes</th><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Date</th><th className="text-right py-3 px-4 text-sm font-medium text-gray-500">Actions</th></tr></thead>
                                 <tbody className="divide-y divide-gray-100">
                                     {campaigns.length === 0 && <tr><td colSpan="7" className="py-8 text-center text-gray-500">Aucune campagne</td></tr>}
                                     {campaigns.map(c => (
@@ -595,7 +868,7 @@
                                             <td className="py-4 px-4"><div className="flex items-center gap-3"><div className="w-10 h-10 bg-bgfi-primary/10 rounded-xl flex items-center justify-center text-bgfi-primary"><Icons.Send /></div><div><p className="font-medium text-gray-900">{c.name}</p><p className="text-sm text-gray-500">{c.template?.name || '-'}</p></div></div></td>
                                             <td className="py-4 px-4"><Badge variant={statusVariant[c.status] || 'default'}>{statusMap[c.status] || c.status}</Badge></td>
                                             <td className="py-4 px-4 text-sm text-gray-600">{catMap[c.type] || c.type}</td>
-                                            <td className="py-4 px-4 text-sm text-gray-600">{segmentMap[c.segment] || c.segment || '-'}</td>
+                                            <td className="py-4 px-4 text-sm text-gray-600">{c.segmentRef?.name || categoryMap[c.legacySegment] || 'Tous'}</td>
                                             <td className="py-4 px-4 text-sm text-gray-600">{c.sent || 0}/{c.delivered || 0}/{c.failed || 0}</td>
                                             <td className="py-4 px-4 text-sm text-gray-500">{c.createdAt ? new Date(c.createdAt).toLocaleDateString('fr-FR') : '-'}</td>
                                             <td className="py-4 px-4 text-right" onClick={e => e.stopPropagation()}><div className="flex items-center justify-end gap-2">{c.status === 'DRAFT' && <Button variant="accent" size="sm" icon={Icons.Play} onClick={() => handleSend(c.id)}>Lancer</Button>}{['DRAFT','SCHEDULED','PAUSED'].includes(c.status) && <Button variant="ghost" size="sm" icon={Icons.Edit} onClick={() => openEdit(c)} title="Modifier" />}<Button variant="ghost" size="sm" icon={Icons.BarChart3} onClick={() => setSelectedCampaign(c)} title="Statistiques" />{c.status !== 'RUNNING' && <Button variant="ghost" size="sm" icon={Icons.Trash2} onClick={() => handleDelete(c.id)} title="Supprimer" />}</div></td>
@@ -606,31 +879,7 @@
                         </div>
                     </Card>
 
-                    {showCreateModal && (
-                        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                            <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-auto">
-                                <div className="p-6 border-b border-gray-200 flex items-center justify-between">
-                                    <h2 className="text-xl font-semibold text-gray-900">Nouvelle Campagne WhatsApp</h2>
-                                    <button onClick={() => setShowCreateModal(false)} className="text-gray-400 hover:text-gray-600"><Icons.X /></button>
-                                </div>
-                                <div className="p-6 space-y-6">
-                                    <Input label="Nom de la campagne" placeholder="Ex: Relance App Mobile - Fevrier" value={form.name} onChange={v => setForm({...form, name: v})} />
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <Select label="Type" value={form.type} onChange={v => setForm({...form, type: v})} options={[{ value: '', label: 'Selectionner...' }, { value: 'REACTIVATION', label: 'Reactivation' }, { value: 'PROMOTIONAL', label: 'Promotion' }, { value: 'NOTIFICATION', label: 'Notification' }]} />
-                                        <Select label="Template" value={form.templateId} onChange={v => setForm({...form, templateId: v})} options={[{ value: '', label: 'Selectionner...' }, ...templates.map(t => ({ value: t.id, label: t.displayName || t.name }))]} />
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <Select label="Segment" value={form.segment} onChange={v => setForm({...form, segment: v})} options={[{ value: '', label: 'Tous les contacts' }, { value: 'ACTIVE', label: 'Actifs' }, { value: 'INACTIVE', label: 'Inactifs' }, { value: 'NEW', label: 'Nouveaux' }, { value: 'VIP', label: 'VIP' }]} />
-                                        <Input label="Date d'envoi" type="datetime-local" value={form.scheduledAt} onChange={v => setForm({...form, scheduledAt: v})} />
-                                    </div>
-                                </div>
-                                <div className="p-6 border-t border-gray-200 flex justify-end gap-3">
-                                    <Button variant="secondary" onClick={() => setShowCreateModal(false)}>Annuler</Button>
-                                    <Button onClick={handleCreate} disabled={creating || !form.name} icon={Icons.CheckCircle}>{creating ? 'Creation...' : 'Creer la campagne'}</Button>
-                                </div>
-                            </div>
-                        </div>
-                    )}
+                    {showWizard && <CampaignWizard onClose={() => setShowWizard(false)} onCreated={() => { setShowWizard(false); refetch(); }} templates={templates} />}
 
                     {editModal && (
                         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -642,11 +891,11 @@
                                 <div className="p-6 space-y-6">
                                     <Input label="Nom de la campagne" value={editForm.name} onChange={v => setEditForm({...editForm, name: v})} />
                                     <div className="grid grid-cols-2 gap-4">
-                                        <Select label="Type" value={editForm.type} onChange={v => setEditForm({...editForm, type: v})} options={[{ value: 'REACTIVATION', label: 'Reactivation' }, { value: 'PROMOTIONAL', label: 'Promotion' }, { value: 'NOTIFICATION', label: 'Notification' }, { value: 'MARKETING', label: 'Marketing' }]} />
+                                        <Select label="Type" value={editForm.type} onChange={v => setEditForm({...editForm, type: v})} options={[{ value: 'REACTIVATION', label: 'Reactivation' }, { value: 'MARKETING', label: 'Marketing' }, { value: 'NOTIFICATION', label: 'Notification' }, { value: 'ALERT', label: 'Alerte' }]} />
                                         <Select label="Template" value={editForm.templateId} onChange={v => setEditForm({...editForm, templateId: v})} options={[{ value: '', label: 'Selectionner...' }, ...templates.map(t => ({ value: t.id, label: t.displayName || t.name }))]} />
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
-                                        <Select label="Segment" value={editForm.segment} onChange={v => setEditForm({...editForm, segment: v})} options={[{ value: 'ALL', label: 'Tous les contacts' }, { value: 'ACTIVE', label: 'Actifs' }, { value: 'INACTIVE', label: 'Inactifs' }, { value: 'NEW', label: 'Nouveaux' }, { value: 'VIP', label: 'VIP' }]} />
+                                        <Select label="Categorie" value={editForm.segment} onChange={v => setEditForm({...editForm, segment: v})} options={[{ value: 'ALL', label: 'Tous les contacts' }, { value: 'ACTIVE', label: 'Actifs' }, { value: 'INACTIVE', label: 'Inactifs' }, { value: 'NEW', label: 'Nouveaux' }, { value: 'VIP', label: 'VIP' }, { value: 'PREMIUM', label: 'Premium' }]} />
                                         <Input label="Date d'envoi" type="datetime-local" value={editForm.scheduledAt} onChange={v => setEditForm({...editForm, scheduledAt: v})} />
                                     </div>
                                 </div>
@@ -809,9 +1058,11 @@
             const [showImportModal, setShowImportModal] = useState(false);
             const [showAddModal, setShowAddModal] = useState(false);
             const [search, setSearch] = useState('');
-            const [segmentFilter, setSegmentFilter] = useState('');
-            const { data, loading, error, refetch } = useApi('/contacts?limit=50' + (search ? '&search=' + encodeURIComponent(search) : '') + (segmentFilter ? '&segment=' + segmentFilter : ''));
-            const [form, setForm] = useState({ name: '', phone: '', email: '', segment: 'ACTIVE' });
+            const [categoryFilter, setCategoryFilter] = useState('');
+            const [cityFilter, setCityFilter] = useState('');
+            const [accountTypeFilter, setAccountTypeFilter] = useState('');
+            const { data, loading, error, refetch } = useApi('/contacts?limit=50' + (search ? '&search=' + encodeURIComponent(search) : '') + (categoryFilter ? '&category=' + categoryFilter : '') + (cityFilter ? '&city=' + encodeURIComponent(cityFilter) : '') + (accountTypeFilter ? '&accountType=' + accountTypeFilter : ''));
+            const [form, setForm] = useState({ name: '', phone: '', email: '', category: 'ACTIVE', city: '', accountType: '', ageRange: '', gender: '' });
             const [creating, setCreating] = useState(false);
 
             const contacts = data?.data || [];
@@ -819,8 +1070,13 @@
             const handleCreate = async () => {
                 setCreating(true);
                 try {
-                    await api('/contacts', { method: 'POST', body: JSON.stringify(form) });
-                    setShowAddModal(false); setForm({ name: '', phone: '', email: '', segment: 'ACTIVE' }); refetch();
+                    const body = { ...form };
+                    if (!body.city) delete body.city;
+                    if (!body.accountType) delete body.accountType;
+                    if (!body.ageRange) delete body.ageRange;
+                    if (!body.gender) delete body.gender;
+                    await api('/contacts', { method: 'POST', body: JSON.stringify(body) });
+                    setShowAddModal(false); setForm({ name: '', phone: '', email: '', category: 'ACTIVE', city: '', accountType: '', ageRange: '', gender: '' }); refetch();
                 } catch (err) { alert(err.message); }
                 finally { setCreating(false); }
             };
@@ -848,9 +1104,11 @@
             return (
                 <div className="space-y-6">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                        <div className="flex items-center gap-4">
-                            <Input placeholder="Rechercher un contact..." icon={Icons.Search} className="w-64" value={search} onChange={setSearch} />
-                            <Select value={segmentFilter} onChange={setSegmentFilter} options={[{ value: '', label: 'Tous les segments' }, { value: 'ACTIVE', label: 'Actifs' }, { value: 'INACTIVE', label: 'Inactifs' }, { value: 'NEW', label: 'Nouveaux' }, { value: 'VIP', label: 'VIP' }]} />
+                        <div className="flex items-center gap-2 flex-wrap">
+                            <Input placeholder="Rechercher un contact..." icon={Icons.Search} className="w-56" value={search} onChange={setSearch} />
+                            <Select value={categoryFilter} onChange={setCategoryFilter} options={[{ value: '', label: 'Categorie' }, { value: 'ACTIVE', label: 'Actifs' }, { value: 'INACTIVE', label: 'Inactifs' }, { value: 'NEW', label: 'Nouveaux' }, { value: 'VIP', label: 'VIP' }, { value: 'PREMIUM', label: 'Premium' }]} />
+                            <Select value={accountTypeFilter} onChange={setAccountTypeFilter} options={[{ value: '', label: 'Type compte' }, { value: 'EPARGNE', label: 'Epargne' }, { value: 'COURANT', label: 'Courant' }, { value: 'PROFESSIONNEL', label: 'Pro' }, { value: 'JEUNE', label: 'Jeune' }]} />
+                            <Input placeholder="Ville..." className="w-32" value={cityFilter} onChange={setCityFilter} />
                         </div>
                         <div className="flex gap-2">
                             <Button variant="secondary" onClick={() => setShowImportModal(true)} icon={Icons.Upload}>Importer</Button>
@@ -861,16 +1119,17 @@
                     <Card>
                         <div className="overflow-x-auto">
                             <table className="w-full">
-                                <thead><tr className="border-b border-gray-200"><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Contact</th><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Telephone</th><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Email</th><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Segment</th><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Derniere activite</th><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Opt-in</th><th className="text-right py-3 px-4 text-sm font-medium text-gray-500">Actions</th></tr></thead>
+                                <thead><tr className="border-b border-gray-200"><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Contact</th><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Telephone</th><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Ville</th><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Categorie</th><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Compte</th><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Engagement</th><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Opt-in</th><th className="text-right py-3 px-4 text-sm font-medium text-gray-500">Actions</th></tr></thead>
                                 <tbody className="divide-y divide-gray-100">
-                                    {contacts.length === 0 && <tr><td colSpan="7" className="py-8 text-center text-gray-500">Aucun contact</td></tr>}
+                                    {contacts.length === 0 && <tr><td colSpan="8" className="py-8 text-center text-gray-500">Aucun contact</td></tr>}
                                     {contacts.map(contact => (
                                         <tr key={contact.id} className="hover:bg-gray-50">
-                                            <td className="py-4 px-4"><div className="flex items-center gap-3"><div className="w-10 h-10 bg-bgfi-primary/10 rounded-full flex items-center justify-center text-bgfi-primary font-semibold">{(contact.name || '?').split(' ').map(n => n[0]).join('').substring(0,2)}</div><span className="font-medium text-gray-900">{contact.name || '-'}</span></div></td>
+                                            <td className="py-4 px-4"><div className="flex items-center gap-3"><div className="w-10 h-10 bg-bgfi-primary/10 rounded-full flex items-center justify-center text-bgfi-primary font-semibold">{(contact.name || '?').split(' ').map(n => n[0]).join('').substring(0,2)}</div><div><span className="font-medium text-gray-900 block">{contact.name || '-'}</span><span className="text-xs text-gray-500">{contact.email || ''}</span></div></div></td>
                                             <td className="py-4 px-4 text-sm text-gray-600">{contact.phone}</td>
-                                            <td className="py-4 px-4 text-sm text-gray-600">{contact.email || '-'}</td>
-                                            <td className="py-4 px-4"><Badge variant={segmentVariant[contact.segment] || 'default'}>{segmentMap[contact.segment] || contact.segment}</Badge></td>
-                                            <td className="py-4 px-4 text-sm text-gray-600">{contact.lastActivity ? new Date(contact.lastActivity).toLocaleDateString('fr-FR') : '-'}</td>
+                                            <td className="py-4 px-4 text-sm text-gray-600">{contact.city || '-'}</td>
+                                            <td className="py-4 px-4"><Badge variant={categoryVariant[contact.category] || 'default'}>{categoryMap[contact.category] || contact.category}</Badge></td>
+                                            <td className="py-4 px-4 text-sm text-gray-600">{accountTypeMap[contact.accountType] || contact.accountType || '-'}</td>
+                                            <td className="py-4 px-4"><div className="flex items-center gap-2"><div className="w-16 bg-gray-200 rounded-full h-2"><div className="h-2 rounded-full" style={{width: (contact.engagementScore || 0) + '%', backgroundColor: (contact.engagementScore || 0) >= 70 ? '#16a34a' : (contact.engagementScore || 0) >= 40 ? '#f59e0b' : '#ef4444'}} /></div><span className="text-xs text-gray-500">{contact.engagementScore || 0}</span></div></td>
                                             <td className="py-4 px-4"><Badge variant={contact.optedIn ? 'success' : 'danger'}>{contact.optedIn ? 'Oui' : 'Non'}</Badge></td>
                                             <td className="py-4 px-4 text-right"><div className="flex items-center justify-end gap-2"><Button variant="ghost" size="sm" icon={Icons.Trash2} onClick={() => handleDelete(contact.id)} /></div></td>
                                         </tr>
@@ -883,16 +1142,26 @@
 
                     {showAddModal && (
                         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                            <div className="bg-white rounded-2xl max-w-lg w-full">
+                            <div className="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-auto">
                                 <div className="p-6 border-b border-gray-200 flex items-center justify-between">
                                     <h2 className="text-xl font-semibold text-gray-900">Ajouter un Contact</h2>
                                     <button onClick={() => setShowAddModal(false)} className="text-gray-400 hover:text-gray-600"><Icons.X /></button>
                                 </div>
                                 <div className="p-6 space-y-4">
-                                    <Input label="Nom" placeholder="Jean Dupont" value={form.name} onChange={v => setForm({...form, name: v})} />
-                                    <Input label="Telephone" placeholder="+24174000001" value={form.phone} onChange={v => setForm({...form, phone: v})} icon={Icons.Phone} />
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <Input label="Nom" placeholder="Jean Dupont" value={form.name} onChange={v => setForm({...form, name: v})} />
+                                        <Input label="Telephone" placeholder="+24174000001" value={form.phone} onChange={v => setForm({...form, phone: v})} icon={Icons.Phone} />
+                                    </div>
                                     <Input label="Email" placeholder="jean@email.com" value={form.email} onChange={v => setForm({...form, email: v})} icon={Icons.Mail} />
-                                    <Select label="Segment" value={form.segment} onChange={v => setForm({...form, segment: v})} options={[{ value: 'ACTIVE', label: 'Actif' }, { value: 'INACTIVE', label: 'Inactif' }, { value: 'NEW', label: 'Nouveau' }, { value: 'VIP', label: 'VIP' }]} />
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <Select label="Categorie" value={form.category} onChange={v => setForm({...form, category: v})} options={[{ value: 'ACTIVE', label: 'Actif' }, { value: 'INACTIVE', label: 'Inactif' }, { value: 'NEW', label: 'Nouveau' }, { value: 'VIP', label: 'VIP' }, { value: 'PREMIUM', label: 'Premium' }]} />
+                                        <Input label="Ville" placeholder="Libreville" value={form.city} onChange={v => setForm({...form, city: v})} />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <Select label="Type de compte" value={form.accountType} onChange={v => setForm({...form, accountType: v})} options={[{ value: '', label: 'Selectionner...' }, { value: 'EPARGNE', label: 'Epargne' }, { value: 'COURANT', label: 'Courant' }, { value: 'PROFESSIONNEL', label: 'Professionnel' }, { value: 'JEUNE', label: 'Jeune' }]} />
+                                        <Select label="Tranche d'age" value={form.ageRange} onChange={v => setForm({...form, ageRange: v})} options={[{ value: '', label: 'Selectionner...' }, { value: '18-25', label: '18-25 ans' }, { value: '26-35', label: '26-35 ans' }, { value: '36-45', label: '36-45 ans' }, { value: '46-55', label: '46-55 ans' }, { value: '56+', label: '56+ ans' }]} />
+                                    </div>
+                                    <Select label="Genre" value={form.gender} onChange={v => setForm({...form, gender: v})} options={[{ value: '', label: 'Selectionner...' }, { value: 'M', label: 'Masculin' }, { value: 'F', label: 'Feminin' }, { value: 'AUTRE', label: 'Autre' }]} />
                                 </div>
                                 <div className="p-6 border-t border-gray-200 flex justify-end gap-3">
                                     <Button variant="secondary" onClick={() => setShowAddModal(false)}>Annuler</Button>
@@ -916,10 +1185,119 @@
                                         <p className="font-medium text-gray-900">Deposez votre fichier ici</p>
                                         <p className="text-sm text-gray-500 mt-1">CSV ou Excel (max 10MB)</p>
                                     </div>
-                                    <div className="bg-gray-50 p-4 rounded-xl"><p className="text-sm font-medium text-gray-700 mb-2">Format attendu :</p><code className="text-xs text-gray-600 block">phone, name, email, segment</code></div>
+                                    <div className="bg-gray-50 p-4 rounded-xl"><p className="text-sm font-medium text-gray-700 mb-2">Format attendu :</p><code className="text-xs text-gray-600 block">phone, name, email, category, city, accountType, ageRange, gender</code></div>
                                 </div>
                                 <div className="p-6 border-t border-gray-200 flex justify-end gap-3">
                                     <Button variant="secondary" onClick={() => setShowImportModal(false)}>Fermer</Button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        // =============================================
+        // Segments View
+        // =============================================
+        const SegmentsView = () => {
+            const { data, loading, error, refetch } = useApi('/segments?limit=50');
+            const [showCreate, setShowCreate] = useState(false);
+            const [form, setForm] = useState({ name: '', description: '', criteria: { operator: 'AND', rules: [] } });
+            const [creating, setCreating] = useState(false);
+            const [previewCount, setPreviewCount] = useState(null);
+
+            const segments = data?.data || [];
+
+            // Debounced preview
+            const timer = React.useRef(null);
+            React.useEffect(() => {
+                if (form.criteria.rules.length === 0) { setPreviewCount(null); return; }
+                clearTimeout(timer.current);
+                timer.current = setTimeout(async () => {
+                    try {
+                        const res = await api('/segments/preview', { method: 'POST', body: JSON.stringify({ criteria: form.criteria }) });
+                        setPreviewCount(res.contactCount);
+                    } catch { setPreviewCount(null); }
+                }, 500);
+                return () => clearTimeout(timer.current);
+            }, [form.criteria]);
+
+            const handleCreate = async () => {
+                setCreating(true);
+                try {
+                    await api('/segments', { method: 'POST', body: JSON.stringify(form) });
+                    setShowCreate(false); setForm({ name: '', description: '', criteria: { operator: 'AND', rules: [] } }); refetch();
+                } catch (err) { alert(err.message); }
+                finally { setCreating(false); }
+            };
+
+            const handleDelete = async (id) => {
+                if (!confirm('Supprimer ce segment ?')) return;
+                try { await api('/segments/' + id, { method: 'DELETE' }); refetch(); }
+                catch (err) { alert(err.message); }
+            };
+
+            const handleEvaluate = async (id) => {
+                try { await api('/segments/' + id + '/evaluate', { method: 'POST' }); refetch(); }
+                catch (err) { alert(err.message); }
+            };
+
+            if (loading) return <Spinner />;
+            if (error) return <ErrorBox message={error} onRetry={refetch} />;
+
+            return (
+                <div className="space-y-6">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                        <h2 className="text-xl font-bold text-gray-900">Segments de ciblage</h2>
+                        <Button icon={Icons.Plus} onClick={() => setShowCreate(true)}>Nouveau Segment</Button>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {segments.length === 0 && <p className="text-gray-500 col-span-3 text-center py-8">Aucun segment. Creez-en un pour cibler vos campagnes.</p>}
+                        {segments.map(seg => (
+                            <Card key={seg.id} className="p-5">
+                                <div className="flex items-start justify-between mb-3">
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-10 h-10 bg-bgfi-primary/10 rounded-xl flex items-center justify-center text-bgfi-primary"><Icons.Layers /></div>
+                                        <div>
+                                            <p className="font-semibold text-gray-900">{seg.name}</p>
+                                            <Badge variant={seg.type === 'DYNAMIC' ? 'info' : seg.type === 'BANK_CRITERIA' ? 'primary' : 'default'}>{seg.type}</Badge>
+                                        </div>
+                                    </div>
+                                    <div className="flex gap-1">
+                                        <Button variant="ghost" size="sm" icon={Icons.RefreshCw} onClick={() => handleEvaluate(seg.id)} title="Re-evaluer" />
+                                        <Button variant="ghost" size="sm" icon={Icons.Trash2} onClick={() => handleDelete(seg.id)} title="Supprimer" />
+                                    </div>
+                                </div>
+                                {seg.description && <p className="text-sm text-gray-500 mb-3">{seg.description}</p>}
+                                <div className="flex items-center justify-between text-sm">
+                                    <span className="text-gray-500">Contacts</span>
+                                    <span className="font-bold text-bgfi-primary">{seg.contactCount}</span>
+                                </div>
+                                {seg.lastEvaluatedAt && <p className="text-xs text-gray-400 mt-1">Evalue: {new Date(seg.lastEvaluatedAt).toLocaleDateString('fr-FR')}</p>}
+                            </Card>
+                        ))}
+                    </div>
+
+                    {showCreate && (
+                        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                            <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-auto">
+                                <div className="p-6 border-b border-gray-200 flex items-center justify-between">
+                                    <h2 className="text-xl font-semibold text-gray-900">Nouveau Segment</h2>
+                                    <button onClick={() => setShowCreate(false)} className="text-gray-400 hover:text-gray-600"><Icons.X /></button>
+                                </div>
+                                <div className="p-6 space-y-4">
+                                    <Input label="Nom du segment" placeholder="Ex: Clients actifs Libreville" value={form.name} onChange={v => setForm({...form, name: v})} />
+                                    <Input label="Description" placeholder="Description optionnelle" value={form.description} onChange={v => setForm({...form, description: v})} />
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">Criteres de ciblage</label>
+                                        <SegmentBuilder criteria={form.criteria} onChange={c => setForm({...form, criteria: c})} previewCount={previewCount} />
+                                    </div>
+                                </div>
+                                <div className="p-6 border-t border-gray-200 flex justify-end gap-3">
+                                    <Button variant="secondary" onClick={() => setShowCreate(false)}>Annuler</Button>
+                                    <Button onClick={handleCreate} disabled={creating || !form.name || form.criteria.rules.length === 0} icon={Icons.CheckCircle}>{creating ? 'Creation...' : 'Creer le segment'}</Button>
                                 </div>
                             </div>
                         </div>

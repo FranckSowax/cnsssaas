@@ -91,27 +91,37 @@ async function main() {
   console.log(`${templates.length} templates créés`);
 
   // ============================================
-  // 3. Contacts de test
+  // 3. Contacts de test (enrichis bancaire)
   // ============================================
   const contacts = [
-    { phone: '+24174000001', name: 'Jean Dupont', email: 'jean.dupont@email.com', segment: 'ACTIVE', tags: ['app-mobile', 'premium'], optedIn: true },
-    { phone: '+24174000002', name: 'Marie Ndong', email: 'marie.ndong@email.com', segment: 'ACTIVE', tags: ['app-mobile'], optedIn: true },
-    { phone: '+24174000003', name: 'Paul Mba', email: 'paul.mba@email.com', segment: 'INACTIVE', tags: ['ancien-client'], optedIn: true },
-    { phone: '+24174000004', name: 'Aline Obame', email: 'aline.obame@email.com', segment: 'PREMIUM', tags: ['vip', 'app-mobile'], optedIn: true },
-    { phone: '+24174000005', name: 'Marc Essono', email: 'marc.essono@email.com', segment: 'NEW', tags: ['nouveau'], optedIn: true },
-    { phone: '+24174000006', name: 'Sophie Nguema', email: 'sophie.nguema@email.com', segment: 'ACTIVE', tags: ['app-mobile'], optedIn: false },
-    { phone: '+24174000007', name: 'David Ondo', email: 'david.ondo@email.com', segment: 'INACTIVE', tags: [], optedIn: true },
-    { phone: '+24174000008', name: 'Claire Bongo', email: 'claire.bongo@email.com', segment: 'VIP', tags: ['vip', 'premium'], optedIn: true },
-    { phone: '+24174000009', name: 'Pierre Ella', email: 'pierre.ella@email.com', segment: 'ACTIVE', tags: ['app-mobile'], optedIn: true },
-    { phone: '+24174000010', name: 'Fatou Diallo', email: 'fatou.diallo@email.com', segment: 'ACTIVE', tags: ['app-mobile', 'premium'], optedIn: true }
+    { phone: '+24174000001', name: 'Jean Dupont', email: 'jean.dupont@email.com', category: 'ACTIVE', tags: ['app-mobile', 'premium'], optedIn: true, city: 'Libreville', country: 'GA', ageRange: '36-45', gender: 'M', accountType: 'COURANT', engagementScore: 85 },
+    { phone: '+24174000002', name: 'Marie Ndong', email: 'marie.ndong@email.com', category: 'ACTIVE', tags: ['app-mobile'], optedIn: true, city: 'Libreville', country: 'GA', ageRange: '26-35', gender: 'F', accountType: 'EPARGNE', engagementScore: 72 },
+    { phone: '+24174000003', name: 'Paul Mba', email: 'paul.mba@email.com', category: 'INACTIVE', tags: ['ancien-client'], optedIn: true, city: 'Port-Gentil', country: 'GA', ageRange: '46-55', gender: 'M', accountType: 'COURANT', engagementScore: 15 },
+    { phone: '+24174000004', name: 'Aline Obame', email: 'aline.obame@email.com', category: 'PREMIUM', tags: ['vip', 'app-mobile'], optedIn: true, city: 'Libreville', country: 'GA', ageRange: '36-45', gender: 'F', accountType: 'PROFESSIONNEL', engagementScore: 95 },
+    { phone: '+24174000005', name: 'Marc Essono', email: 'marc.essono@email.com', category: 'NEW', tags: ['nouveau'], optedIn: true, city: 'Franceville', country: 'GA', ageRange: '18-25', gender: 'M', accountType: 'JEUNE', engagementScore: 40 },
+    { phone: '+24174000006', name: 'Sophie Nguema', email: 'sophie.nguema@email.com', category: 'ACTIVE', tags: ['app-mobile'], optedIn: false, city: 'Libreville', country: 'GA', ageRange: '26-35', gender: 'F', accountType: 'EPARGNE', engagementScore: 60 },
+    { phone: '+24174000007', name: 'David Ondo', email: 'david.ondo@email.com', category: 'INACTIVE', tags: [], optedIn: true, city: 'Oyem', country: 'GA', ageRange: '56+', gender: 'M', accountType: 'COURANT', engagementScore: 5 },
+    { phone: '+24174000008', name: 'Claire Bongo', email: 'claire.bongo@email.com', category: 'VIP', tags: ['vip', 'premium'], optedIn: true, city: 'Libreville', country: 'GA', ageRange: '46-55', gender: 'F', accountType: 'PROFESSIONNEL', engagementScore: 98 },
+    { phone: '+24174000009', name: 'Pierre Ella', email: 'pierre.ella@email.com', category: 'ACTIVE', tags: ['app-mobile'], optedIn: true, city: 'Lambaréné', country: 'GA', ageRange: '26-35', gender: 'M', accountType: 'COURANT', engagementScore: 55 },
+    { phone: '+24174000010', name: 'Fatou Diallo', email: 'fatou.diallo@email.com', category: 'ACTIVE', tags: ['app-mobile', 'premium'], optedIn: true, city: 'Libreville', country: 'GA', ageRange: '36-45', gender: 'F', accountType: 'EPARGNE', engagementScore: 78 }
   ];
 
   for (const contact of contacts) {
     await prisma.contact.upsert({
       where: { phone: contact.phone },
-      update: {},
+      update: {
+        category: contact.category,
+        city: contact.city,
+        country: contact.country,
+        ageRange: contact.ageRange,
+        gender: contact.gender,
+        accountType: contact.accountType,
+        engagementScore: contact.engagementScore
+      },
       create: {
         ...contact,
+        language: 'fr',
+        registrationDate: new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000),
         optedInAt: contact.optedIn ? new Date() : null,
         lastActivity: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000)
       }
@@ -120,7 +130,66 @@ async function main() {
   console.log(`${contacts.length} contacts créés`);
 
   // ============================================
-  // 4. Campagne de test
+  // 4. Segments dynamiques
+  // ============================================
+  const segments = [
+    {
+      id: '00000000-0000-0000-0000-000000000020',
+      name: 'clients_actifs_libreville',
+      description: 'Clients actifs basés à Libreville',
+      type: 'DYNAMIC',
+      criteria: {
+        operator: 'AND',
+        rules: [
+          { field: 'city', op: 'eq', value: 'Libreville' },
+          { field: 'category', op: 'eq', value: 'ACTIVE' }
+        ]
+      },
+      contactCount: 0,
+      createdBy: admin.id
+    },
+    {
+      id: '00000000-0000-0000-0000-000000000021',
+      name: 'clients_vip_premium',
+      description: 'Clients VIP et Premium à fort engagement',
+      type: 'BANK_CRITERIA',
+      criteria: {
+        operator: 'AND',
+        rules: [
+          { field: 'category', op: 'in', value: ['VIP', 'PREMIUM'] },
+          { field: 'engagementScore', op: 'gte', value: 80 }
+        ]
+      },
+      contactCount: 0,
+      createdBy: admin.id
+    },
+    {
+      id: '00000000-0000-0000-0000-000000000022',
+      name: 'nouveaux_inscrits_30j',
+      description: 'Contacts inscrits dans les 30 derniers jours',
+      type: 'DYNAMIC',
+      criteria: {
+        operator: 'AND',
+        rules: [
+          { field: 'category', op: 'eq', value: 'NEW' }
+        ]
+      },
+      contactCount: 0,
+      createdBy: admin.id
+    }
+  ];
+
+  for (const seg of segments) {
+    await prisma.segment.upsert({
+      where: { id: seg.id },
+      update: { criteria: seg.criteria, description: seg.description },
+      create: seg
+    });
+  }
+  console.log(`${segments.length} segments créés`);
+
+  // ============================================
+  // 5. Campagne de test
   // ============================================
   const campaign = await prisma.campaign.upsert({
     where: { id: '00000000-0000-0000-0000-000000000010' },
@@ -131,7 +200,7 @@ async function main() {
       type: 'REACTIVATION',
       status: 'DRAFT',
       templateId: '00000000-0000-0000-0000-000000000002',
-      segment: 'ACTIVE',
+      legacySegment: 'ACTIVE',
       variables: { var1: 'nom', var2: 'https://bgfi.ga/app' },
       createdBy: admin.id
     }
@@ -139,7 +208,7 @@ async function main() {
   console.log(`Campagne créée: ${campaign.name}`);
 
   // ============================================
-  // 5. API Key de test
+  // 6. API Key de test
   // ============================================
   const apiKey = await prisma.apiKey.upsert({
     where: { key: 'bgfi-test-api-key-2026' },

@@ -1,5 +1,6 @@
 const { PrismaClient } = require('@prisma/client');
 const whatsappService = require('./whatsapp');
+const { evaluateContacts } = require('./segmentEvaluator');
 const logger = require('../utils/logger');
 const { campaignMessagesSent, campaignDuration, activeCampaigns } = require('../utils/metrics');
 
@@ -95,22 +96,55 @@ class CampaignService {
    * Créer une nouvelle campagne
    */
   async createCampaign(data, userId) {
+    const campaignData = {
+      name: data.name,
+      type: data.type.toUpperCase(),
+      status: data.scheduledAt ? 'SCHEDULED' : 'DRAFT',
+      templateId: data.templateId,
+      variables: data.variables || {},
+      scheduledAt: data.scheduledAt ? new Date(data.scheduledAt) : null,
+      createdBy: userId
+    };
+
+    // New segment system
+    if (data.segmentId) {
+      campaignData.segmentId = data.segmentId;
+    } else if (data.inlineCriteria) {
+      campaignData.inlineCriteria = data.inlineCriteria;
+    }
+
+    // Legacy fallback
+    if (data.segment) {
+      campaignData.legacySegment = data.segment.toUpperCase();
+    }
+
     const campaign = await prisma.campaign.create({
-      data: {
-        name: data.name,
-        type: data.type.toUpperCase(),
-        status: data.scheduledAt ? 'SCHEDULED' : 'DRAFT',
-        templateId: data.templateId,
-        segment: data.segment.toUpperCase(),
-        variables: data.variables || {},
-        scheduledAt: data.scheduledAt ? new Date(data.scheduledAt) : null,
-        createdBy: userId
-      },
-      include: { template: true }
+      data: campaignData,
+      include: { template: true, segmentRef: true }
     });
 
     logger.info(`Campagne créée: ${campaign.name}`, { campaignId: campaign.id, userId });
     return campaign;
+  }
+
+  /**
+   * Resolve target contacts using segment evaluator or legacy fallback
+   */
+  async resolveTargetContacts(campaign) {
+    if (campaign.segmentId) {
+      const segment = await prisma.segment.findUnique({ where: { id: campaign.segmentId } });
+      if (!segment) throw new Error('Segment non trouvé');
+      return evaluateContacts(prisma, segment.criteria);
+    }
+    if (campaign.inlineCriteria) {
+      return evaluateContacts(prisma, campaign.inlineCriteria);
+    }
+    // Legacy fallback
+    const where = { status: 'ACTIVE', optedIn: true };
+    if (campaign.legacySegment && campaign.legacySegment !== 'ALL') {
+      where.category = campaign.legacySegment;
+    }
+    return prisma.contact.findMany({ where });
   }
 
   /**
@@ -125,9 +159,7 @@ class CampaignService {
     if (!campaign) throw new Error('Campagne non trouvée');
     if (campaign.status === 'RUNNING') throw new Error('La campagne est déjà en cours');
 
-    const contacts = await prisma.contact.findMany({
-      where: { segment: campaign.segment, status: 'ACTIVE', optedIn: true }
-    });
+    const contacts = await this.resolveTargetContacts(campaign);
 
     if (contacts.length === 0) throw new Error('Aucun contact trouvé pour ce segment');
 

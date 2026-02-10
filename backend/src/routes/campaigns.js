@@ -45,6 +45,13 @@ router.get('/', authenticate, async (req, res) => {
               id: true,
               name: true
             }
+          },
+          segmentRef: {
+            select: {
+              id: true,
+              name: true,
+              contactCount: true
+            }
           }
         },
         orderBy: {
@@ -82,6 +89,7 @@ router.get('/:id', authenticate, async (req, res) => {
       where: { id },
       include: {
         template: true,
+        segmentRef: true,
         user: {
           select: {
             id: true,
@@ -119,13 +127,20 @@ router.get('/:id', authenticate, async (req, res) => {
 // ============================================
 router.post('/', authenticate, authorize(['campaign:create']), async (req, res) => {
   try {
-    const { name, type, templateId, segment, variables, scheduledAt } = req.body;
+    const { name, type, templateId, segment, segmentId, inlineCriteria, variables, scheduledAt } = req.body;
 
-    // Validation
-    if (!name || !type || !templateId || !segment) {
-      return res.status(400).json({ 
+    // Validation: need at least one targeting method
+    if (!name || !type || !templateId) {
+      return res.status(400).json({
         error: 'Données manquantes',
-        required: ['name', 'type', 'templateId', 'segment']
+        required: ['name', 'type', 'templateId']
+      });
+    }
+
+    if (!segmentId && !inlineCriteria && !segment) {
+      return res.status(400).json({
+        error: 'Ciblage manquant',
+        message: 'Fournir segmentId, inlineCriteria ou segment (legacy)'
       });
     }
 
@@ -150,6 +165,8 @@ router.post('/', authenticate, authorize(['campaign:create']), async (req, res) 
       type,
       templateId,
       segment,
+      segmentId,
+      inlineCriteria,
       variables,
       scheduledAt
     }, req.user.id);
@@ -172,7 +189,7 @@ router.post('/', authenticate, authorize(['campaign:create']), async (req, res) 
 router.put('/:id', authenticate, authorize(['campaign:create']), async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, type, templateId, segment, variables, scheduledAt } = req.body;
+    const { name, type, templateId, segment, segmentId, inlineCriteria, variables, scheduledAt } = req.body;
 
     const existing = await prisma.campaign.findUnique({ where: { id } });
     if (!existing) {
@@ -201,8 +218,10 @@ router.put('/:id', authenticate, authorize(['campaign:create']), async (req, res
     if (name !== undefined) updateData.name = name;
     if (type !== undefined) updateData.type = type.toUpperCase();
     if (templateId !== undefined) updateData.templateId = templateId;
-    if (segment !== undefined) updateData.segment = segment.toUpperCase();
     if (variables !== undefined) updateData.variables = variables;
+    if (segmentId !== undefined) updateData.segmentId = segmentId || null;
+    if (inlineCriteria !== undefined) updateData.inlineCriteria = inlineCriteria || null;
+    if (segment !== undefined) updateData.legacySegment = segment.toUpperCase();
     if (scheduledAt !== undefined) {
       updateData.scheduledAt = scheduledAt ? new Date(scheduledAt) : null;
       updateData.status = scheduledAt ? 'SCHEDULED' : 'DRAFT';
@@ -211,7 +230,7 @@ router.put('/:id', authenticate, authorize(['campaign:create']), async (req, res
     const campaign = await prisma.campaign.update({
       where: { id },
       data: updateData,
-      include: { template: true }
+      include: { template: true, segmentRef: true }
     });
 
     logger.info('Campaign updated', { campaignId: id, userId: req.user.id });

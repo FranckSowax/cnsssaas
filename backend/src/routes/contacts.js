@@ -32,24 +32,30 @@ const upload = multer({
 // ============================================
 router.get('/', authenticate, async (req, res) => {
   try {
-    const { 
-      page = 1, 
-      limit = 50, 
-      segment,
+    const {
+      page = 1,
+      limit = 50,
+      category,
       status,
       search,
+      city,
+      accountType,
+      ageRange,
       sortBy = 'createdAt',
       sortOrder = 'desc'
     } = req.query;
 
     const skip = (parseInt(page) - 1) * parseInt(limit);
-    
+
     // Construction du where
     const where = {};
-    
-    if (segment) where.segment = segment.toUpperCase();
+
+    if (category) where.category = category.toUpperCase();
     if (status) where.status = status.toUpperCase();
-    
+    if (city) where.city = { contains: city, mode: 'insensitive' };
+    if (accountType) where.accountType = accountType.toUpperCase();
+    if (ageRange) where.ageRange = ageRange;
+
     if (search) {
       where.OR = [
         { name: { contains: search, mode: 'insensitive' } },
@@ -119,7 +125,10 @@ router.get('/:id', authenticate, async (req, res) => {
 // ============================================
 router.post('/', authenticate, authorize(['contact:create']), async (req, res) => {
   try {
-    const { phone, email, name, segment = 'ACTIVE', tags = [] } = req.body;
+    const {
+      phone, email, name, category = 'ACTIVE', tags = [],
+      city, country, ageRange, gender, language, accountType, registrationDate
+    } = req.body;
 
     // Validation
     if (!phone) {
@@ -135,7 +144,7 @@ router.post('/', authenticate, authorize(['contact:create']), async (req, res) =
     });
 
     if (existingContact) {
-      return res.status(409).json({ 
+      return res.status(409).json({
         error: 'Contact existant',
         message: 'Un contact avec ce numéro existe déjà',
         contact: existingContact
@@ -147,13 +156,20 @@ router.post('/', authenticate, authorize(['contact:create']), async (req, res) =
         phone: normalizedPhone,
         email,
         name,
-        segment: segment.toUpperCase(),
-        tags
+        category: category.toUpperCase(),
+        tags,
+        city,
+        country,
+        ageRange,
+        gender,
+        language,
+        accountType,
+        registrationDate: registrationDate ? new Date(registrationDate) : null
       }
     });
 
     // Métriques
-    contactsTotal.inc({ segment: contact.segment, status: contact.status });
+    contactsTotal.inc({ segment: contact.category, status: contact.status });
 
     logger.info('Contact created', { contactId: contact.id, phone: normalizedPhone.replace(/\d(?=\d{4})/g, '*') });
 
@@ -170,17 +186,28 @@ router.post('/', authenticate, authorize(['contact:create']), async (req, res) =
 router.put('/:id', authenticate, authorize(['contact:update']), async (req, res) => {
   try {
     const { id } = req.params;
-    const { email, name, segment, tags, status } = req.body;
+    const {
+      email, name, category, tags, status,
+      city, country, ageRange, gender, language, accountType, registrationDate
+    } = req.body;
+
+    const updateData = {};
+    if (email !== undefined) updateData.email = email;
+    if (name !== undefined) updateData.name = name;
+    if (category !== undefined) updateData.category = category.toUpperCase();
+    if (tags !== undefined) updateData.tags = tags;
+    if (status !== undefined) updateData.status = status.toUpperCase();
+    if (city !== undefined) updateData.city = city;
+    if (country !== undefined) updateData.country = country;
+    if (ageRange !== undefined) updateData.ageRange = ageRange;
+    if (gender !== undefined) updateData.gender = gender;
+    if (language !== undefined) updateData.language = language;
+    if (accountType !== undefined) updateData.accountType = accountType;
+    if (registrationDate !== undefined) updateData.registrationDate = registrationDate ? new Date(registrationDate) : null;
 
     const contact = await prisma.contact.update({
       where: { id },
-      data: {
-        email,
-        name,
-        segment: segment?.toUpperCase(),
-        tags,
-        status: status?.toUpperCase()
-      }
+      data: updateData
     });
 
     logger.info('Contact updated', { contactId: id });
@@ -253,15 +280,23 @@ router.post('/import', authenticate, authorize(['contact:import']), uploadLimite
           update: {
             name: record.name,
             email: record.email,
-            segment: record.segment?.toUpperCase() || 'ACTIVE',
-            tags: record.tags ? record.tags.split(',').map(t => t.trim()) : []
+            category: record.category?.toUpperCase() || record.segment?.toUpperCase() || 'ACTIVE',
+            tags: record.tags ? record.tags.split(',').map(t => t.trim()) : [],
+            city: record.city || undefined,
+            accountType: record.accountType || undefined,
+            ageRange: record.ageRange || undefined,
+            gender: record.gender || undefined
           },
           create: {
             phone: normalizedPhone,
             name: record.name,
             email: record.email,
-            segment: record.segment?.toUpperCase() || 'ACTIVE',
-            tags: record.tags ? record.tags.split(',').map(t => t.trim()) : []
+            category: record.category?.toUpperCase() || record.segment?.toUpperCase() || 'ACTIVE',
+            tags: record.tags ? record.tags.split(',').map(t => t.trim()) : [],
+            city: record.city || undefined,
+            accountType: record.accountType || undefined,
+            ageRange: record.ageRange || undefined,
+            gender: record.gender || undefined
           }
         });
 
@@ -276,10 +311,7 @@ router.post('/import', authenticate, authorize(['contact:import']), uploadLimite
       }
     }
 
-    // Supprimer le fichier temporaire
-    fs.unlinkSync(req.file.path);
-
-    // Métriques
+    // Métriques (memoryStorage: no file to unlink)
     contactsTotal.inc({ segment: 'ALL', status: 'ACTIVE' }, results.imported);
 
     logger.info('Contacts imported', { 
@@ -300,10 +332,10 @@ router.post('/import', authenticate, authorize(['contact:import']), uploadLimite
 // ============================================
 router.get('/export', authenticate, authorize(['contact:export']), async (req, res) => {
   try {
-    const { segment, status } = req.query;
+    const { category, status } = req.query;
 
     const where = {};
-    if (segment) where.segment = segment.toUpperCase();
+    if (category) where.category = category.toUpperCase();
     if (status) where.status = status.toUpperCase();
 
     const contacts = await prisma.contact.findMany({
@@ -312,31 +344,37 @@ router.get('/export', authenticate, authorize(['contact:export']), async (req, r
         name: true,
         phone: true,
         email: true,
-        segment: true,
+        category: true,
+        city: true,
+        accountType: true,
         tags: true,
         status: true,
+        engagementScore: true,
         lastActivity: true
       }
     });
 
     // Convertir en CSV
     const { stringify } = require('csv-stringify/sync');
-    const csv = stringify(contacts, {
+    const csvData = stringify(contacts, {
       header: true,
       columns: {
         name: 'Nom',
         phone: 'Téléphone',
         email: 'Email',
-        segment: 'Segment',
+        category: 'Catégorie',
+        city: 'Ville',
+        accountType: 'Type Compte',
         tags: 'Tags',
         status: 'Statut',
+        engagementScore: 'Score Engagement',
         lastActivity: 'Dernière activité'
       }
     });
 
     res.setHeader('Content-Type', 'text/csv');
     res.setHeader('Content-Disposition', 'attachment; filename=contacts.csv');
-    res.send(csv);
+    res.send(csvData);
   } catch (error) {
     logger.error('Error exporting contacts', { error: error.message });
     res.status(500).json({ error: 'Erreur lors de l\'exportation' });
@@ -348,20 +386,32 @@ router.get('/export', authenticate, authorize(['contact:export']), async (req, r
 // ============================================
 router.get('/stats/overview', authenticate, async (req, res) => {
   try {
-    const [total, bySegment, byStatus, recent] = await Promise.all([
+    const [total, byCategory, byStatus, byCity, byAccountType, recent] = await Promise.all([
       prisma.contact.count(),
       prisma.contact.groupBy({
-        by: ['segment'],
-        _count: { segment: true }
+        by: ['category'],
+        _count: { category: true }
       }),
       prisma.contact.groupBy({
         by: ['status'],
         _count: { status: true }
       }),
+      prisma.contact.groupBy({
+        by: ['city'],
+        where: { city: { not: null } },
+        _count: { city: true },
+        orderBy: { _count: { city: 'desc' } },
+        take: 10
+      }),
+      prisma.contact.groupBy({
+        by: ['accountType'],
+        where: { accountType: { not: null } },
+        _count: { accountType: true }
+      }),
       prisma.contact.count({
         where: {
           createdAt: {
-            gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) // 30 jours
+            gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
           }
         }
       })
@@ -369,12 +419,20 @@ router.get('/stats/overview', authenticate, async (req, res) => {
 
     res.json({
       total,
-      bySegment: bySegment.reduce((acc, item) => {
-        acc[item.segment] = item._count.segment;
+      byCategory: byCategory.reduce((acc, item) => {
+        acc[item.category] = item._count.category;
         return acc;
       }, {}),
       byStatus: byStatus.reduce((acc, item) => {
         acc[item.status] = item._count.status;
+        return acc;
+      }, {}),
+      byCity: byCity.reduce((acc, item) => {
+        if (item.city) acc[item.city] = item._count.city;
+        return acc;
+      }, {}),
+      byAccountType: byAccountType.reduce((acc, item) => {
+        if (item.accountType) acc[item.accountType] = item._count.accountType;
         return acc;
       }, {}),
       recent
