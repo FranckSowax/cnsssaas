@@ -1369,20 +1369,356 @@
         };
 
         // =============================================
-        // Segments View
+        // Human-readable criteria helper
+        // =============================================
+        const criteriaToText = (criteria) => {
+            if (!criteria?.rules?.length) return 'Aucun critere';
+            const fieldLabels = { category: 'Categorie', city: 'Ville', country: 'Pays', ageRange: "Tranche d'age", gender: 'Genre', language: 'Langue', accountType: 'Type de compte', engagementScore: 'Score engagement', status: 'Statut', tags: 'Tags', optedIn: 'Opt-in', registrationDate: "Date inscription", lastActivity: 'Derniere activite' };
+            const opLabels = { eq: '=', neq: '!=', gt: '>', gte: '>=', lt: '<', lte: '<=', in: 'dans', nin: 'pas dans', contains: 'contient', isNull: 'est vide', isNotNull: 'existe' };
+            const parts = criteria.rules.map(r => {
+                const fl = fieldLabels[r.field] || r.field;
+                const ol = opLabels[r.op] || r.op;
+                const val = Array.isArray(r.value) ? r.value.join(', ') : r.value;
+                return `${fl} ${ol} ${val}`;
+            });
+            const join = criteria.operator === 'OR' ? ' OU ' : ' ET ';
+            return parts.join(join);
+        };
+
+        // =============================================
+        // Segment Detail Panel (contacts + insights + edit)
+        // =============================================
+        const SegmentDetailPanel = ({ segment, onClose, onRefresh }) => {
+            const [tab, setTab] = useState('contacts');
+            const [contactsPage, setContactsPage] = useState(1);
+            const [contactSearch, setContactSearch] = useState('');
+            const [contacts, setContacts] = useState(null);
+            const [insights, setInsights] = useState(null);
+            const [loadingContacts, setLoadingContacts] = useState(false);
+            const [loadingInsights, setLoadingInsights] = useState(false);
+            const [showEdit, setShowEdit] = useState(false);
+            const [editForm, setEditForm] = useState({ name: segment.name, description: segment.description || '', criteria: segment.criteria });
+            const [editPreview, setEditPreview] = useState(null);
+            const [saving, setSaving] = useState(false);
+            const [evaluating, setEvaluating] = useState(false);
+
+            // Fetch contacts
+            const fetchContacts = useCallback(async () => {
+                setLoadingContacts(true);
+                try {
+                    const q = new URLSearchParams({ page: contactsPage, limit: 10 });
+                    if (contactSearch) q.set('search', contactSearch);
+                    const res = await api(`/segments/${segment.id}/contacts?${q}`);
+                    setContacts(res);
+                } catch { setContacts(null); }
+                finally { setLoadingContacts(false); }
+            }, [segment.id, contactsPage, contactSearch]);
+
+            // Fetch insights
+            const fetchInsights = useCallback(async () => {
+                setLoadingInsights(true);
+                try {
+                    const res = await api(`/segments/${segment.id}/insights`);
+                    setInsights(res);
+                } catch { setInsights(null); }
+                finally { setLoadingInsights(false); }
+            }, [segment.id]);
+
+            useEffect(() => { fetchContacts(); }, [fetchContacts]);
+            useEffect(() => { if (tab === 'insights') fetchInsights(); }, [tab, fetchInsights]);
+
+            // Debounced edit preview
+            const editTimer = useRef(null);
+            useEffect(() => {
+                if (!showEdit || editForm.criteria.rules.length === 0) { setEditPreview(null); return; }
+                clearTimeout(editTimer.current);
+                editTimer.current = setTimeout(async () => {
+                    try {
+                        const res = await api('/segments/preview', { method: 'POST', body: JSON.stringify({ criteria: editForm.criteria }) });
+                        setEditPreview(res.contactCount);
+                    } catch { setEditPreview(null); }
+                }, 500);
+                return () => clearTimeout(editTimer.current);
+            }, [showEdit, editForm.criteria]);
+
+            const handleSave = async () => {
+                setSaving(true);
+                try {
+                    await api(`/segments/${segment.id}`, { method: 'PUT', body: JSON.stringify(editForm) });
+                    setShowEdit(false);
+                    onRefresh();
+                } catch (err) { alert(err.message); }
+                finally { setSaving(false); }
+            };
+
+            const handleEvaluate = async () => {
+                setEvaluating(true);
+                try { await api(`/segments/${segment.id}/evaluate`, { method: 'POST' }); onRefresh(); fetchContacts(); if (tab === 'insights') fetchInsights(); }
+                catch (err) { alert(err.message); }
+                finally { setEvaluating(false); }
+            };
+
+            const INSIGHT_COLORS = ['#1e3a5f', '#2d5a87', '#3b82f6', '#00a86b', '#8b5cf6', '#f59e0b', '#ec4899', '#14b8a6'];
+
+            return (
+                <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50" onClick={onClose}>
+                    <div className="bg-white rounded-t-2xl sm:rounded-2xl w-full max-w-4xl max-h-[92vh] overflow-hidden flex flex-col" onClick={e => e.stopPropagation()}>
+                        {/* Header */}
+                        <div className="p-5 border-b border-gray-200 flex items-start justify-between shrink-0">
+                            <div className="flex items-center gap-3">
+                                <div className="w-12 h-12 rounded-xl flex items-center justify-center text-white" style={{ background: 'linear-gradient(135deg, #1e3a5f, #3b82f6)' }}><Icons.Layers /></div>
+                                <div>
+                                    <h2 className="text-lg font-bold text-gray-900">{segment.name}</h2>
+                                    <div className="flex items-center gap-2 mt-0.5">
+                                        <Badge variant={segment.type === 'DYNAMIC' ? 'info' : segment.type === 'BANK_CRITERIA' ? 'primary' : 'default'}>{segment.type}</Badge>
+                                        <span className="text-sm text-gray-500">{segment.contactCount} contacts</span>
+                                        {segment.lastEvaluatedAt && <span className="text-xs text-gray-400">Evalue {new Date(segment.lastEvaluatedAt).toLocaleDateString('fr-FR')}</span>}
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <Button variant="secondary" size="sm" icon={Icons.RefreshCw} onClick={handleEvaluate} disabled={evaluating}>{evaluating ? '...' : 'Re-evaluer'}</Button>
+                                <Button variant="secondary" size="sm" icon={Icons.Edit} onClick={() => setShowEdit(true)}>Editer</Button>
+                                <button onClick={onClose} className="text-gray-400 hover:text-gray-600 ml-2"><Icons.X /></button>
+                            </div>
+                        </div>
+
+                        {/* Criteria summary */}
+                        <div className="px-5 py-3 bg-gray-50 border-b border-gray-200 shrink-0">
+                            <p className="text-xs font-medium text-gray-500 mb-1">Criteres de ciblage</p>
+                            <div className="flex flex-wrap gap-1.5">
+                                {(segment.criteria?.rules || []).map((r, i) => {
+                                    const fl = { category: 'Categorie', city: 'Ville', ageRange: 'Age', gender: 'Genre', accountType: 'Compte', engagementScore: 'Score', status: 'Statut', language: 'Langue', country: 'Pays', tags: 'Tags', optedIn: 'Opt-in' };
+                                    const ol = { eq: '=', neq: '!=', gt: '>', gte: '>=', lt: '<', lte: '<=', in: 'dans', contains: '~' };
+                                    const val = Array.isArray(r.value) ? r.value.join(', ') : r.value;
+                                    return (
+                                        <React.Fragment key={i}>
+                                            {i > 0 && <span className="text-xs font-bold px-1.5 py-1 rounded bg-bgfi-primary/10 text-bgfi-primary">{segment.criteria.operator}</span>}
+                                            <span className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full bg-white border border-gray-200 shadow-sm">
+                                                <span className="font-medium text-gray-700">{fl[r.field] || r.field}</span>
+                                                <span className="text-gray-400">{ol[r.op] || r.op}</span>
+                                                <span className="font-semibold text-bgfi-primary">{String(val)}</span>
+                                            </span>
+                                        </React.Fragment>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        {/* Tabs */}
+                        <div className="flex border-b border-gray-200 shrink-0">
+                            {[{ id: 'contacts', label: 'Contacts', icon: Icons.Users }, { id: 'insights', label: 'Insights', icon: Icons.BarChart3 }].map(t => (
+                                <button key={t.id} onClick={() => setTab(t.id)} className={`flex items-center gap-2 px-5 py-3 text-sm font-medium border-b-2 transition-colors ${tab === t.id ? 'border-bgfi-primary text-bgfi-primary' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
+                                    <t.icon className="w-4 h-4" />{t.label}
+                                </button>
+                            ))}
+                        </div>
+
+                        {/* Content */}
+                        <div className="flex-1 overflow-auto p-5">
+                            {tab === 'contacts' && (
+                                <div className="space-y-4">
+                                    <div className="flex items-center gap-3">
+                                        <Input placeholder="Rechercher dans ce segment..." icon={Icons.Search} className="flex-1" value={contactSearch} onChange={v => { setContactSearch(v); setContactsPage(1); }} />
+                                        <span className="text-sm text-gray-500 whitespace-nowrap">{contacts?.pagination?.total || 0} resultats</span>
+                                    </div>
+                                    {loadingContacts ? <Spinner /> : contacts?.data?.length > 0 ? (
+                                        <div className="overflow-x-auto">
+                                            <table className="w-full text-sm">
+                                                <thead><tr className="border-b border-gray-200">
+                                                    <th className="text-left py-3 px-3 font-medium text-gray-500">Contact</th>
+                                                    <th className="text-left py-3 px-3 font-medium text-gray-500">Ville</th>
+                                                    <th className="text-left py-3 px-3 font-medium text-gray-500">Compte</th>
+                                                    <th className="text-left py-3 px-3 font-medium text-gray-500">Engagement</th>
+                                                    <th className="text-left py-3 px-3 font-medium text-gray-500">Tags</th>
+                                                </tr></thead>
+                                                <tbody>
+                                                    {contacts.data.map(c => (
+                                                        <tr key={c.id} className="border-b border-gray-100 hover:bg-gray-50">
+                                                            <td className="py-3 px-3">
+                                                                <p className="font-medium text-gray-900">{c.name || 'Sans nom'}</p>
+                                                                <p className="text-xs text-gray-400">{c.phone}</p>
+                                                            </td>
+                                                            <td className="py-3 px-3 text-gray-600">{c.city || '-'}</td>
+                                                            <td className="py-3 px-3"><Badge variant="default">{c.accountType || '-'}</Badge></td>
+                                                            <td className="py-3 px-3">
+                                                                <div className="flex items-center gap-2">
+                                                                    <div className="w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
+                                                                        <div className="h-full rounded-full" style={{ width: (c.engagementScore || 0) + '%', background: (c.engagementScore || 0) >= 70 ? '#00a86b' : (c.engagementScore || 0) >= 40 ? '#f59e0b' : '#ef4444' }} />
+                                                                    </div>
+                                                                    <span className="text-xs font-medium">{c.engagementScore || 0}</span>
+                                                                </div>
+                                                            </td>
+                                                            <td className="py-3 px-3">
+                                                                <div className="flex flex-wrap gap-1">{(c.tags || []).slice(0, 2).map((t, i) => <span key={i} className="text-xs px-2 py-0.5 bg-gray-100 rounded-full text-gray-600">{t}</span>)}</div>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                            {contacts.pagination.totalPages > 1 && (
+                                                <div className="flex items-center justify-center gap-2 mt-4">
+                                                    <Button variant="secondary" size="sm" disabled={contactsPage <= 1} onClick={() => setContactsPage(p => p - 1)}>Precedent</Button>
+                                                    <span className="text-sm text-gray-500">Page {contactsPage} / {contacts.pagination.totalPages}</span>
+                                                    <Button variant="secondary" size="sm" disabled={contactsPage >= contacts.pagination.totalPages} onClick={() => setContactsPage(p => p + 1)}>Suivant</Button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ) : <p className="text-center text-gray-400 py-8">Aucun contact dans ce segment</p>}
+                                </div>
+                            )}
+
+                            {tab === 'insights' && (
+                                <div className="space-y-6">
+                                    {loadingInsights ? <Spinner /> : insights ? (
+                                        <>
+                                            {/* KPI row */}
+                                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                                <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-xl p-4 text-center">
+                                                    <p className="text-2xl font-bold text-bgfi-primary">{insights.total}</p>
+                                                    <p className="text-xs text-gray-500 mt-1">Contacts totaux</p>
+                                                </div>
+                                                <div className="bg-gradient-to-br from-green-50 to-green-100/50 rounded-xl p-4 text-center">
+                                                    <p className="text-2xl font-bold text-emerald-600">{insights.averageEngagement}%</p>
+                                                    <p className="text-xs text-gray-500 mt-1">Engagement moyen</p>
+                                                </div>
+                                                <div className="bg-gradient-to-br from-purple-50 to-purple-100/50 rounded-xl p-4 text-center">
+                                                    <p className="text-2xl font-bold text-purple-600">{insights.byCity?.length || 0}</p>
+                                                    <p className="text-xs text-gray-500 mt-1">Villes couvertes</p>
+                                                </div>
+                                                <div className="bg-gradient-to-br from-amber-50 to-amber-100/50 rounded-xl p-4 text-center">
+                                                    <p className="text-2xl font-bold text-amber-600">{insights.byAccountType?.length || 0}</p>
+                                                    <p className="text-xs text-gray-500 mt-1">Types de compte</p>
+                                                </div>
+                                            </div>
+
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                {/* City distribution */}
+                                                {insights.byCity?.length > 0 && (
+                                                    <Card title="Repartition geographique">
+                                                        <div className="space-y-2">
+                                                            {insights.byCity.map((c, i) => (
+                                                                <div key={c.name} className="flex items-center gap-3">
+                                                                    <span className="text-sm text-gray-600 w-28 truncate">{c.name}</span>
+                                                                    <div className="flex-1 h-6 bg-gray-100 rounded-full overflow-hidden">
+                                                                        <div className="h-full rounded-full flex items-center justify-end px-2" style={{ width: Math.max(15, (c.count / insights.total * 100)) + '%', backgroundColor: INSIGHT_COLORS[i % INSIGHT_COLORS.length] }}>
+                                                                            <span className="text-xs font-bold text-white">{c.count}</span>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </Card>
+                                                )}
+
+                                                {/* Account type PieChart */}
+                                                {insights.byAccountType?.length > 0 && (
+                                                    <Card title="Types de compte">
+                                                        <div style={{ height: 200 }}>
+                                                            <ResponsiveContainer>
+                                                                <PieChart>
+                                                                    <Pie data={insights.byAccountType.map((a, i) => ({ ...a, fill: INSIGHT_COLORS[i % INSIGHT_COLORS.length] }))} dataKey="count" nameKey="name" cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={3}>
+                                                                        {insights.byAccountType.map((_, i) => <Cell key={i} fill={INSIGHT_COLORS[i % INSIGHT_COLORS.length]} />)}
+                                                                    </Pie>
+                                                                    <Tooltip formatter={(v, n) => [v + ' contacts', n]} />
+                                                                    <Legend iconType="circle" wrapperStyle={{ fontSize: 12 }} />
+                                                                </PieChart>
+                                                            </ResponsiveContainer>
+                                                        </div>
+                                                    </Card>
+                                                )}
+
+                                                {/* Age distribution */}
+                                                {insights.byAgeRange?.length > 0 && (
+                                                    <Card title="Tranches d'age">
+                                                        <div style={{ height: 200 }}>
+                                                            <ResponsiveContainer>
+                                                                <BarChart data={insights.byAgeRange} layout="vertical" margin={{ left: 10, right: 20 }}>
+                                                                    <XAxis type="number" hide />
+                                                                    <YAxis type="category" dataKey="name" width={50} tick={{ fontSize: 12 }} />
+                                                                    <Tooltip formatter={(v) => [v + ' contacts']} />
+                                                                    <Bar dataKey="count" radius={6}>
+                                                                        {insights.byAgeRange.map((_, i) => <Cell key={i} fill={INSIGHT_COLORS[i % INSIGHT_COLORS.length]} />)}
+                                                                    </Bar>
+                                                                </BarChart>
+                                                            </ResponsiveContainer>
+                                                        </div>
+                                                    </Card>
+                                                )}
+
+                                                {/* Gender split */}
+                                                {insights.byGender?.length > 0 && (
+                                                    <Card title="Repartition par genre">
+                                                        <div className="flex items-center justify-center gap-6 py-4">
+                                                            {insights.byGender.map((g, i) => {
+                                                                const pct = insights.total > 0 ? Math.round(g.count / insights.total * 100) : 0;
+                                                                const labels = { M: 'Homme', F: 'Femme', AUTRE: 'Autre' };
+                                                                return (
+                                                                    <div key={g.name} className="text-center">
+                                                                        <div className="w-20 h-20 rounded-full flex items-center justify-center text-white text-lg font-bold mx-auto" style={{ background: INSIGHT_COLORS[i % INSIGHT_COLORS.length] }}>{pct}%</div>
+                                                                        <p className="text-sm font-medium text-gray-700 mt-2">{labels[g.name] || g.name}</p>
+                                                                        <p className="text-xs text-gray-400">{g.count} contacts</p>
+                                                                    </div>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                    </Card>
+                                                )}
+                                            </div>
+                                        </>
+                                    ) : <p className="text-center text-gray-400 py-8">Impossible de charger les insights</p>}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Edit modal */}
+                        {showEdit && (
+                            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60] p-4" onClick={() => setShowEdit(false)}>
+                                <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-auto" onClick={e => e.stopPropagation()}>
+                                    <div className="p-6 border-b border-gray-200 flex items-center justify-between">
+                                        <h2 className="text-xl font-semibold text-gray-900">Editer le segment</h2>
+                                        <button onClick={() => setShowEdit(false)} className="text-gray-400 hover:text-gray-600"><Icons.X /></button>
+                                    </div>
+                                    <div className="p-6 space-y-4">
+                                        <Input label="Nom" value={editForm.name} onChange={v => setEditForm({...editForm, name: v})} />
+                                        <Input label="Description" value={editForm.description} onChange={v => setEditForm({...editForm, description: v})} />
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">Criteres</label>
+                                            <SegmentBuilder criteria={editForm.criteria} onChange={c => setEditForm({...editForm, criteria: c})} previewCount={editPreview} />
+                                        </div>
+                                    </div>
+                                    <div className="p-6 border-t border-gray-200 flex justify-end gap-3">
+                                        <Button variant="secondary" onClick={() => setShowEdit(false)}>Annuler</Button>
+                                        <Button onClick={handleSave} disabled={saving || !editForm.name} icon={Icons.CheckCircle}>{saving ? 'Sauvegarde...' : 'Sauvegarder'}</Button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        };
+
+        // =============================================
+        // Segments View (complete redesign)
         // =============================================
         const SegmentsView = () => {
             const { data, loading, error, refetch } = useApi('/segments?limit=50');
             const [showCreate, setShowCreate] = useState(false);
+            const [selectedSegment, setSelectedSegment] = useState(null);
             const [form, setForm] = useState({ name: '', description: '', criteria: { operator: 'AND', rules: [] } });
             const [creating, setCreating] = useState(false);
             const [previewCount, setPreviewCount] = useState(null);
+            // AI assistant
+            const [aiPrompt, setAiPrompt] = useState('');
+            const [aiLoading, setAiLoading] = useState(false);
+            const [aiError, setAiError] = useState('');
 
             const segments = data?.data || [];
 
             // Debounced preview
-            const timer = React.useRef(null);
-            React.useEffect(() => {
+            const timer = useRef(null);
+            useEffect(() => {
                 if (form.criteria.rules.length === 0) { setPreviewCount(null); return; }
                 clearTimeout(timer.current);
                 timer.current = setTimeout(async () => {
@@ -1398,7 +1734,7 @@
                 setCreating(true);
                 try {
                     await api('/segments', { method: 'POST', body: JSON.stringify(form) });
-                    setShowCreate(false); setForm({ name: '', description: '', criteria: { operator: 'AND', rules: [] } }); refetch();
+                    setShowCreate(false); setForm({ name: '', description: '', criteria: { operator: 'AND', rules: [] } }); setAiPrompt(''); setAiError(''); refetch();
                 } catch (err) { alert(err.message); }
                 finally { setCreating(false); }
             };
@@ -1409,66 +1745,148 @@
                 catch (err) { alert(err.message); }
             };
 
-            const handleEvaluate = async (id) => {
-                try { await api('/segments/' + id + '/evaluate', { method: 'POST' }); refetch(); }
-                catch (err) { alert(err.message); }
+            const handleAiSuggest = async () => {
+                if (!aiPrompt.trim()) return;
+                setAiLoading(true); setAiError('');
+                try {
+                    const res = await api('/segments/ai-suggest', { method: 'POST', body: JSON.stringify({ prompt: aiPrompt }) });
+                    setForm({ name: res.name || '', description: res.description || '', criteria: res.criteria || { operator: 'AND', rules: [] } });
+                    setPreviewCount(res.contactCount);
+                } catch (err) { setAiError(err.message || 'Erreur IA'); }
+                finally { setAiLoading(false); }
             };
 
             if (loading) return <Spinner />;
             if (error) return <ErrorBox message={error} onRetry={refetch} />;
 
+            // Refresh a segment after edit (re-fetch list and update selected)
+            const handleSegmentRefresh = async () => {
+                await refetch();
+                if (selectedSegment) {
+                    try {
+                        const updated = await api(`/segments/${selectedSegment.id}`);
+                        setSelectedSegment(updated);
+                    } catch {}
+                }
+            };
+
             return (
                 <div className="space-y-6">
+                    {/* Header */}
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                        <h2 className="text-xl font-bold text-gray-900">Segments de ciblage</h2>
+                        <div>
+                            <h2 className="text-xl font-bold text-gray-900">Segments de ciblage</h2>
+                            <p className="text-sm text-gray-500 mt-0.5">{segments.length} segment(s) - Cliquez pour explorer</p>
+                        </div>
                         <Button icon={Icons.Plus} onClick={() => setShowCreate(true)}>Nouveau Segment</Button>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {segments.length === 0 && <p className="text-gray-500 col-span-3 text-center py-8">Aucun segment. Creez-en un pour cibler vos campagnes.</p>}
-                        {segments.map(seg => (
-                            <Card key={seg.id} className="p-5">
-                                <div className="flex items-start justify-between mb-3">
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-10 h-10 bg-bgfi-primary/10 rounded-xl flex items-center justify-center text-bgfi-primary"><Icons.Layers /></div>
-                                        <div>
-                                            <p className="font-semibold text-gray-900">{seg.name}</p>
-                                            <Badge variant={seg.type === 'DYNAMIC' ? 'info' : seg.type === 'BANK_CRITERIA' ? 'primary' : 'default'}>{seg.type}</Badge>
+                    {/* Segment cards grid */}
+                    {segments.length === 0 ? (
+                        <div className="text-center py-16">
+                            <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4"><Icons.Layers className="text-gray-400" /></div>
+                            <h3 className="text-lg font-semibold text-gray-700">Aucun segment</h3>
+                            <p className="text-gray-500 mt-1 mb-4">Creez votre premier segment pour cibler vos campagnes intelligemment</p>
+                            <Button icon={Icons.Plus} onClick={() => setShowCreate(true)}>Creer un segment</Button>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {segments.map(seg => (
+                                <div key={seg.id} className="group bg-white rounded-2xl border border-gray-200 hover:border-bgfi-primary/40 hover:shadow-lg transition-all cursor-pointer p-5" onClick={() => setSelectedSegment(seg)}>
+                                    <div className="flex items-start justify-between mb-3">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-11 h-11 rounded-xl flex items-center justify-center text-white" style={{ background: seg.type === 'BANK_CRITERIA' ? 'linear-gradient(135deg, #00a86b, #2d5a87)' : seg.type === 'STATIC' ? 'linear-gradient(135deg, #8b5cf6, #6d28d9)' : 'linear-gradient(135deg, #1e3a5f, #3b82f6)' }}><Icons.Layers /></div>
+                                            <div>
+                                                <p className="font-semibold text-gray-900 group-hover:text-bgfi-primary transition-colors">{seg.name}</p>
+                                                <Badge variant={seg.type === 'DYNAMIC' ? 'info' : seg.type === 'BANK_CRITERIA' ? 'primary' : 'default'}>{seg.type === 'BANK_CRITERIA' ? 'Bancaire' : seg.type === 'DYNAMIC' ? 'Dynamique' : 'Statique'}</Badge>
+                                            </div>
                                         </div>
+                                        <button className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition-all p-1" onClick={e => { e.stopPropagation(); handleDelete(seg.id); }} title="Supprimer"><Icons.Trash2 /></button>
                                     </div>
-                                    <div className="flex gap-1">
-                                        <Button variant="ghost" size="sm" icon={Icons.RefreshCw} onClick={() => handleEvaluate(seg.id)} title="Re-evaluer" />
-                                        <Button variant="ghost" size="sm" icon={Icons.Trash2} onClick={() => handleDelete(seg.id)} title="Supprimer" />
+                                    {seg.description && <p className="text-sm text-gray-500 mb-3 line-clamp-2">{seg.description}</p>}
+                                    {/* Criteria pills */}
+                                    <div className="flex flex-wrap gap-1 mb-3">
+                                        {(seg.criteria?.rules || []).slice(0, 3).map((r, i) => {
+                                            const fl = { category: 'Cat.', city: 'Ville', ageRange: 'Age', accountType: 'Compte', engagementScore: 'Score', gender: 'Genre', status: 'Statut' };
+                                            const val = Array.isArray(r.value) ? r.value.join(',') : r.value;
+                                            return <span key={i} className="text-[11px] px-2 py-0.5 bg-gray-100 rounded-full text-gray-600">{fl[r.field] || r.field}: {String(val).substring(0, 15)}</span>;
+                                        })}
+                                        {(seg.criteria?.rules?.length || 0) > 3 && <span className="text-[11px] px-2 py-0.5 bg-gray-100 rounded-full text-gray-400">+{seg.criteria.rules.length - 3}</span>}
+                                    </div>
+                                    {/* Footer */}
+                                    <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                                        <div className="flex items-center gap-1.5">
+                                            <Icons.Users className="w-4 h-4 text-bgfi-primary" />
+                                            <span className="text-sm font-bold text-bgfi-primary">{seg.contactCount}</span>
+                                            <span className="text-xs text-gray-400">contacts</span>
+                                        </div>
+                                        <span className="text-xs text-gray-400">{seg.lastEvaluatedAt ? new Date(seg.lastEvaluatedAt).toLocaleDateString('fr-FR') : 'Non evalue'}</span>
                                     </div>
                                 </div>
-                                {seg.description && <p className="text-sm text-gray-500 mb-3">{seg.description}</p>}
-                                <div className="flex items-center justify-between text-sm">
-                                    <span className="text-gray-500">Contacts</span>
-                                    <span className="font-bold text-bgfi-primary">{seg.contactCount}</span>
-                                </div>
-                                {seg.lastEvaluatedAt && <p className="text-xs text-gray-400 mt-1">Evalue: {new Date(seg.lastEvaluatedAt).toLocaleDateString('fr-FR')}</p>}
-                            </Card>
-                        ))}
-                    </div>
+                            ))}
+                        </div>
+                    )}
 
+                    {/* Detail panel */}
+                    {selectedSegment && (
+                        <SegmentDetailPanel segment={selectedSegment} onClose={() => setSelectedSegment(null)} onRefresh={handleSegmentRefresh} />
+                    )}
+
+                    {/* Create modal with AI assistant */}
                     {showCreate && (
-                        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                            <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-auto">
+                        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setShowCreate(false)}>
+                            <div className="bg-white rounded-2xl max-w-3xl w-full max-h-[92vh] overflow-auto" onClick={e => e.stopPropagation()}>
                                 <div className="p-6 border-b border-gray-200 flex items-center justify-between">
-                                    <h2 className="text-xl font-semibold text-gray-900">Nouveau Segment</h2>
+                                    <div>
+                                        <h2 className="text-xl font-semibold text-gray-900">Nouveau Segment</h2>
+                                        <p className="text-sm text-gray-500 mt-0.5">Utilisez l'assistant IA ou construisez manuellement</p>
+                                    </div>
                                     <button onClick={() => setShowCreate(false)} className="text-gray-400 hover:text-gray-600"><Icons.X /></button>
                                 </div>
+
+                                {/* AI Assistant section */}
+                                <div className="px-6 pt-5 pb-4">
+                                    <div className="bg-gradient-to-r from-bgfi-primary/5 to-blue-50 rounded-xl p-4 border border-bgfi-primary/10">
+                                        <div className="flex items-center gap-2 mb-3">
+                                            <div className="w-8 h-8 rounded-lg bg-bgfi-primary flex items-center justify-center"><Icons.Bot className="text-white w-4 h-4" /></div>
+                                            <div>
+                                                <p className="text-sm font-semibold text-gray-900">Assistant IA</p>
+                                                <p className="text-xs text-gray-500">Decrivez votre cible en langage naturel</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <input type="text" className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-bgfi-primary/30 focus:border-bgfi-primary" placeholder='Ex: "Clients VIP a Libreville avec un score > 80"' value={aiPrompt} onChange={e => setAiPrompt(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleAiSuggest()} disabled={aiLoading} />
+                                            <Button onClick={handleAiSuggest} disabled={aiLoading || !aiPrompt.trim()} size="sm">{aiLoading ? 'Analyse...' : 'Generer'}</Button>
+                                        </div>
+                                        {aiError && <p className="text-xs text-red-500 mt-2">{aiError}</p>}
+                                        {/* Quick suggestions */}
+                                        <div className="flex flex-wrap gap-1.5 mt-3">
+                                            {['Clients actifs a Libreville', 'Jeunes 18-25 ans avec compte epargne', 'VIP et Premium fort engagement', 'Clients inactifs a reactiver'].map(s => (
+                                                <button key={s} className="text-xs px-2.5 py-1 bg-white rounded-full border border-gray-200 text-gray-600 hover:border-bgfi-primary hover:text-bgfi-primary transition-colors" onClick={() => { setAiPrompt(s); }}>{s}</button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Divider */}
+                                <div className="px-6"><div className="flex items-center gap-3"><div className="flex-1 h-px bg-gray-200" /><span className="text-xs text-gray-400 font-medium">ou construisez manuellement</span><div className="flex-1 h-px bg-gray-200" /></div></div>
+
                                 <div className="p-6 space-y-4">
-                                    <Input label="Nom du segment" placeholder="Ex: Clients actifs Libreville" value={form.name} onChange={v => setForm({...form, name: v})} />
-                                    <Input label="Description" placeholder="Description optionnelle" value={form.description} onChange={v => setForm({...form, description: v})} />
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <Input label="Nom du segment" placeholder="Ex: Clients actifs Libreville" value={form.name} onChange={v => setForm({...form, name: v})} />
+                                        <Input label="Description" placeholder="Description optionnelle" value={form.description} onChange={v => setForm({...form, description: v})} />
+                                    </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-2">Criteres de ciblage</label>
                                         <SegmentBuilder criteria={form.criteria} onChange={c => setForm({...form, criteria: c})} previewCount={previewCount} />
                                     </div>
                                 </div>
-                                <div className="p-6 border-t border-gray-200 flex justify-end gap-3">
-                                    <Button variant="secondary" onClick={() => setShowCreate(false)}>Annuler</Button>
-                                    <Button onClick={handleCreate} disabled={creating || !form.name || form.criteria.rules.length === 0} icon={Icons.CheckCircle}>{creating ? 'Creation...' : 'Creer le segment'}</Button>
+                                <div className="p-6 border-t border-gray-200 flex items-center justify-between">
+                                    <div>{previewCount !== null && <span className="text-sm text-gray-500"><span className="font-bold text-bgfi-primary">{previewCount}</span> contact(s) cibles</span>}</div>
+                                    <div className="flex gap-3">
+                                        <Button variant="secondary" onClick={() => setShowCreate(false)}>Annuler</Button>
+                                        <Button onClick={handleCreate} disabled={creating || !form.name || form.criteria.rules.length === 0} icon={Icons.CheckCircle}>{creating ? 'Creation...' : 'Creer le segment'}</Button>
+                                    </div>
                                 </div>
                             </div>
                         </div>

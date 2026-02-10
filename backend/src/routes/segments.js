@@ -230,6 +230,184 @@ router.post('/:id/evaluate', authenticate, async (req, res) => {
 });
 
 // ============================================
+// GET /api/segments/:id/contacts - Contacts d'un segment (pagines)
+// ============================================
+router.get('/:id/contacts', authenticate, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { page = 1, limit = 20, search } = req.query;
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    const segment = await prisma.segment.findUnique({ where: { id } });
+    if (!segment) {
+      return res.status(404).json({ error: 'Segment non trouvé' });
+    }
+
+    const criteriaWhere = buildWhereClause(segment.criteria);
+    const baseWhere = { AND: [{ status: 'ACTIVE', optedIn: true }, criteriaWhere] };
+
+    // Optional search filter
+    const where = search
+      ? { AND: [baseWhere, { OR: [
+          { name: { contains: search, mode: 'insensitive' } },
+          { phone: { contains: search } },
+          { email: { contains: search, mode: 'insensitive' } }
+        ]}]}
+      : baseWhere;
+
+    const [contacts, total] = await Promise.all([
+      prisma.contact.findMany({
+        where,
+        orderBy: { engagementScore: 'desc' },
+        skip,
+        take: parseInt(limit),
+        select: {
+          id: true, name: true, phone: true, email: true, city: true,
+          accountType: true, category: true, engagementScore: true,
+          ageRange: true, gender: true, lastActivity: true, tags: true
+        }
+      }),
+      prisma.contact.count({ where })
+    ]);
+
+    res.json({
+      data: contacts,
+      pagination: { page: parseInt(page), limit: parseInt(limit), total, totalPages: Math.ceil(total / parseInt(limit)) }
+    });
+  } catch (error) {
+    logger.error('Error fetching segment contacts', { error: error.message });
+    res.status(500).json({ error: 'Erreur lors de la récupération des contacts du segment' });
+  }
+});
+
+// ============================================
+// GET /api/segments/:id/insights - Distribution stats d'un segment
+// ============================================
+router.get('/:id/insights', authenticate, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const segment = await prisma.segment.findUnique({ where: { id } });
+    if (!segment) {
+      return res.status(404).json({ error: 'Segment non trouvé' });
+    }
+
+    const criteriaWhere = buildWhereClause(segment.criteria);
+    const baseWhere = { AND: [{ status: 'ACTIVE', optedIn: true }, criteriaWhere] };
+
+    const [byCity, byAccountType, byAgeRange, byGender, engagementAvg, total] = await Promise.all([
+      prisma.contact.groupBy({ by: ['city'], where: { ...baseWhere, city: { not: null } }, _count: { city: true }, orderBy: { _count: { city: 'desc' } }, take: 8 }),
+      prisma.contact.groupBy({ by: ['accountType'], where: { ...baseWhere, accountType: { not: null } }, _count: { accountType: true } }),
+      prisma.contact.groupBy({ by: ['ageRange'], where: { ...baseWhere, ageRange: { not: null } }, _count: { ageRange: true } }),
+      prisma.contact.groupBy({ by: ['gender'], where: { ...baseWhere, gender: { not: null } }, _count: { gender: true } }),
+      prisma.contact.aggregate({ _avg: { engagementScore: true }, where: baseWhere }),
+      prisma.contact.count({ where: baseWhere })
+    ]);
+
+    res.json({
+      total,
+      averageEngagement: Math.round(engagementAvg._avg.engagementScore || 0),
+      byCity: byCity.map(i => ({ name: i.city, count: i._count.city })),
+      byAccountType: byAccountType.map(i => ({ name: i.accountType, count: i._count.accountType })),
+      byAgeRange: byAgeRange.map(i => ({ name: i.ageRange, count: i._count.ageRange })),
+      byGender: byGender.map(i => ({ name: i.gender, count: i._count.gender }))
+    });
+  } catch (error) {
+    logger.error('Error fetching segment insights', { error: error.message });
+    res.status(500).json({ error: 'Erreur lors de la récupération des insights' });
+  }
+});
+
+// ============================================
+// POST /api/segments/ai-suggest - IA: langage naturel → criteres segment
+// ============================================
+router.post('/ai-suggest', authenticate, async (req, res) => {
+  try {
+    const { prompt } = req.body;
+    if (!prompt) {
+      return res.status(400).json({ error: 'Prompt requis' });
+    }
+
+    // Get available field definitions for context
+    const fieldDefs = ALLOWED_FIELDS.join(', ');
+
+    const systemPrompt = `Tu es un assistant IA pour BGFI Bank. Tu convertis des descriptions en langage naturel en critères de segmentation JSON.
+
+Champs disponibles: ${fieldDefs}
+Types de valeurs:
+- category: ALL, ACTIVE, INACTIVE, NEW, PREMIUM, VIP
+- city: texte libre (ex: Libreville, Port-Gentil, Franceville, Oyem)
+- accountType: EPARGNE, COURANT, PROFESSIONNEL, JEUNE
+- ageRange: 18-25, 26-35, 36-45, 46-55, 56+
+- gender: M, F, AUTRE
+- engagementScore: nombre 0-100
+- status: ACTIVE, UNSUBSCRIBED, BLOCKED
+- optedIn: true/false
+- language: fr, en, es
+
+Opérateurs: eq, neq, gt, gte, lt, lte, in, nin, contains, isNull, isNotNull
+
+Réponds UNIQUEMENT avec un JSON valide au format:
+{
+  "name": "nom_court_du_segment",
+  "description": "Description lisible du segment",
+  "criteria": {
+    "operator": "AND",
+    "rules": [
+      { "field": "...", "op": "...", "value": "..." }
+    ]
+  }
+}`;
+
+    // Use OpenAI if available
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) {
+      return res.status(503).json({ error: 'Service IA non configuré (OPENAI_API_KEY manquant)' });
+    }
+
+    const fetch = require('node-fetch');
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+      body: JSON.stringify({
+        model: process.env.OPENAI_MODEL || 'gpt-4',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: prompt }
+        ],
+        temperature: 0.3,
+        max_tokens: 500
+      })
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.error?.message || 'Erreur OpenAI');
+    }
+
+    const content = data.choices?.[0]?.message?.content;
+    if (!content) {
+      throw new Error('Pas de réponse IA');
+    }
+
+    // Parse JSON from response (handle markdown code blocks)
+    const jsonStr = content.replace(/```json?\n?/g, '').replace(/```/g, '').trim();
+    const suggestion = JSON.parse(jsonStr);
+
+    // Validate the criteria
+    buildWhereClause(suggestion.criteria);
+
+    // Evaluate count
+    const contactCount = await evaluateCount(prisma, suggestion.criteria);
+
+    res.json({ ...suggestion, contactCount });
+  } catch (error) {
+    logger.error('Error AI suggest segment', { error: error.message });
+    res.status(500).json({ error: error.message || 'Erreur lors de la suggestion IA' });
+  }
+});
+
+// ============================================
 // POST /api/segments/preview - Preview inline criteria (without saving)
 // ============================================
 router.post('/preview', authenticate, async (req, res) => {
