@@ -73,11 +73,21 @@ async function initialize() {
 }
 
 // ============================================
-// Generer un embedding via OpenAI
+// Generer un embedding via OpenAI (single text)
 // ============================================
 async function generateEmbedding(text) {
+  const results = await generateEmbeddingsBatch([text]);
+  return results[0];
+}
+
+// ============================================
+// Generer des embeddings en batch via OpenAI
+// ============================================
+async function generateEmbeddingsBatch(texts) {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) throw new Error('OPENAI_API_KEY non configure');
+
+  const inputs = texts.map(t => t.substring(0, 8000));
 
   const response = await fetch('https://api.openai.com/v1/embeddings', {
     method: 'POST',
@@ -87,19 +97,23 @@ async function generateEmbedding(text) {
     },
     body: JSON.stringify({
       model: EMBEDDING_MODEL,
-      input: text.substring(0, 8000)
+      input: inputs
     })
   });
 
   const data = await response.json();
   if (!response.ok) throw new Error(data.error?.message || 'Erreur embedding OpenAI');
-  return data.data[0].embedding;
+
+  // OpenAI returns embeddings sorted by index
+  return data.data
+    .sort((a, b) => a.index - b.index)
+    .map(d => d.embedding);
 }
 
 // ============================================
 // Decouper un texte en chunks
 // ============================================
-function chunkText(text, chunkSize = 500, overlap = 50) {
+function chunkText(text, chunkSize = 1000, overlap = 100) {
   // Split by paragraphs first, then sentences
   const paragraphs = text.split(/\n\n+/).filter(p => p.trim());
   const chunks = [];
@@ -150,24 +164,36 @@ async function addDocument(title, content, type = 'text', metadata = {}) {
   );
   const doc = docs[0];
 
-  // Decouper en chunks et generer les embeddings
+  // Decouper en chunks et generer les embeddings en batch
   const chunks = chunkText(content);
   let embedded = 0;
 
-  for (let i = 0; i < chunks.length; i++) {
-    try {
-      const embedding = await generateEmbedding(chunks[i]);
-      const embeddingStr = `[${embedding.join(',')}]`;
+  // Batch embeddings: un seul appel OpenAI pour tous les chunks
+  try {
+    const embeddings = await generateEmbeddingsBatch(chunks);
 
+    // Batch insert: construire un seul INSERT multi-lignes
+    const valueParts = [];
+    const params = [];
+    let paramIdx = 1;
+
+    for (let i = 0; i < chunks.length; i++) {
+      const embeddingStr = `[${embeddings[i].join(',')}]`;
+      valueParts.push(`($${paramIdx}::uuid, $${paramIdx + 1}, $${paramIdx + 2}, $${paramIdx + 3}::vector)`);
+      params.push(doc.id, chunks[i], i, embeddingStr);
+      paramIdx += 4;
+    }
+
+    if (valueParts.length > 0) {
       await prisma.$queryRawUnsafe(
         `INSERT INTO rag_chunks (document_id, content, chunk_index, embedding)
-         VALUES ($1::uuid, $2, $3, $4::vector)`,
-        doc.id, chunks[i], i, embeddingStr
+         VALUES ${valueParts.join(', ')}`,
+        ...params
       );
-      embedded++;
-    } catch (err) {
-      logger.warn('Failed to embed chunk', { docId: doc.id, chunk: i, error: err.message });
+      embedded = chunks.length;
     }
+  } catch (err) {
+    logger.error('Batch embedding failed', { docId: doc.id, error: err.message });
   }
 
   // Mettre a jour le nombre de chunks
@@ -420,6 +446,7 @@ async function getStats() {
 module.exports = {
   initialize,
   generateEmbedding,
+  generateEmbeddingsBatch,
   chunkText,
   addDocument,
   searchSimilar,
