@@ -1595,9 +1595,117 @@
         // =============================================
         const SettingsView = () => {
             const { data: health } = useApi('/health');
+            const { data: billing, loading: billingLoading } = useApi('/billing/overview');
+
+            const formatFCFA = (amount) => {
+                if (!amount && amount !== 0) return '0 FCFA';
+                return new Intl.NumberFormat('fr-FR').format(Math.round(amount)) + ' FCFA';
+            };
+
+            const categoryLabels = { MARKETING: 'Marketing', UTILITY: 'Utilitaire', AUTHENTICATION: 'Authentification' };
+            const categoryColors = { MARKETING: '#3b82f6', UTILITY: '#10b981', AUTHENTICATION: '#f59e0b' };
 
             return (
                 <div className="space-y-6">
+                    {/* Cout des messages WhatsApp */}
+                    <Card title="Cout des Messages WhatsApp">
+                        {billingLoading ? <div className="py-8 text-center text-gray-500">Chargement...</div> : billing ? (
+                            <div className="space-y-6">
+                                {/* KPI Cards */}
+                                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                                    <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4">
+                                        <p className="text-xs font-medium text-blue-600 uppercase tracking-wide">Cout Total</p>
+                                        <p className="text-2xl font-bold text-blue-900 mt-1">{formatFCFA(billing.totals?.costFCFA)}</p>
+                                        <p className="text-xs text-blue-500 mt-1">{billing.totals?.sent || 0} messages envoyes</p>
+                                    </div>
+                                    <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl p-4">
+                                        <p className="text-xs font-medium text-emerald-600 uppercase tracking-wide">Delivres</p>
+                                        <p className="text-2xl font-bold text-emerald-900 mt-1">{billing.totals?.delivered || 0}</p>
+                                        <p className="text-xs text-emerald-500 mt-1">{billing.totals?.sent ? Math.round(billing.totals.delivered / billing.totals.sent * 100) : 0}% taux de livraison</p>
+                                    </div>
+                                    <div className="bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl p-4">
+                                        <p className="text-xs font-medium text-amber-600 uppercase tracking-wide">Lus</p>
+                                        <p className="text-2xl font-bold text-amber-900 mt-1">{billing.totals?.read || 0}</p>
+                                        <p className="text-xs text-amber-500 mt-1">{billing.totals?.sent ? Math.round(billing.totals.read / billing.totals.sent * 100) : 0}% taux de lecture</p>
+                                    </div>
+                                    <div className="bg-gradient-to-br from-red-50 to-red-100 rounded-xl p-4">
+                                        <p className="text-xs font-medium text-red-600 uppercase tracking-wide">Echoues</p>
+                                        <p className="text-2xl font-bold text-red-900 mt-1">{billing.totals?.failed || 0}</p>
+                                        <p className="text-xs text-red-500 mt-1">{billing.totals?.sent ? Math.round(billing.totals.failed / billing.totals.sent * 100) : 0}% taux d'echec</p>
+                                    </div>
+                                </div>
+
+                                {/* Cout par categorie */}
+                                <div>
+                                    <h3 className="text-sm font-semibold text-gray-700 mb-3">Repartition par type de message</h3>
+                                    <div className="space-y-3">
+                                        {Object.entries(billing.costByCategory || {}).map(([cat, data]) => {
+                                            const totalCost = billing.totals?.costFCFA || 1;
+                                            const pct = totalCost > 0 ? Math.round(data.costFCFA / totalCost * 100) : 0;
+                                            return (
+                                                <div key={cat} className="flex items-center gap-4 p-3 bg-gray-50 rounded-xl">
+                                                    <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: categoryColors[cat] }} />
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="flex items-center justify-between mb-1">
+                                                            <span className="text-sm font-medium text-gray-800">{categoryLabels[cat] || cat}</span>
+                                                            <span className="text-sm font-bold text-gray-900">{formatFCFA(data.costFCFA)}</span>
+                                                        </div>
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="flex-1 bg-gray-200 rounded-full h-2">
+                                                                <div className="h-2 rounded-full transition-all" style={{ width: pct + '%', backgroundColor: categoryColors[cat] }} />
+                                                            </div>
+                                                            <span className="text-xs text-gray-500 w-16 text-right">{data.sent} msg</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+
+                                {/* Grille tarifaire */}
+                                <div>
+                                    <h3 className="text-sm font-semibold text-gray-700 mb-3">Grille tarifaire (Region Gabon - Rest of Africa)</h3>
+                                    <div className="bg-gray-50 rounded-xl overflow-hidden">
+                                        <table className="w-full">
+                                            <thead><tr className="border-b border-gray-200"><th className="text-left py-2 px-4 text-xs font-medium text-gray-500">Type</th><th className="text-right py-2 px-4 text-xs font-medium text-gray-500">Prix USD</th><th className="text-right py-2 px-4 text-xs font-medium text-gray-500">Prix FCFA</th><th className="text-right py-2 px-4 text-xs font-medium text-gray-500">Regle</th></tr></thead>
+                                            <tbody className="divide-y divide-gray-100">
+                                                <tr><td className="py-2 px-4 text-sm text-gray-700">Marketing</td><td className="py-2 px-4 text-sm text-gray-600 text-right">$0.0259</td><td className="py-2 px-4 text-sm font-medium text-gray-900 text-right">{billing.pricing?.MARKETING || '31.08'} FCFA</td><td className="py-2 px-4 text-xs text-gray-400 text-right">x2 x600</td></tr>
+                                                <tr><td className="py-2 px-4 text-sm text-gray-700">Utilitaire</td><td className="py-2 px-4 text-sm text-gray-600 text-right">$0.0046</td><td className="py-2 px-4 text-sm font-medium text-gray-900 text-right">{billing.pricing?.UTILITY || '5.52'} FCFA</td><td className="py-2 px-4 text-xs text-gray-400 text-right">x2 x600</td></tr>
+                                                <tr><td className="py-2 px-4 text-sm text-gray-700">Authentification</td><td className="py-2 px-4 text-sm text-gray-600 text-right">$0.0046</td><td className="py-2 px-4 text-sm font-medium text-gray-900 text-right">{billing.pricing?.AUTHENTICATION || '5.52'} FCFA</td><td className="py-2 px-4 text-xs text-gray-400 text-right">x2 x600</td></tr>
+                                                <tr><td className="py-2 px-4 text-sm text-gray-700">Service</td><td className="py-2 px-4 text-sm text-gray-600 text-right">$0.00</td><td className="py-2 px-4 text-sm font-medium text-emerald-600 text-right">Gratuit</td><td className="py-2 px-4 text-xs text-gray-400 text-right">-</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                {/* Detail par campagne */}
+                                {billing.campaigns?.length > 0 && (
+                                    <div>
+                                        <h3 className="text-sm font-semibold text-gray-700 mb-3">Detail par campagne</h3>
+                                        <div className="overflow-x-auto">
+                                            <table className="w-full">
+                                                <thead><tr className="border-b border-gray-200"><th className="text-left py-2 px-3 text-xs font-medium text-gray-500">Campagne</th><th className="text-left py-2 px-3 text-xs font-medium text-gray-500">Type</th><th className="text-right py-2 px-3 text-xs font-medium text-gray-500">Envoyes</th><th className="text-right py-2 px-3 text-xs font-medium text-gray-500">Delivres</th><th className="text-right py-2 px-3 text-xs font-medium text-gray-500">Echoues</th><th className="text-right py-2 px-3 text-xs font-medium text-gray-500">Cout</th></tr></thead>
+                                                <tbody className="divide-y divide-gray-100">
+                                                    {billing.campaigns.map(c => (
+                                                        <tr key={c.id} className="hover:bg-gray-50">
+                                                            <td className="py-2 px-3 text-sm text-gray-900">{c.name}</td>
+                                                            <td className="py-2 px-3"><Badge variant={c.templateCategory === 'MARKETING' ? 'primary' : 'default'}>{categoryLabels[c.templateCategory] || c.templateCategory}</Badge></td>
+                                                            <td className="py-2 px-3 text-sm text-gray-600 text-right">{c.sent}</td>
+                                                            <td className="py-2 px-3 text-sm text-emerald-600 text-right">{c.delivered}</td>
+                                                            <td className="py-2 px-3 text-sm text-red-500 text-right">{c.failed}</td>
+                                                            <td className="py-2 px-3 text-sm font-medium text-gray-900 text-right">{formatFCFA(c.costFCFA)}</td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        ) : <div className="py-8 text-center text-gray-500">Aucune donnee de facturation</div>}
+                    </Card>
+
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <Card title="Informations Generales">
                             <div className="space-y-4">
