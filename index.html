@@ -136,6 +136,7 @@
             RefreshCw: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>,
             Copy: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>,
             LogOut: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>,
+            ArrowLeft: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12,19 5,12 12,5"/></svg>,
         };
 
         // =============================================
@@ -411,6 +412,108 @@
         // =============================================
         // Campaigns View
         // =============================================
+        const msgStatusMap = { PENDING: 'En attente', QUEUED: 'En file', SENT: 'Envoye', DELIVERED: 'Delivre', READ: 'Lu', FAILED: 'Echoue' };
+        const msgStatusVariant = { PENDING: 'default', QUEUED: 'default', SENT: 'info', DELIVERED: 'success', READ: 'primary', FAILED: 'danger' };
+
+        const CampaignDetailView = ({ campaign, onBack, onSend, templates }) => {
+            const { data: msgData, loading: msgLoading } = useApi('/campaigns/' + campaign.id + '/messages?limit=500');
+            const messages = msgData?.data || [];
+
+            const c = campaign;
+            const totalSent = c.sent || 0;
+            const deliveryRate = totalSent > 0 ? ((c.delivered / totalSent) * 100).toFixed(1) : 0;
+            const openRate = c.delivered > 0 ? ((c.read / c.delivered) * 100).toFixed(1) : 0;
+            const clickRate = c.read > 0 ? ((c.clicked / c.read) * 100).toFixed(1) : 0;
+
+            const [statusFilter, setStatusFilter] = useState('');
+            const filtered = statusFilter ? messages.filter(m => m.status === statusFilter) : messages;
+
+            return (
+                <div className="space-y-6">
+                    <div className="flex items-center gap-4">
+                        <Button variant="ghost" icon={Icons.ArrowLeft} onClick={onBack}>Retour aux campagnes</Button>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                        <div className="flex items-center gap-3">
+                            <div className="w-12 h-12 bg-bgfi-primary/10 rounded-xl flex items-center justify-center text-bgfi-primary"><Icons.Send /></div>
+                            <div>
+                                <h2 className="text-2xl font-bold text-gray-900">{c.name}</h2>
+                                <p className="text-sm text-gray-500">{catMap[c.type] || c.type} - {segmentMap[c.segment] || c.segment || 'Tous'} - Template: {c.template?.displayName || c.template?.name || '-'}</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <Badge variant={statusVariant[c.status] || 'default'}>{statusMap[c.status] || c.status}</Badge>
+                            {c.status === 'DRAFT' && <Button variant="accent" size="sm" icon={Icons.Play} onClick={() => onSend(c.id)}>Lancer</Button>}
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
+                        <Card className="text-center"><p className="text-2xl font-bold text-blue-700">{formatNum(totalSent)}</p><p className="text-xs text-blue-600 mt-1">Envoyes</p></Card>
+                        <Card className="text-center"><p className="text-2xl font-bold text-green-700">{formatNum(c.delivered || 0)}</p><p className="text-xs text-green-600 mt-1">Delivres ({deliveryRate}%)</p></Card>
+                        <Card className="text-center"><p className="text-2xl font-bold text-purple-700">{formatNum(c.read || 0)}</p><p className="text-xs text-purple-600 mt-1">Lus ({openRate}%)</p></Card>
+                        <Card className="text-center"><p className="text-2xl font-bold text-amber-700">{formatNum(c.clicked || 0)}</p><p className="text-xs text-amber-600 mt-1">Cliques ({clickRate}%)</p></Card>
+                        <Card className="text-center"><p className="text-2xl font-bold text-red-700">{formatNum(c.failed || 0)}</p><p className="text-xs text-red-600 mt-1">Echoues</p></Card>
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                        <div className="text-sm"><span className="text-gray-500">Creee le</span><p className="font-medium text-gray-900">{c.createdAt ? new Date(c.createdAt).toLocaleString('fr-FR') : '-'}</p></div>
+                        <div className="text-sm"><span className="text-gray-500">Lancee le</span><p className="font-medium text-gray-900">{c.startedAt ? new Date(c.startedAt).toLocaleString('fr-FR') : '-'}</p></div>
+                        <div className="text-sm"><span className="text-gray-500">Terminee le</span><p className="font-medium text-gray-900">{c.completedAt ? new Date(c.completedAt).toLocaleString('fr-FR') : '-'}</p></div>
+                        {c.scheduledAt && <div className="text-sm"><span className="text-gray-500">Planifiee le</span><p className="font-medium text-gray-900">{new Date(c.scheduledAt).toLocaleString('fr-FR')}</p></div>}
+                    </div>
+
+                    <Card>
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-lg font-semibold text-gray-900">Detail des envois ({filtered.length})</h3>
+                            <div className="flex gap-2">
+                                <select className="text-sm border border-gray-300 rounded-lg px-3 py-2" value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
+                                    <option value="">Tous les statuts</option>
+                                    <option value="SENT">Envoyes</option>
+                                    <option value="DELIVERED">Delivres</option>
+                                    <option value="READ">Lus</option>
+                                    <option value="FAILED">Echoues</option>
+                                    <option value="PENDING">En attente</option>
+                                </select>
+                            </div>
+                        </div>
+                        {msgLoading ? <Spinner /> : (
+                        <div className="overflow-x-auto">
+                            <table className="w-full">
+                                <thead>
+                                    <tr className="border-b border-gray-200">
+                                        <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Contact</th>
+                                        <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Telephone</th>
+                                        <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Statut</th>
+                                        <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Date d'envoi</th>
+                                        <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Erreur</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-100">
+                                    {filtered.length === 0 && <tr><td colSpan="5" className="py-8 text-center text-gray-500">Aucun message</td></tr>}
+                                    {filtered.map(m => (
+                                        <tr key={m.id} className="hover:bg-gray-50">
+                                            <td className="py-3 px-4">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-500 text-xs font-medium">{(m.contact?.name || '?')[0].toUpperCase()}</div>
+                                                    <span className="text-sm font-medium text-gray-900">{m.contact?.name || '-'}</span>
+                                                </div>
+                                            </td>
+                                            <td className="py-3 px-4 text-sm text-gray-600 font-mono">{m.contact?.phone || '-'}</td>
+                                            <td className="py-3 px-4"><Badge variant={msgStatusVariant[m.status] || 'default'}>{msgStatusMap[m.status] || m.status}</Badge></td>
+                                            <td className="py-3 px-4 text-sm text-gray-500">{m.sentAt ? new Date(m.sentAt).toLocaleString('fr-FR') : m.createdAt ? new Date(m.createdAt).toLocaleString('fr-FR') : '-'}</td>
+                                            <td className="py-3 px-4 text-sm text-red-600">{m.error || ''}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                        )}
+                    </Card>
+                </div>
+            );
+        };
+
         const CampaignsView = () => {
             const [showCreateModal, setShowCreateModal] = useState(false);
             const [selectedCampaign, setSelectedCampaign] = useState(null);
@@ -434,7 +537,7 @@
 
             const handleSend = async (id) => {
                 if (!confirm('Lancer cette campagne ?')) return;
-                try { await api('/campaigns/' + id + '/send', { method: 'POST' }); refetch(); }
+                try { await api('/campaigns/' + id + '/send', { method: 'POST' }); setSelectedCampaign(null); refetch(); }
                 catch (err) { alert(err.message); }
             };
 
@@ -471,6 +574,10 @@
             if (loading) return <Spinner />;
             if (error) return <ErrorBox message={error} onRetry={refetch} />;
 
+            if (selectedCampaign) {
+                return <CampaignDetailView campaign={selectedCampaign} onBack={() => { setSelectedCampaign(null); refetch(); }} onSend={handleSend} templates={templates} />;
+            }
+
             return (
                 <div className="space-y-6">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -480,17 +587,18 @@
                     <Card>
                         <div className="overflow-x-auto">
                             <table className="w-full">
-                                <thead><tr className="border-b border-gray-200"><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Campagne</th><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Statut</th><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Type</th><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Segment</th><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Date</th><th className="text-right py-3 px-4 text-sm font-medium text-gray-500">Actions</th></tr></thead>
+                                <thead><tr className="border-b border-gray-200"><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Campagne</th><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Statut</th><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Type</th><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Segment</th><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Envoyes</th><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Date</th><th className="text-right py-3 px-4 text-sm font-medium text-gray-500">Actions</th></tr></thead>
                                 <tbody className="divide-y divide-gray-100">
-                                    {campaigns.length === 0 && <tr><td colSpan="6" className="py-8 text-center text-gray-500">Aucune campagne</td></tr>}
+                                    {campaigns.length === 0 && <tr><td colSpan="7" className="py-8 text-center text-gray-500">Aucune campagne</td></tr>}
                                     {campaigns.map(c => (
-                                        <tr key={c.id} className="hover:bg-gray-50">
+                                        <tr key={c.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => setSelectedCampaign(c)}>
                                             <td className="py-4 px-4"><div className="flex items-center gap-3"><div className="w-10 h-10 bg-bgfi-primary/10 rounded-xl flex items-center justify-center text-bgfi-primary"><Icons.Send /></div><div><p className="font-medium text-gray-900">{c.name}</p><p className="text-sm text-gray-500">{c.template?.name || '-'}</p></div></div></td>
                                             <td className="py-4 px-4"><Badge variant={statusVariant[c.status] || 'default'}>{statusMap[c.status] || c.status}</Badge></td>
                                             <td className="py-4 px-4 text-sm text-gray-600">{catMap[c.type] || c.type}</td>
                                             <td className="py-4 px-4 text-sm text-gray-600">{segmentMap[c.segment] || c.segment || '-'}</td>
+                                            <td className="py-4 px-4 text-sm text-gray-600">{c.sent || 0}/{c.delivered || 0}/{c.failed || 0}</td>
                                             <td className="py-4 px-4 text-sm text-gray-500">{c.createdAt ? new Date(c.createdAt).toLocaleDateString('fr-FR') : '-'}</td>
-                                            <td className="py-4 px-4 text-right"><div className="flex items-center justify-end gap-2">{c.status === 'DRAFT' && <Button variant="accent" size="sm" icon={Icons.Play} onClick={() => handleSend(c.id)}>Lancer</Button>}{['DRAFT','SCHEDULED','PAUSED'].includes(c.status) && <Button variant="ghost" size="sm" icon={Icons.Edit} onClick={() => openEdit(c)} title="Modifier" />}<Button variant="ghost" size="sm" icon={Icons.Eye} onClick={() => setSelectedCampaign(c)} title="Details" />{c.status !== 'RUNNING' && <Button variant="ghost" size="sm" icon={Icons.Trash2} onClick={() => handleDelete(c.id)} title="Supprimer" />}</div></td>
+                                            <td className="py-4 px-4 text-right" onClick={e => e.stopPropagation()}><div className="flex items-center justify-end gap-2">{c.status === 'DRAFT' && <Button variant="accent" size="sm" icon={Icons.Play} onClick={() => handleSend(c.id)}>Lancer</Button>}{['DRAFT','SCHEDULED','PAUSED'].includes(c.status) && <Button variant="ghost" size="sm" icon={Icons.Edit} onClick={() => openEdit(c)} title="Modifier" />}<Button variant="ghost" size="sm" icon={Icons.BarChart3} onClick={() => setSelectedCampaign(c)} title="Statistiques" />{c.status !== 'RUNNING' && <Button variant="ghost" size="sm" icon={Icons.Trash2} onClick={() => handleDelete(c.id)} title="Supprimer" />}</div></td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -523,78 +631,6 @@
                             </div>
                         </div>
                     )}
-
-                    {selectedCampaign && (() => {
-                        const c = selectedCampaign;
-                        const totalSent = c.sent || 0;
-                        const deliveryRate = totalSent > 0 ? ((c.delivered / totalSent) * 100).toFixed(1) : 0;
-                        const openRate = c.delivered > 0 ? ((c.read / c.delivered) * 100).toFixed(1) : 0;
-                        const clickRate = c.read > 0 ? ((c.clicked / c.read) * 100).toFixed(1) : 0;
-                        return (
-                        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                            <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-auto animate-fade-in">
-                                <div className="p-6 border-b border-gray-200 flex items-center justify-between">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 bg-bgfi-primary/10 rounded-xl flex items-center justify-center text-bgfi-primary"><Icons.Send /></div>
-                                        <div>
-                                            <h2 className="text-xl font-semibold text-gray-900">{c.name}</h2>
-                                            <p className="text-sm text-gray-500">{catMap[c.type] || c.type} - {segmentMap[c.segment] || c.segment || 'Tous'}</p>
-                                        </div>
-                                    </div>
-                                    <button onClick={() => setSelectedCampaign(null)} className="text-gray-400 hover:text-gray-600"><Icons.X /></button>
-                                </div>
-                                <div className="p-6 space-y-6">
-                                    <div className="flex items-center gap-3">
-                                        <Badge variant={statusVariant[c.status] || 'default'}>{statusMap[c.status] || c.status}</Badge>
-                                        {c.scheduledAt && <span className="text-sm text-gray-500 flex items-center gap-1"><Icons.Calendar /> Planifiee le {new Date(c.scheduledAt).toLocaleString('fr-FR')}</span>}
-                                    </div>
-
-                                    {c.description && <p className="text-sm text-gray-600">{c.description}</p>}
-
-                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                                        <div className="bg-blue-50 rounded-xl p-4 text-center">
-                                            <p className="text-2xl font-bold text-blue-700">{formatNum(totalSent)}</p>
-                                            <p className="text-xs text-blue-600 mt-1">Envoyes</p>
-                                        </div>
-                                        <div className="bg-green-50 rounded-xl p-4 text-center">
-                                            <p className="text-2xl font-bold text-green-700">{formatNum(c.delivered || 0)}</p>
-                                            <p className="text-xs text-green-600 mt-1">Delivres ({deliveryRate}%)</p>
-                                        </div>
-                                        <div className="bg-purple-50 rounded-xl p-4 text-center">
-                                            <p className="text-2xl font-bold text-purple-700">{formatNum(c.read || 0)}</p>
-                                            <p className="text-xs text-purple-600 mt-1">Lus ({openRate}%)</p>
-                                        </div>
-                                        <div className="bg-amber-50 rounded-xl p-4 text-center">
-                                            <p className="text-2xl font-bold text-amber-700">{formatNum(c.clicked || 0)}</p>
-                                            <p className="text-xs text-amber-600 mt-1">Cliques ({clickRate}%)</p>
-                                        </div>
-                                    </div>
-
-                                    {(c.failed || 0) > 0 && (
-                                        <div className="bg-red-50 border border-red-200 rounded-xl p-3 flex items-center gap-2 text-sm text-red-700">
-                                            <span className="font-medium">{formatNum(c.failed)}</span> messages echoues
-                                        </div>
-                                    )}
-
-                                    <div className="grid grid-cols-2 gap-4 text-sm">
-                                        <div className="space-y-2">
-                                            <div className="flex justify-between"><span className="text-gray-500">Template</span><span className="font-medium text-gray-900">{c.template?.displayName || c.template?.name || '-'}</span></div>
-                                            <div className="flex justify-between"><span className="text-gray-500">Segment</span><span className="font-medium text-gray-900">{segmentMap[c.segment] || c.segment || 'Tous'}</span></div>
-                                        </div>
-                                        <div className="space-y-2">
-                                            <div className="flex justify-between"><span className="text-gray-500">Creee le</span><span className="font-medium text-gray-900">{c.createdAt ? new Date(c.createdAt).toLocaleDateString('fr-FR') : '-'}</span></div>
-                                            <div className="flex justify-between"><span className="text-gray-500">Terminee le</span><span className="font-medium text-gray-900">{c.completedAt ? new Date(c.completedAt).toLocaleDateString('fr-FR') : '-'}</span></div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="p-6 border-t border-gray-200 flex justify-end gap-3">
-                                    {c.status === 'DRAFT' && <Button variant="accent" icon={Icons.Play} onClick={() => { handleSend(c.id); setSelectedCampaign(null); }}>Lancer la campagne</Button>}
-                                    <Button variant="secondary" onClick={() => setSelectedCampaign(null)}>Fermer</Button>
-                                </div>
-                            </div>
-                        </div>
-                        );
-                    })()}
 
                     {editModal && (
                         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
