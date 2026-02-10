@@ -180,7 +180,8 @@ class WhatsAppCloudService {
         category: t.category,
         language: t.language,
         id: t.id,
-        rejectionReason: t.rejected_reason
+        rejectionReason: t.rejected_reason,
+        components: t.components
       }));
 
       return { success: true, templates };

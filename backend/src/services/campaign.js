@@ -71,7 +71,13 @@ class CampaignService {
   async sendBatch(batch, template, variables) {
     const messages = batch.map(contact => ({
       phone: contact.phone,
-      message: this.formatMessage(template.content, contact, variables)
+      template: {
+        name: template.name,
+        language: template.language || 'fr',
+        components: this.extractVariables(template.content, contact, variables).length > 0
+          ? [{ type: 'body', parameters: this.extractVariables(template.content, contact, variables) }]
+          : []
+      }
     }));
 
     const results = await whatsappService.sendBatch(messages, {
@@ -187,8 +193,17 @@ class CampaignService {
       try {
         // Send each message individually to track per-contact results
         for (const contact of batch) {
-          const text = this.formatMessage(campaign.template.content, contact, campaign.variables);
-          const result = await whatsappService.sendMessage(contact.phone, text);
+          let result;
+
+          // Use WhatsApp template for broadcast (required to initiate conversations)
+          const templateName = campaign.template.name;
+          const language = campaign.template.language || 'fr';
+          const components = this.extractVariables(campaign.template.content, contact, campaign.variables);
+          const bodyParams = components.length > 0
+            ? [{ type: 'body', parameters: components }]
+            : [];
+
+          result = await whatsappService.sendTemplate(contact.phone, templateName, language, bodyParams);
 
           const newStatus = result.success ? 'SENT' : 'FAILED';
           await prisma.message.updateMany({

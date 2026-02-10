@@ -305,6 +305,59 @@ router.post('/:id/sync', authenticate, authorize(['template:sync']), async (req,
 });
 
 // ============================================
+// POST /api/templates/sync-all - Synchroniser tous les templates avec Meta
+// ============================================
+router.post('/sync-all', authenticate, async (req, res) => {
+  try {
+    const templatesResult = await whatsappService.getTemplates();
+    if (!templatesResult.success) {
+      return res.status(500).json({ error: 'Synchronisation échouée', message: templatesResult.error });
+    }
+
+    const metaTemplates = templatesResult.templates;
+    let synced = 0;
+    let created = 0;
+
+    for (const mt of metaTemplates) {
+      const existing = await prisma.template.findFirst({ where: { name: mt.name } });
+      if (existing) {
+        await prisma.template.update({
+          where: { id: existing.id },
+          data: {
+            status: mt.status.toUpperCase(),
+            metaId: mt.id,
+            approvedAt: mt.status === 'APPROVED' ? (existing.approvedAt || new Date()) : null,
+            rejectedAt: mt.status === 'REJECTED' ? new Date() : null,
+            rejectionReason: mt.rejectionReason
+          }
+        });
+        synced++;
+      } else {
+        await prisma.template.create({
+          data: {
+            name: mt.name,
+            displayName: mt.name.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+            category: mt.category || 'MARKETING',
+            content: mt.components?.find(c => c.type === 'BODY')?.text || '',
+            language: mt.language || 'fr',
+            status: mt.status.toUpperCase(),
+            metaId: mt.id,
+            variables: (mt.components?.find(c => c.type === 'BODY')?.text?.match(/\{\{(\d+)\}\}/g) || []).map((_, i) => `var${i + 1}`),
+            approvedAt: mt.status === 'APPROVED' ? new Date() : null
+          }
+        });
+        created++;
+      }
+    }
+
+    res.json({ success: true, synced, created, total: metaTemplates.length });
+  } catch (error) {
+    logger.error('Error syncing all templates', { error: error.message });
+    res.status(500).json({ error: 'Erreur lors de la synchronisation' });
+  }
+});
+
+// ============================================
 // GET /api/templates/variables/preview - Prévisualiser les variables
 // ============================================
 router.post('/variables/preview', authenticate, async (req, res) => {
