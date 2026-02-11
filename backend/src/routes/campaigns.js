@@ -329,6 +329,45 @@ router.post('/:id/cancel', authenticate, authorize(['campaign:cancel']), async (
 });
 
 // ============================================
+// POST /api/campaigns/:id/duplicate - Dupliquer une campagne
+// ============================================
+router.post('/:id/duplicate', authenticate, authorize(['campaign:create']), async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const original = await prisma.campaign.findUnique({
+      where: { id },
+      include: { template: true, segmentRef: true }
+    });
+
+    if (!original) {
+      return res.status(404).json({ error: 'Campagne non trouvée' });
+    }
+
+    const duplicate = await prisma.campaign.create({
+      data: {
+        name: original.name + ' (copie)',
+        type: original.type,
+        status: 'DRAFT',
+        templateId: original.templateId,
+        variables: original.variables || {},
+        segmentId: original.segmentId || null,
+        inlineCriteria: original.inlineCriteria || null,
+        legacySegment: original.legacySegment || null,
+        createdBy: req.user.id
+      },
+      include: { template: true, segmentRef: true }
+    });
+
+    logger.info('Campaign duplicated', { originalId: id, duplicateId: duplicate.id, userId: req.user.id });
+    res.status(201).json(duplicate);
+  } catch (error) {
+    logger.error('Error duplicating campaign', { error: error.message, campaignId: req.params.id });
+    res.status(500).json({ error: 'Erreur lors de la duplication de la campagne' });
+  }
+});
+
+// ============================================
 // GET /api/campaigns/:id/stats - Statistiques
 // ============================================
 router.get('/:id/stats', authenticate, async (req, res) => {

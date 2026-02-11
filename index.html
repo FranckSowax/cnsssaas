@@ -527,7 +527,7 @@
         const msgStatusMap = { PENDING: 'En attente', QUEUED: 'En file', SENT: 'Envoye', DELIVERED: 'Delivre', READ: 'Lu', FAILED: 'Echoue' };
         const msgStatusVariant = { PENDING: 'default', QUEUED: 'default', SENT: 'info', DELIVERED: 'success', READ: 'primary', FAILED: 'danger' };
 
-        const CampaignDetailView = ({ campaign, onBack, onSend, templates }) => {
+        const CampaignDetailView = ({ campaign, onBack, onSend, onDuplicate, templates }) => {
             const { data: msgData, loading: msgLoading } = useApi('/campaigns/' + campaign.id + '/messages?limit=500');
             const messages = msgData?.data || [];
 
@@ -557,6 +557,7 @@
                         <div className="flex items-center gap-3">
                             <Badge variant={statusVariant[c.status] || 'default'}>{statusMap[c.status] || c.status}</Badge>
                             {c.status === 'DRAFT' && <Button variant="accent" size="sm" icon={Icons.Play} onClick={() => onSend(c.id)}>Lancer</Button>}
+                            <Button variant="secondary" size="sm" icon={Icons.Copy} onClick={() => onDuplicate(c.id)}>Dupliquer</Button>
                         </div>
                     </div>
 
@@ -948,11 +949,16 @@
                 catch (err) { alert(err.message); }
             };
 
+            const handleDuplicate = async (id) => {
+                try { await api('/campaigns/' + id + '/duplicate', { method: 'POST' }); refetch(); }
+                catch (err) { alert(err.message); }
+            };
+
             if (loading) return <Spinner />;
             if (error) return <ErrorBox message={error} onRetry={refetch} />;
 
             if (selectedCampaign) {
-                return <CampaignDetailView campaign={selectedCampaign} onBack={() => { setSelectedCampaign(null); refetch(); }} onSend={handleSend} templates={templates} />;
+                return <CampaignDetailView campaign={selectedCampaign} onBack={() => { setSelectedCampaign(null); refetch(); }} onSend={handleSend} onDuplicate={(id) => { handleDuplicate(id); setSelectedCampaign(null); }} templates={templates} />;
             }
 
             return (
@@ -975,7 +981,7 @@
                                             <td className="py-4 px-4 text-sm text-gray-600">{c.segmentRef?.name || categoryMap[c.legacySegment] || 'Tous'}</td>
                                             <td className="py-4 px-4 text-sm text-gray-600">{c.sent || 0}/{c.delivered || 0}/{c.failed || 0}</td>
                                             <td className="py-4 px-4 text-sm text-gray-500">{c.createdAt ? new Date(c.createdAt).toLocaleDateString('fr-FR') : '-'}</td>
-                                            <td className="py-4 px-4 text-right" onClick={e => e.stopPropagation()}><div className="flex items-center justify-end gap-2">{c.status === 'DRAFT' && <Button variant="accent" size="sm" icon={Icons.Play} onClick={() => handleSend(c.id)}>Lancer</Button>}{['DRAFT','SCHEDULED','PAUSED'].includes(c.status) && <Button variant="ghost" size="sm" icon={Icons.Edit} onClick={() => openEdit(c)} title="Modifier" />}<Button variant="ghost" size="sm" icon={Icons.BarChart3} onClick={() => setSelectedCampaign(c)} title="Statistiques" />{c.status !== 'RUNNING' && <Button variant="ghost" size="sm" icon={Icons.Trash2} onClick={() => handleDelete(c.id)} title="Supprimer" />}</div></td>
+                                            <td className="py-4 px-4 text-right" onClick={e => e.stopPropagation()}><div className="flex items-center justify-end gap-2">{c.status === 'DRAFT' && <Button variant="accent" size="sm" icon={Icons.Play} onClick={() => handleSend(c.id)}>Lancer</Button>}{['DRAFT','SCHEDULED','PAUSED'].includes(c.status) && <Button variant="ghost" size="sm" icon={Icons.Edit} onClick={() => openEdit(c)} title="Modifier" />}<Button variant="ghost" size="sm" icon={Icons.Copy} onClick={() => handleDuplicate(c.id)} title="Dupliquer" /><Button variant="ghost" size="sm" icon={Icons.BarChart3} onClick={() => setSelectedCampaign(c)} title="Statistiques" />{c.status !== 'RUNNING' && <Button variant="ghost" size="sm" icon={Icons.Trash2} onClick={() => handleDelete(c.id)} title="Supprimer" />}</div></td>
                                         </tr>
                                     ))}
                                 </tbody>
