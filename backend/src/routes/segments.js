@@ -439,4 +439,107 @@ router.post('/preview', authenticate, async (req, res) => {
   }
 });
 
+// ============================================
+// POST /api/segments/:id/add-contacts - Ajouter des contacts directement
+// ============================================
+router.post('/:id/add-contacts', authenticate, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { contactIds } = req.body;
+
+    if (!contactIds || !Array.isArray(contactIds) || contactIds.length === 0) {
+      return res.status(400).json({ error: 'contactIds requis (tableau non vide)' });
+    }
+
+    const segment = await prisma.segment.findUnique({ where: { id } });
+    if (!segment) {
+      return res.status(404).json({ error: 'Segment non trouvé' });
+    }
+
+    // Determine the tag for this segment
+    const tagName = 'seg_' + segment.name.replace(/\s+/g, '_').toLowerCase();
+
+    // Tag each contact if not already tagged
+    let tagged = 0;
+    for (const contactId of contactIds) {
+      const contact = await prisma.contact.findUnique({ where: { id: contactId }, select: { id: true, tags: true } });
+      if (contact && !(contact.tags || []).includes(tagName)) {
+        await prisma.contact.update({
+          where: { id: contactId },
+          data: { tags: { push: tagName } }
+        });
+        tagged++;
+      }
+    }
+
+    // Ensure segment criteria includes this tag (for tag-based segments)
+    const criteria = segment.criteria || { operator: 'AND', rules: [] };
+    const hasTagRule = (criteria.rules || []).some(r => r.field === 'tags' && r.op === 'has' && r.value === tagName);
+    if (!hasTagRule) {
+      criteria.rules = criteria.rules || [];
+      criteria.rules.push({ field: 'tags', op: 'has', value: tagName });
+      await prisma.segment.update({
+        where: { id },
+        data: { criteria, type: 'STATIC' }
+      });
+    }
+
+    // Re-evaluate count
+    const contactCount = await evaluateCount(prisma, criteria);
+    await prisma.segment.update({
+      where: { id },
+      data: { contactCount, lastEvaluatedAt: new Date() }
+    });
+
+    logger.info('Contacts added to segment', { segmentId: id, tagged, total: contactIds.length });
+    res.json({ success: true, tagged, newCount: contactCount });
+  } catch (error) {
+    logger.error('Error adding contacts to segment', { error: error.message });
+    res.status(500).json({ error: error.message || 'Erreur lors de l\'ajout des contacts' });
+  }
+});
+
+// ============================================
+// GET /api/segments/:id/search-contacts - Recherche contacts hors segment
+// ============================================
+router.get('/:id/search-contacts', authenticate, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { q } = req.query;
+    if (!q || q.length < 2) {
+      return res.json({ data: [] });
+    }
+
+    const segment = await prisma.segment.findUnique({ where: { id } });
+    if (!segment) {
+      return res.status(404).json({ error: 'Segment non trouvé' });
+    }
+
+    // Find contacts matching search that are NOT already in the segment
+    const tagName = 'seg_' + segment.name.replace(/\s+/g, '_').toLowerCase();
+
+    const contacts = await prisma.contact.findMany({
+      where: {
+        OR: [
+          { name: { contains: q, mode: 'insensitive' } },
+          { phone: { contains: q } },
+          { email: { contains: q, mode: 'insensitive' } }
+        ],
+        NOT: { tags: { has: tagName } }
+      },
+      take: 10,
+      orderBy: { name: 'asc' },
+      select: {
+        id: true, name: true, phone: true, email: true,
+        city: true, category: true, accountType: true
+      }
+    });
+
+    res.json({ data: contacts });
+  } catch (error) {
+    logger.error('Error searching contacts for segment', { error: error.message });
+    res.status(500).json({ error: 'Erreur lors de la recherche' });
+  }
+});
+
 module.exports = router;

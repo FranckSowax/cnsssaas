@@ -2257,6 +2257,47 @@
             const [editPreview, setEditPreview] = useState(null);
             const [saving, setSaving] = useState(false);
             const [evaluating, setEvaluating] = useState(false);
+            const [showAddContacts, setShowAddContacts] = useState(false);
+            const [addSearch, setAddSearch] = useState('');
+            const [addResults, setAddResults] = useState([]);
+            const [addSelected, setAddSelected] = useState([]);
+            const [addSearching, setAddSearching] = useState(false);
+            const [addSaving, setAddSaving] = useState(false);
+
+            // Search contacts to add
+            const addSearchTimer = useRef(null);
+            useEffect(() => {
+                if (!showAddContacts || addSearch.length < 2) { setAddResults([]); return; }
+                clearTimeout(addSearchTimer.current);
+                addSearchTimer.current = setTimeout(async () => {
+                    setAddSearching(true);
+                    try {
+                        const res = await api(`/segments/${segment.id}/search-contacts?q=${encodeURIComponent(addSearch)}`);
+                        setAddResults(res.data || []);
+                    } catch { setAddResults([]); }
+                    finally { setAddSearching(false); }
+                }, 300);
+                return () => clearTimeout(addSearchTimer.current);
+            }, [addSearch, showAddContacts, segment.id]);
+
+            const toggleAddContact = (contact) => {
+                setAddSelected(prev => prev.find(c => c.id === contact.id) ? prev.filter(c => c.id !== contact.id) : [...prev, contact]);
+            };
+
+            const handleAddContacts = async () => {
+                if (addSelected.length === 0) return;
+                setAddSaving(true);
+                try {
+                    await api(`/segments/${segment.id}/add-contacts`, { method: 'POST', body: JSON.stringify({ contactIds: addSelected.map(c => c.id) }) });
+                    setShowAddContacts(false);
+                    setAddSearch('');
+                    setAddResults([]);
+                    setAddSelected([]);
+                    onRefresh();
+                    fetchContacts();
+                } catch (err) { alert(err.message); }
+                finally { setAddSaving(false); }
+            };
 
             // Fetch contacts
             const fetchContacts = useCallback(async () => {
@@ -2333,6 +2374,7 @@
                                 </div>
                             </div>
                             <div className="flex items-center gap-2">
+                                <Button variant="secondary" size="sm" icon={Icons.Plus} onClick={() => setShowAddContacts(true)}>Ajouter contacts</Button>
                                 <Button variant="secondary" size="sm" icon={Icons.RefreshCw} onClick={handleEvaluate} disabled={evaluating}>{evaluating ? '...' : 'Re-evaluer'}</Button>
                                 <Button variant="secondary" size="sm" icon={Icons.Edit} onClick={() => setShowEdit(true)}>Editer</Button>
                                 <button onClick={onClose} className="text-gray-400 hover:text-gray-600 ml-2"><Icons.X /></button>
@@ -2546,6 +2588,88 @@
                                     <div className="p-6 border-t border-gray-200 flex justify-end gap-3">
                                         <Button variant="secondary" onClick={() => setShowEdit(false)}>Annuler</Button>
                                         <Button onClick={handleSave} disabled={saving || !editForm.name} icon={Icons.CheckCircle}>{saving ? 'Sauvegarde...' : 'Sauvegarder'}</Button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Add contacts modal */}
+                        {showAddContacts && (
+                            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60] p-4" onClick={() => { setShowAddContacts(false); setAddSearch(''); setAddResults([]); setAddSelected([]); }}>
+                                <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[85vh] overflow-hidden flex flex-col" onClick={e => e.stopPropagation()}>
+                                    <div className="p-5 border-b border-gray-200 flex items-center justify-between shrink-0">
+                                        <div>
+                                            <h2 className="text-lg font-semibold text-gray-900">Ajouter des contacts au segment</h2>
+                                            <p className="text-sm text-gray-500 mt-0.5">Recherchez par nom, telephone ou email</p>
+                                        </div>
+                                        <button onClick={() => { setShowAddContacts(false); setAddSearch(''); setAddResults([]); setAddSelected([]); }} className="text-gray-400 hover:text-gray-600"><Icons.X /></button>
+                                    </div>
+
+                                    <div className="p-5 space-y-4 flex-1 overflow-auto">
+                                        {/* Search input */}
+                                        <div className="relative">
+                                            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"><Icons.Search /></div>
+                                            <input type="text" value={addSearch} onChange={e => setAddSearch(e.target.value)} placeholder="Rechercher un contact..." className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-bgfi-primary/20 focus:border-bgfi-primary outline-none" autoFocus />
+                                            {addSearching && <div className="absolute right-3 top-1/2 -translate-y-1/2"><Spinner /></div>}
+                                        </div>
+
+                                        {/* Selected contacts chips */}
+                                        {addSelected.length > 0 && (
+                                            <div>
+                                                <p className="text-xs font-medium text-gray-500 mb-2">{addSelected.length} contact{addSelected.length > 1 ? 's' : ''} selectionne{addSelected.length > 1 ? 's' : ''}</p>
+                                                <div className="flex flex-wrap gap-2">
+                                                    {addSelected.map(c => (
+                                                        <span key={c.id} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-bgfi-primary/10 text-bgfi-primary rounded-full text-sm font-medium">
+                                                            {c.name || c.phone}
+                                                            <button onClick={() => toggleAddContact(c)} className="hover:text-red-500 transition-colors">
+                                                                <Icons.X />
+                                                            </button>
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* Search results */}
+                                        {addSearch.length >= 2 && (
+                                            <div>
+                                                {addResults.length > 0 ? (
+                                                    <div className="border border-gray-200 rounded-xl overflow-hidden">
+                                                        {addResults.map((c, i) => {
+                                                            const isSelected = addSelected.some(s => s.id === c.id);
+                                                            return (
+                                                                <div key={c.id} onClick={() => toggleAddContact(c)} className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors ${i > 0 ? 'border-t border-gray-100' : ''} ${isSelected ? 'bg-bgfi-primary/5' : 'hover:bg-gray-50'}`}>
+                                                                    <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors ${isSelected ? 'bg-bgfi-primary border-bgfi-primary' : 'border-gray-300'}`}>
+                                                                        {isSelected && <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/></svg>}
+                                                                    </div>
+                                                                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-bgfi-primary to-bgfi-secondary flex items-center justify-center text-white text-sm font-bold shrink-0">
+                                                                        {(c.name || '?')[0].toUpperCase()}
+                                                                    </div>
+                                                                    <div className="flex-1 min-w-0">
+                                                                        <p className="text-sm font-medium text-gray-900 truncate">{c.name || 'Sans nom'}</p>
+                                                                        <p className="text-xs text-gray-400">{c.phone}{c.email ? ` · ${c.email}` : ''}</p>
+                                                                    </div>
+                                                                    <div className="flex items-center gap-2 shrink-0">
+                                                                        {c.city && <span className="text-xs text-gray-400">{c.city}</span>}
+                                                                        {c.category && <Badge variant={c.category === 'VIP' ? 'success' : c.category === 'PREMIUM' ? 'warning' : 'default'}>{c.category}</Badge>}
+                                                                    </div>
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                ) : !addSearching && (
+                                                    <p className="text-center text-gray-400 py-6 text-sm">Aucun contact trouve hors de ce segment</p>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <div className="p-5 border-t border-gray-200 flex items-center justify-between shrink-0">
+                                        <span className="text-sm text-gray-500">{addSelected.length} selectionne{addSelected.length > 1 ? 's' : ''}</span>
+                                        <div className="flex gap-3">
+                                            <Button variant="secondary" onClick={() => { setShowAddContacts(false); setAddSearch(''); setAddResults([]); setAddSelected([]); }}>Annuler</Button>
+                                            <Button onClick={handleAddContacts} disabled={addSaving || addSelected.length === 0} icon={Icons.Plus}>{addSaving ? 'Ajout...' : `Ajouter ${addSelected.length > 0 ? `(${addSelected.length})` : ''}`}</Button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
