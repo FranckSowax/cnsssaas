@@ -61,6 +61,32 @@ router.get('/', authenticate, async (req, res) => {
 });
 
 // ============================================
+// GET /api/templates/meta/app-info - Retrouver le App ID Meta
+// ============================================
+router.get('/meta/app-info', authenticate, async (req, res) => {
+  try {
+    const axios = require('axios');
+    const token = process.env.WHATSAPP_ACCESS_TOKEN;
+    if (!token) return res.status(400).json({ error: 'WHATSAPP_ACCESS_TOKEN non configure' });
+
+    const response = await axios.get('https://graph.facebook.com/v21.0/app', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+
+    res.json({
+      appId: response.data.id,
+      appName: response.data.name,
+      configuredAppId: process.env.WHATSAPP_APP_ID || null,
+      hint: 'Ajoutez WHATSAPP_APP_ID=' + response.data.id + ' dans vos variables Railway'
+    });
+  } catch (error) {
+    const errMsg = error.response?.data?.error?.message || error.message;
+    logger.error('Error fetching Meta app info', { error: errMsg });
+    res.status(500).json({ error: errMsg });
+  }
+});
+
+// ============================================
 // GET /api/templates/:id - Détail d'un template
 // ============================================
 router.get('/:id', authenticate, async (req, res) => {
@@ -534,32 +560,6 @@ router.post('/variables/preview', authenticate, async (req, res) => {
   } catch (error) {
     logger.error('Error previewing template', { error: error.message });
     res.status(500).json({ error: 'Erreur lors de la prévisualisation' });
-  }
-});
-
-// ============================================
-// GET /api/templates/meta/app-info - Retrouver le App ID Meta
-// ============================================
-router.get('/meta/app-info', authenticate, async (req, res) => {
-  try {
-    const axios = require('axios');
-    const token = process.env.WHATSAPP_ACCESS_TOKEN;
-    if (!token) return res.status(400).json({ error: 'WHATSAPP_ACCESS_TOKEN non configure' });
-
-    const response = await axios.get('https://graph.facebook.com/v21.0/app', {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-
-    res.json({
-      appId: response.data.id,
-      appName: response.data.name,
-      configuredAppId: process.env.WHATSAPP_APP_ID || null,
-      hint: 'Ajoutez WHATSAPP_APP_ID=' + response.data.id + ' dans vos variables Railway'
-    });
-  } catch (error) {
-    const errMsg = error.response?.data?.error?.message || error.message;
-    logger.error('Error fetching Meta app info', { error: errMsg });
-    res.status(500).json({ error: errMsg });
   }
 });
 
