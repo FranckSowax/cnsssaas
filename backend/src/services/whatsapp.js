@@ -290,7 +290,6 @@ class WhatsAppCloudService {
 
   /**
    * Récupérer l'URL de l'image header d'un template approuvé depuis Meta
-   * Utile quand headerContent stocké est un header_handle (non utilisable pour l'envoi)
    */
   async getTemplateImageUrl(templateName) {
     try {
@@ -309,6 +308,58 @@ class WhatsAppCloudService {
     } catch (error) {
       logger.error('Erreur récupération image URL template', { templateName, error: error.message });
       return null;
+    }
+  }
+
+  /**
+   * Télécharger une image depuis une URL et l'uploader sur WhatsApp Media API
+   * Retourne le media_id utilisable pour envoyer des messages
+   */
+  async downloadAndUploadMedia(imageUrl, mimeType = 'image/jpeg') {
+    try {
+      // Step 1: Download the image
+      logger.info('Downloading image for media upload', { url: imageUrl.substring(0, 80) + '...' });
+      const imageResponse = await axios.get(imageUrl, {
+        responseType: 'arraybuffer',
+        timeout: 30000,
+        headers: {
+          'Authorization': `OAuth ${this.accessToken}`,
+          'User-Agent': 'WhatsApp/2.0'
+        }
+      });
+
+      const imageBuffer = Buffer.from(imageResponse.data);
+      const detectedMime = imageResponse.headers['content-type'] || mimeType;
+
+      // Step 2: Upload to WhatsApp Media API
+      const FormData = require('form-data');
+      const form = new FormData();
+      form.append('messaging_product', 'whatsapp');
+      form.append('type', detectedMime);
+      form.append('file', imageBuffer, {
+        filename: 'header_image.jpg',
+        contentType: detectedMime
+      });
+
+      const uploadResponse = await axios.post(
+        `${GRAPH_API_BASE}/${this.phoneNumberId}/media`,
+        form,
+        {
+          headers: {
+            ...form.getHeaders(),
+            'Authorization': `Bearer ${this.accessToken}`
+          },
+          timeout: 60000
+        }
+      );
+
+      const mediaId = uploadResponse.data?.id;
+      logger.info('Media uploaded successfully', { mediaId });
+      return { success: true, mediaId };
+    } catch (error) {
+      const errMsg = error.response?.data?.error?.message || error.message;
+      logger.error('Erreur download+upload media', { error: errMsg, status: error.response?.status });
+      return { success: false, error: errMsg };
     }
   }
 

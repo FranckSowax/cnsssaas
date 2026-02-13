@@ -224,28 +224,35 @@ class CampaignService {
     let totalSent = 0;
     let totalFailed = 0;
 
-    // Resolve image URL once for the entire campaign (not per contact)
-    let resolvedImageUrl = null;
-    if (campaign.template.headerType && !['NONE', 'TEXT'].includes(campaign.template.headerType) && campaign.template.headerContent) {
-      resolvedImageUrl = campaign.template.headerContent;
-      // If headerContent is not a valid URL (e.g. it's a header_handle from template creation), fetch the real URL from Meta
-      if (!resolvedImageUrl.startsWith('http')) {
-        logger.info('headerContent is not a URL, fetching image URL from Meta API', {
-          template: campaign.template.name,
-          headerContent: resolvedImageUrl.substring(0, 30) + '...'
-        });
+    // Resolve media for image/video/document header - upload once, reuse media_id for all contacts
+    let resolvedMediaId = null;
+    if (campaign.template.headerType && !['NONE', 'TEXT'].includes(campaign.template.headerType)) {
+      let imageUrl = campaign.template.headerContent;
+
+      // If headerContent is not a URL (e.g. header_handle), fetch the real URL from Meta
+      if (imageUrl && !imageUrl.startsWith('http')) {
+        logger.info('headerContent is not a URL, fetching from Meta API', { template: campaign.template.name });
         try {
-          const metaUrl = await whatsappService.getTemplateImageUrl(campaign.template.name);
-          if (metaUrl) {
-            resolvedImageUrl = metaUrl;
-            logger.info('Resolved template image URL from Meta', { template: campaign.template.name, url: metaUrl.substring(0, 60) + '...' });
+          imageUrl = await whatsappService.getTemplateImageUrl(campaign.template.name);
+        } catch (e) {
+          logger.warn('Error fetching template image URL', { error: e.message });
+          imageUrl = null;
+        }
+      }
+
+      // Download the image and upload to WhatsApp Media API to get a reusable media_id
+      if (imageUrl) {
+        logger.info('Uploading template header media to WhatsApp', { template: campaign.template.name });
+        try {
+          const uploadResult = await whatsappService.downloadAndUploadMedia(imageUrl);
+          if (uploadResult.success) {
+            resolvedMediaId = uploadResult.mediaId;
+            logger.info('Media ready for campaign', { template: campaign.template.name, mediaId: resolvedMediaId });
           } else {
-            logger.warn('Could not resolve image URL from Meta, sending without header', { template: campaign.template.name });
-            resolvedImageUrl = null;
+            logger.warn('Media upload failed, sending without header', { error: uploadResult.error });
           }
         } catch (e) {
-          logger.warn('Error fetching template image URL from Meta', { error: e.message });
-          resolvedImageUrl = null;
+          logger.warn('Error uploading media for campaign', { error: e.message });
         }
       }
     }
@@ -257,7 +264,7 @@ class CampaignService {
           // Use WhatsApp template for broadcast (required to initiate conversations)
           const templateName = campaign.template.name;
           const language = campaign.template.language || 'fr';
-          const sendComponents = this.buildSendComponents(campaign.template, contact, campaign.variables, resolvedImageUrl);
+          const sendComponents = this.buildSendComponents(campaign.template, contact, campaign.variables, resolvedMediaId);
 
           logger.info('Sending template', {
             campaignId: campaign.id,
@@ -445,24 +452,21 @@ class CampaignService {
    * @param {Object} template - Template object from DB
    * @param {Object} contact - Contact object
    * @param {Object} variables - Campaign variables
-   * @param {string|null} resolvedImageUrl - Pre-resolved image URL (from Meta API or DB)
+   * @param {string|null} mediaId - Pre-uploaded WhatsApp media ID for header
    */
-  buildSendComponents(template, contact, variables, resolvedImageUrl = null) {
+  buildSendComponents(template, contact, variables, mediaId = null) {
     const components = [];
 
-    // HEADER component (image/video/document)
-    if (template.headerType && template.headerType !== 'NONE' && template.headerType !== 'TEXT') {
-      const imageUrl = resolvedImageUrl || template.headerContent;
-      if (imageUrl && imageUrl.startsWith('http')) {
-        const mediaType = template.headerType.toLowerCase(); // image, video, document
-        components.push({
-          type: 'header',
-          parameters: [{
-            type: mediaType,
-            [mediaType]: { link: imageUrl }
-          }]
-        });
-      }
+    // HEADER component (image/video/document) - use uploaded media ID
+    if (template.headerType && template.headerType !== 'NONE' && template.headerType !== 'TEXT' && mediaId) {
+      const mediaType = template.headerType.toLowerCase(); // image, video, document
+      components.push({
+        type: 'header',
+        parameters: [{
+          type: mediaType,
+          [mediaType]: { id: mediaId }
+        }]
+      });
     }
 
     // BODY component (text variables)
