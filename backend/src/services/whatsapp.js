@@ -289,6 +289,30 @@ class WhatsAppCloudService {
   }
 
   /**
+   * Récupérer l'URL de l'image header d'un template approuvé depuis Meta
+   * Utile quand headerContent stocké est un header_handle (non utilisable pour l'envoi)
+   */
+  async getTemplateImageUrl(templateName) {
+    try {
+      const wabaId = process.env.WHATSAPP_BUSINESS_ACCOUNT_ID;
+      if (!wabaId) return null;
+
+      const response = await this.client.get(`/${wabaId}/message_templates`, {
+        params: { name: templateName, fields: 'components' }
+      });
+
+      const template = response.data?.data?.[0];
+      if (!template) return null;
+
+      const headerComp = template.components?.find(c => c.type === 'HEADER');
+      return headerComp?.example?.header_url?.[0] || null;
+    } catch (error) {
+      logger.error('Erreur récupération image URL template', { templateName, error: error.message });
+      return null;
+    }
+  }
+
+  /**
    * Vérification du webhook Meta (challenge handshake)
    */
   verifyWebhook(mode, token, challenge) {

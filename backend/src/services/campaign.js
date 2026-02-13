@@ -224,6 +224,32 @@ class CampaignService {
     let totalSent = 0;
     let totalFailed = 0;
 
+    // Resolve image URL once for the entire campaign (not per contact)
+    let resolvedImageUrl = null;
+    if (campaign.template.headerType && !['NONE', 'TEXT'].includes(campaign.template.headerType) && campaign.template.headerContent) {
+      resolvedImageUrl = campaign.template.headerContent;
+      // If headerContent is not a valid URL (e.g. it's a header_handle from template creation), fetch the real URL from Meta
+      if (!resolvedImageUrl.startsWith('http')) {
+        logger.info('headerContent is not a URL, fetching image URL from Meta API', {
+          template: campaign.template.name,
+          headerContent: resolvedImageUrl.substring(0, 30) + '...'
+        });
+        try {
+          const metaUrl = await whatsappService.getTemplateImageUrl(campaign.template.name);
+          if (metaUrl) {
+            resolvedImageUrl = metaUrl;
+            logger.info('Resolved template image URL from Meta', { template: campaign.template.name, url: metaUrl.substring(0, 60) + '...' });
+          } else {
+            logger.warn('Could not resolve image URL from Meta, sending without header', { template: campaign.template.name });
+            resolvedImageUrl = null;
+          }
+        } catch (e) {
+          logger.warn('Error fetching template image URL from Meta', { error: e.message });
+          resolvedImageUrl = null;
+        }
+      }
+    }
+
     for (const batch of batches) {
       try {
         // Send each message individually to track per-contact results
@@ -231,7 +257,7 @@ class CampaignService {
           // Use WhatsApp template for broadcast (required to initiate conversations)
           const templateName = campaign.template.name;
           const language = campaign.template.language || 'fr';
-          const sendComponents = this.buildSendComponents(campaign.template, contact, campaign.variables);
+          const sendComponents = this.buildSendComponents(campaign.template, contact, campaign.variables, resolvedImageUrl);
 
           logger.info('Sending template', {
             campaignId: campaign.id,
@@ -416,27 +442,24 @@ class CampaignService {
 
   /**
    * Build the full components array for sending a template (HEADER + BODY + BUTTONS)
+   * @param {Object} template - Template object from DB
+   * @param {Object} contact - Contact object
+   * @param {Object} variables - Campaign variables
+   * @param {string|null} resolvedImageUrl - Pre-resolved image URL (from Meta API or DB)
    */
-  buildSendComponents(template, contact, variables) {
+  buildSendComponents(template, contact, variables, resolvedImageUrl = null) {
     const components = [];
 
     // HEADER component (image/video/document)
     if (template.headerType && template.headerType !== 'NONE' && template.headerType !== 'TEXT') {
-      const headerImageUrl = template.headerContent;
-      if (headerImageUrl) {
-        // Build full public URL if relative path
-        let imageUrl = headerImageUrl;
-        if (!imageUrl.startsWith('http')) {
-          const baseUrl = process.env.RAILWAY_PUBLIC_DOMAIN
-            ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`
-            : process.env.BASE_URL || 'https://bgfi-wacbt-production.up.railway.app';
-          imageUrl = `${baseUrl}/${headerImageUrl.replace(/^\//, '')}`;
-        }
+      const imageUrl = resolvedImageUrl || template.headerContent;
+      if (imageUrl && imageUrl.startsWith('http')) {
+        const mediaType = template.headerType.toLowerCase(); // image, video, document
         components.push({
           type: 'header',
           parameters: [{
-            type: 'image',
-            image: { link: imageUrl }
+            type: mediaType,
+            [mediaType]: { link: imageUrl }
           }]
         });
       }

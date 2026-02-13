@@ -499,7 +499,8 @@ router.post('/sync-all', authenticate, async (req, res) => {
       const buttonsComp = mt.components?.find(c => c.type === 'BUTTONS');
 
       const headerType = headerComp?.format || 'NONE';
-      const headerContent = headerComp?.format === 'TEXT' ? headerComp.text : (headerComp?.example?.header_handle?.[0] || headerComp?.example?.header_url?.[0] || null);
+      // Prefer header_url (actual accessible URL) over header_handle (opaque token for template creation only)
+      const headerContent = headerComp?.format === 'TEXT' ? headerComp.text : (headerComp?.example?.header_url?.[0] || headerComp?.example?.header_handle?.[0] || null);
       const footer = footerComp?.text || null;
       const buttons = buttonsComp?.buttons?.map(b => ({
         type: b.type, text: b.text,

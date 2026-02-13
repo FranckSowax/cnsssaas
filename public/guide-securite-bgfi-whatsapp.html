@@ -1,0 +1,1051 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guide de Securite - BGFI WhatsApp SaaS Platform</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+        :root {
+            --primary: #1e3a5f;
+            --primary-light: #2a5a8f;
+            --accent: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-500: #6b7280;
+            --gray-700: #374151;
+            --gray-900: #111827;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            color: var(--gray-900);
+            line-height: 1.7;
+            background: white;
+        }
+
+        @media print {
+            body { font-size: 11pt; }
+            .page-break { page-break-before: always; }
+            .no-print { display: none; }
+            .cover-page { height: 100vh; }
+            h2 { page-break-before: always; }
+            h2:first-of-type { page-break-before: auto; }
+            table { font-size: 9pt; }
+        }
+
+        @page {
+            margin: 2cm;
+            @bottom-center { content: "CONFIDENTIEL - BGFI Bank Gabon"; font-size: 8pt; color: #999; }
+            @bottom-right { content: counter(page); font-size: 8pt; color: #999; }
+        }
+
+        /* Cover Page */
+        .cover-page {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1e3a5f 0%, #0f1f33 100%);
+            color: white;
+            text-align: center;
+            padding: 4rem;
+            position: relative;
+        }
+
+        .cover-page::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80"><rect fill="none" stroke="rgba(255,255,255,0.03)" stroke-width="1" x="0" y="0" width="80" height="80"/></svg>') repeat;
+        }
+
+        .cover-logo {
+            width: 120px; height: 120px;
+            background: white;
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 2rem;
+            position: relative;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .cover-logo svg { width: 60px; height: 60px; }
+
+        .cover-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            position: relative;
+            letter-spacing: -0.02em;
+        }
+
+        .cover-subtitle {
+            font-size: 1.3rem;
+            font-weight: 300;
+            opacity: 0.85;
+            margin-bottom: 3rem;
+            position: relative;
+        }
+
+        .cover-meta {
+            position: relative;
+            display: flex;
+            gap: 2rem;
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+
+        .cover-badge {
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            position: relative;
+            margin-top: 2rem;
+            font-size: 0.85rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        /* Content */
+        .content { max-width: 900px; margin: 0 auto; padding: 3rem 2rem; }
+
+        /* TOC */
+        .toc { background: var(--gray-50); border-radius: 16px; padding: 2rem; margin: 2rem 0; }
+        .toc h2 { font-size: 1.3rem; margin-bottom: 1.5rem; color: var(--primary); }
+        .toc-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.6rem 0;
+            border-bottom: 1px dashed var(--gray-200);
+            font-size: 0.95rem;
+        }
+        .toc-item:last-child { border-bottom: none; }
+        .toc-item a { color: var(--gray-700); text-decoration: none; }
+        .toc-item a:hover { color: var(--primary); }
+        .toc-num { color: var(--primary); font-weight: 600; margin-right: 0.75rem; }
+
+        /* Headings */
+        h2 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin: 3rem 0 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 3px solid var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        h2 .section-num {
+            background: var(--primary);
+            color: white;
+            width: 36px; height: 36px;
+            border-radius: 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+
+        h3 {
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: var(--gray-900);
+            margin: 2rem 0 0.75rem;
+        }
+
+        h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--gray-700);
+            margin: 1.5rem 0 0.5rem;
+        }
+
+        p { margin-bottom: 1rem; color: var(--gray-700); }
+
+        /* Info boxes */
+        .box {
+            border-radius: 12px;
+            padding: 1.25rem 1.5rem;
+            margin: 1.5rem 0;
+            font-size: 0.9rem;
+        }
+
+        .box-info { background: #eff6ff; border-left: 4px solid var(--info); }
+        .box-success { background: #f0fdf4; border-left: 4px solid var(--accent); }
+        .box-warning { background: #fffbeb; border-left: 4px solid var(--warning); }
+        .box-danger { background: #fef2f2; border-left: 4px solid var(--danger); }
+
+        .box strong { display: block; margin-bottom: 0.25rem; }
+        .box p { margin-bottom: 0.25rem; }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            font-size: 0.9rem;
+        }
+
+        th {
+            background: var(--primary);
+            color: white;
+            padding: 0.75rem 1rem;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--gray-200);
+            vertical-align: top;
+        }
+
+        tr:nth-child(even) td { background: var(--gray-50); }
+        tr:hover td { background: #f0f7ff; }
+
+        /* Badges */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-green { background: #dcfce7; color: #166534; }
+        .badge-blue { background: #dbeafe; color: #1e40af; }
+        .badge-amber { background: #fef3c7; color: #92400e; }
+        .badge-red { background: #fecaca; color: #991b1b; }
+
+        /* Diagram boxes */
+        .architecture-diagram {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: center;
+            margin: 2rem 0;
+        }
+
+        .arch-box {
+            background: white;
+            border: 2px solid var(--gray-200);
+            border-radius: 12px;
+            padding: 1.25rem;
+            text-align: center;
+            min-width: 160px;
+            flex: 1;
+            max-width: 200px;
+        }
+
+        .arch-box.primary { border-color: var(--primary); background: #f0f5fa; }
+        .arch-box.green { border-color: var(--accent); background: #f0fdf4; }
+        .arch-box.blue { border-color: var(--info); background: #eff6ff; }
+
+        .arch-box h4 { margin: 0 0 0.25rem; font-size: 0.85rem; }
+        .arch-box p { font-size: 0.75rem; margin: 0; }
+
+        .arch-arrow {
+            display: flex;
+            align-items: center;
+            font-size: 1.5rem;
+            color: var(--gray-300);
+        }
+
+        /* Flow list */
+        .flow-list {
+            list-style: none;
+            padding: 0;
+            margin: 1.5rem 0;
+        }
+
+        .flow-list li {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            align-items: flex-start;
+        }
+
+        .flow-num {
+            background: var(--primary);
+            color: white;
+            width: 28px; height: 28px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .flow-content { flex: 1; }
+        .flow-content strong { display: block; color: var(--gray-900); }
+        .flow-content span { font-size: 0.9rem; color: var(--gray-500); }
+
+        /* Checklist */
+        .checklist {
+            list-style: none;
+            padding: 0;
+            margin: 1rem 0;
+        }
+
+        .checklist li {
+            padding: 0.5rem 0;
+            padding-left: 2rem;
+            position: relative;
+            color: var(--gray-700);
+            font-size: 0.9rem;
+        }
+
+        .checklist li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--accent);
+            font-weight: 700;
+            width: 20px;
+            height: 20px;
+            background: #dcfce7;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            top: 0.55rem;
+        }
+
+        /* Scenarios */
+        .scenario {
+            background: var(--gray-50);
+            border-radius: 16px;
+            padding: 2rem;
+            margin: 2rem 0;
+            border: 1px solid var(--gray-200);
+        }
+
+        .scenario-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .scenario-icon {
+            width: 48px; height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .scenario-icon.blue { background: #dbeafe; }
+        .scenario-icon.green { background: #dcfce7; }
+        .scenario-icon.amber { background: #fef3c7; }
+        .scenario-icon.purple { background: #ede9fe; }
+
+        ul { margin: 0.5rem 0 1rem 1.25rem; }
+        li { margin-bottom: 0.35rem; color: var(--gray-700); font-size: 0.9rem; }
+
+        /* Footer */
+        .doc-footer {
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 2px solid var(--gray-200);
+            text-align: center;
+            color: var(--gray-500);
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+
+<!-- ==================== COVER PAGE ==================== -->
+<div class="cover-page">
+    <div class="cover-logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#1e3a5f" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <polyline points="9 12 11 14 15 10" stroke="#10b981" stroke-width="2.5"/>
+        </svg>
+    </div>
+    <h1 class="cover-title">Guide de Securite</h1>
+    <p class="cover-subtitle">BGFI WhatsApp Business Platform<br>Architecture, Protection des Donnees & Scenarios d'Integration</p>
+    <div class="cover-meta">
+        <span>Version 1.0</span>
+        <span>Fevrier 2026</span>
+        <span>BGFI Bank Gabon</span>
+    </div>
+    <div class="cover-badge">CONFIDENTIEL</div>
+</div>
+
+<div class="content">
+
+<!-- ==================== TABLE OF CONTENTS ==================== -->
+<div class="toc">
+    <h2>Table des matieres</h2>
+    <div class="toc-item"><a href="#s1"><span class="toc-num">01</span> Vue d'ensemble de l'architecture</a></div>
+    <div class="toc-item"><a href="#s2"><span class="toc-num">02</span> Authentification & controle d'acces</a></div>
+    <div class="toc-item"><a href="#s3"><span class="toc-num">03</span> Protection des donnees</a></div>
+    <div class="toc-item"><a href="#s4"><span class="toc-num">04</span> Securite des API & communications</a></div>
+    <div class="toc-item"><a href="#s5"><span class="toc-num">05</span> Securite WhatsApp Cloud API</a></div>
+    <div class="toc-item"><a href="#s6"><span class="toc-num">06</span> Conformite & reglementation</a></div>
+    <div class="toc-item"><a href="#s7"><span class="toc-num">07</span> Scenario A : Integration avec les bases de donnees BGFI</a></div>
+    <div class="toc-item"><a href="#s8"><span class="toc-num">08</span> Scenario B : Notifications utilitaires (paiements, alertes)</a></div>
+    <div class="toc-item"><a href="#s9"><span class="toc-num">09</span> Scenario C : Connexion au Core Banking System</a></div>
+    <div class="toc-item"><a href="#s10"><span class="toc-num">10</span> Plan de securisation & roadmap</a></div>
+    <div class="toc-item"><a href="#s11"><span class="toc-num">11</span> FAQ - Questions anticipees DSI</a></div>
+</div>
+
+<!-- ==================== SECTION 1 ==================== -->
+<h2 id="s1"><span class="section-num">1</span> Vue d'ensemble de l'architecture</h2>
+
+<p>La plateforme BGFI WhatsApp SaaS est concue selon une architecture <strong>trois tiers securisee</strong> avec separation stricte des responsabilites :</p>
+
+<div class="architecture-diagram">
+    <div class="arch-box primary">
+        <h4>Client WhatsApp</h4>
+        <p>Chiffrement E2E<br>Protocol Signal</p>
+    </div>
+    <div class="arch-arrow">&rarr;</div>
+    <div class="arch-box blue">
+        <h4>Meta Cloud API</h4>
+        <p>Infrastructure Meta<br>HTTPS / TLS 1.3</p>
+    </div>
+    <div class="arch-arrow">&rarr;</div>
+    <div class="arch-box green">
+        <h4>Backend BGFI</h4>
+        <p>Express.js / Node.js<br>Railway (EU)</p>
+    </div>
+    <div class="arch-arrow">&rarr;</div>
+    <div class="arch-box">
+        <h4>PostgreSQL</h4>
+        <p>Supabase (EU)<br>Chiffrement AES-256</p>
+    </div>
+</div>
+
+<h3>Composants cles</h3>
+<table>
+    <thead>
+        <tr><th>Composant</th><th>Technologie</th><th>Securite</th></tr>
+    </thead>
+    <tbody>
+        <tr><td>Backend API</td><td>Node.js / Express.js</td><td>JWT, Helmet.js, Rate Limiting, CORS strict</td></tr>
+        <tr><td>Base de donnees</td><td>PostgreSQL (Supabase)</td><td>SSL/TLS, Chiffrement au repos, Backups automatiques</td></tr>
+        <tr><td>ORM</td><td>Prisma</td><td>Requetes parametrees (anti-injection SQL)</td></tr>
+        <tr><td>WhatsApp API</td><td>Meta Cloud API v21.0</td><td>HMAC-SHA256, OAuth Bearer, Webhook verification</td></tr>
+        <tr><td>IA / Chatbot</td><td>OpenAI GPT-4 + pgvector</td><td>API Key isolee, pas de donnees bancaires transmises</td></tr>
+        <tr><td>Hebergement</td><td>Railway (region EU)</td><td>HTTPS force, isolation conteneur, logs chiffres</td></tr>
+        <tr><td>Frontend</td><td>React SPA (servi par Express)</td><td>CSP headers, pas de stockage local sensible</td></tr>
+    </tbody>
+</table>
+
+<div class="box box-info">
+    <strong>Principe fondamental : Aucune donnee bancaire sensible</strong>
+    <p>La plateforme ne stocke <strong>aucun</strong> numero de compte, solde, mot de passe bancaire ou donnee financiere. Elle gere uniquement : noms, numeros de telephone, historique de conversations marketing/support, et preferences de communication.</p>
+</div>
+
+<!-- ==================== SECTION 2 ==================== -->
+<h2 id="s2"><span class="section-num">2</span> Authentification & controle d'acces</h2>
+
+<h3>2.1 Authentification JWT</h3>
+<p>L'acces a la plateforme est protege par un systeme d'authentification base sur <strong>JSON Web Tokens (JWT)</strong> :</p>
+
+<ul class="checklist">
+    <li>Tokens signes avec algorithme HS256 et cle secrete de 256 bits minimum</li>
+    <li>Expiration configurable (defaut : 7 jours, ajustable a 24h pour environnement haute securite)</li>
+    <li>Verification de l'existence et du statut actif de l'utilisateur a chaque requete</li>
+    <li>Tokens transmis uniquement via header HTTP Authorization (pas de cookies, pas d'URL)</li>
+    <li>Refresh token avec endpoint dedie et validation complete</li>
+</ul>
+
+<h3>2.2 Controle d'acces base sur les roles (RBAC)</h3>
+<table>
+    <thead>
+        <tr><th>Role</th><th>Acces</th><th>Restrictions</th></tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><span class="badge badge-red">ADMIN</span></td>
+            <td>Acces complet a toutes les fonctionnalites</td>
+            <td>Gestion des utilisateurs, templates, campagnes, configuration systeme</td>
+        </tr>
+        <tr>
+            <td><span class="badge badge-blue">MANAGER</span></td>
+            <td>Gestion des campagnes et contacts</td>
+            <td>Pas d'acces a la gestion des utilisateurs ni a la configuration systeme</td>
+        </tr>
+        <tr>
+            <td><span class="badge badge-green">OPERATOR</span></td>
+            <td>Operations quotidiennes</td>
+            <td>Lecture seule sur la configuration, pas de suppression</td>
+        </tr>
+    </tbody>
+</table>
+
+<h3>2.3 Securite des mots de passe</h3>
+<ul class="checklist">
+    <li>Hachage bcrypt avec 10 rounds de salage (standard OWASP)</li>
+    <li>Mots de passe jamais stockes en clair ni retournes dans les reponses API</li>
+    <li>Comparaison securisee via bcrypt.compare() (protection timing-attack)</li>
+    <li>Changement de mot de passe requiert le mot de passe actuel</li>
+</ul>
+
+<h3>2.4 Protection contre les attaques par force brute</h3>
+<table>
+    <thead>
+        <tr><th>Endpoint</th><th>Limite</th><th>Fenetre</th><th>Action</th></tr>
+    </thead>
+    <tbody>
+        <tr><td>POST /auth/login</td><td>20 tentatives</td><td>15 minutes</td><td>Blocage temporaire IP</td></tr>
+        <tr><td>API generale</td><td>1 000 requetes</td><td>60 secondes</td><td>HTTP 429 Too Many Requests</td></tr>
+        <tr><td>Chatbot IA</td><td>30 messages</td><td>60 secondes</td><td>Throttling par IP</td></tr>
+        <tr><td>Envoi campagne</td><td>10 campagnes</td><td>60 minutes</td><td>File d'attente</td></tr>
+        <tr><td>Upload fichiers</td><td>10 uploads</td><td>60 minutes</td><td>Rejet temporaire</td></tr>
+    </tbody>
+</table>
+
+<!-- ==================== SECTION 3 ==================== -->
+<h2 id="s3"><span class="section-num">3</span> Protection des donnees</h2>
+
+<h3>3.1 Classification des donnees</h3>
+<table>
+    <thead>
+        <tr><th>Categorie</th><th>Donnees</th><th>Sensibilite</th><th>Protection</th></tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Identite</td>
+            <td>Nom, prenom</td>
+            <td><span class="badge badge-amber">Moyenne</span></td>
+            <td>Chiffrement au repos (Supabase TDE)</td>
+        </tr>
+        <tr>
+            <td>Contact</td>
+            <td>Telephone, email</td>
+            <td><span class="badge badge-red">Haute</span></td>
+            <td>Chiffrement au repos, masquage dans les logs</td>
+        </tr>
+        <tr>
+            <td>Conversations</td>
+            <td>Messages chatbot</td>
+            <td><span class="badge badge-amber">Moyenne</span></td>
+            <td>Chiffrement au repos, retention configurable</td>
+        </tr>
+        <tr>
+            <td>Credentials</td>
+            <td>Mots de passe</td>
+            <td><span class="badge badge-red">Critique</span></td>
+            <td>Hachage bcrypt irreversible</td>
+        </tr>
+        <tr>
+            <td>Tokens API</td>
+            <td>JWT, WhatsApp token</td>
+            <td><span class="badge badge-red">Critique</span></td>
+            <td>Variables d'environnement, jamais en base</td>
+        </tr>
+        <tr>
+            <td>Donnees bancaires</td>
+            <td>Aucune</td>
+            <td>-</td>
+            <td>Non stockees par la plateforme</td>
+        </tr>
+    </tbody>
+</table>
+
+<h3>3.2 Chiffrement</h3>
+
+<h4>En transit (TLS/SSL)</h4>
+<ul class="checklist">
+    <li>HTTPS force sur toutes les communications (certificat SSL Railway)</li>
+    <li>TLS 1.2+ pour la connexion a la base de donnees Supabase</li>
+    <li>TLS 1.3 pour les communications avec Meta WhatsApp Cloud API</li>
+    <li>Aucune communication en HTTP non chiffre</li>
+</ul>
+
+<h4>Au repos</h4>
+<ul class="checklist">
+    <li>Supabase : Transparent Data Encryption (AES-256) sur les volumes de stockage</li>
+    <li>Backups automatiques chiffres quotidiens (retention 7 jours)</li>
+    <li>Mots de passe haches avec bcrypt (irrecuperable meme en cas d'acces a la base)</li>
+    <li>Cles API et tokens d'acces en variables d'environnement (jamais dans le code source)</li>
+</ul>
+
+<h3>3.3 Masquage des donnees sensibles</h3>
+<p>Les numeros de telephone sont systematiquement masques dans les logs applicatifs :</p>
+<div class="box box-success">
+    <strong>Exemple de masquage</strong>
+    <p>+24107488716 &rarr; +*******8716 (seuls les 4 derniers chiffres visibles)</p>
+    <p>Les tokens, mots de passe et cles API ne sont jamais enregistres dans les logs.</p>
+</div>
+
+<!-- ==================== SECTION 4 ==================== -->
+<h2 id="s4"><span class="section-num">4</span> Securite des API & communications</h2>
+
+<h3>4.1 En-tetes de securite HTTP</h3>
+<p>Le middleware <strong>Helmet.js</strong> configure automatiquement les en-tetes de protection :</p>
+<table>
+    <thead>
+        <tr><th>En-tete</th><th>Valeur</th><th>Protection</th></tr>
+    </thead>
+    <tbody>
+        <tr><td>X-Content-Type-Options</td><td>nosniff</td><td>Empeche le MIME-type sniffing</td></tr>
+        <tr><td>X-Frame-Options</td><td>DENY</td><td>Protection contre le clickjacking</td></tr>
+        <tr><td>Strict-Transport-Security</td><td>max-age=31536000</td><td>Force HTTPS pour 1 an</td></tr>
+        <tr><td>X-XSS-Protection</td><td>1; mode=block</td><td>Protection XSS navigateur</td></tr>
+        <tr><td>X-Download-Options</td><td>noopen</td><td>Empeche l'ouverture directe des telechargements</td></tr>
+        <tr><td>Referrer-Policy</td><td>no-referrer</td><td>Pas de fuite de referrer</td></tr>
+    </tbody>
+</table>
+
+<h3>4.2 Protection contre les injections</h3>
+<ul class="checklist">
+    <li><strong>SQL Injection</strong> : Prisma ORM genere des requetes parametrees (prepared statements)</li>
+    <li><strong>XSS</strong> : Contenu echappe cote serveur, en-tetes Helmet configurees</li>
+    <li><strong>CSRF</strong> : CORS strict limite aux origines autorisees, tokens JWT (pas de cookies session)</li>
+    <li><strong>Path Traversal</strong> : Validation des chemins de fichiers avec path.resolve()</li>
+    <li><strong>Command Injection</strong> : Aucune execution de commande systeme par l'application</li>
+</ul>
+
+<h3>4.3 Limitation des tailles de requete</h3>
+<ul>
+    <li>Corps JSON : limite a 10 Mo</li>
+    <li>Upload de fichiers (CSV/Excel) : limite a 10 Mo avec validation MIME type</li>
+    <li>Types acceptes : text/csv, application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet</li>
+</ul>
+
+<!-- ==================== SECTION 5 ==================== -->
+<h2 id="s5"><span class="section-num">5</span> Securite WhatsApp Cloud API</h2>
+
+<h3>5.1 Architecture de communication Meta</h3>
+<p>La plateforme communique avec l'API WhatsApp Cloud de Meta via des mecanismes de securite multi-couches :</p>
+
+<ol class="flow-list">
+    <li>
+        <span class="flow-num">1</span>
+        <div class="flow-content">
+            <strong>Authentification OAuth Bearer</strong>
+            <span>Token d'acces permanent genere depuis la console Meta Business, transmis via header HTTP Authorization.</span>
+        </div>
+    </li>
+    <li>
+        <span class="flow-num">2</span>
+        <div class="flow-content">
+            <strong>Verification Webhook HMAC-SHA256</strong>
+            <span>Chaque notification entrante de Meta est signee avec un secret partage. La plateforme verifie la signature avant traitement.</span>
+        </div>
+    </li>
+    <li>
+        <span class="flow-num">3</span>
+        <div class="flow-content">
+            <strong>Chiffrement bout-en-bout WhatsApp</strong>
+            <span>Les messages entre l'utilisateur final et WhatsApp restent chiffres E2E (protocole Signal). La plateforme recoit le contenu dechiffre via l'API Cloud.</span>
+        </div>
+    </li>
+    <li>
+        <span class="flow-num">4</span>
+        <div class="flow-content">
+            <strong>Validation des templates Meta</strong>
+            <span>Tous les messages proactifs (campagnes) passent par des templates pre-approuves par Meta, empechant le spam et les contenus abusifs.</span>
+        </div>
+    </li>
+</ol>
+
+<h3>5.2 Isolation des donnees Meta</h3>
+<div class="box box-info">
+    <strong>Principe de separation</strong>
+    <p>Les tokens d'acces Meta (WHATSAPP_ACCESS_TOKEN, APP_SECRET) sont stockes exclusivement en variables d'environnement sur Railway. Ils ne transitent jamais par le frontend, ne sont jamais enregistres en base de donnees, et ne sont jamais inclus dans les logs.</p>
+</div>
+
+<h3>5.3 Gestion du consentement (Opt-in / Opt-out)</h3>
+<ul class="checklist">
+    <li>Detection automatique des mots-cles de desinscription : STOP, ARRET, DESINSCRIRE</li>
+    <li>Marquage immediat du contact comme UNSUBSCRIBED</li>
+    <li>Exclusion automatique de toutes les campagnes futures</li>
+    <li>Reinscription possible via mot-cle START</li>
+    <li>Footer obligatoire sur chaque template marketing avec mention opt-out</li>
+</ul>
+
+<!-- ==================== SECTION 6 ==================== -->
+<h2 id="s6"><span class="section-num">6</span> Conformite & reglementation</h2>
+
+<h3>6.1 Conformite aux politiques Meta</h3>
+<table>
+    <thead>
+        <tr><th>Exigence Meta</th><th>Implementation</th><th>Statut</th></tr>
+    </thead>
+    <tbody>
+        <tr><td>Templates pre-approuves</td><td>Soumission et validation avant envoi</td><td><span class="badge badge-green">Conforme</span></td></tr>
+        <tr><td>Opt-out utilisateur</td><td>Detection STOP + desinscription auto</td><td><span class="badge badge-green">Conforme</span></td></tr>
+        <tr><td>Fenetre de 24h</td><td>Messages libres uniquement apres message entrant</td><td><span class="badge badge-green">Conforme</span></td></tr>
+        <tr><td>Rate limiting</td><td>80 messages/seconde avec back-off</td><td><span class="badge badge-green">Conforme</span></td></tr>
+        <tr><td>App en mode Live</td><td>Configuration Facebook Developers</td><td><span class="badge badge-green">Conforme</span></td></tr>
+    </tbody>
+</table>
+
+<h3>6.2 Protection des donnees personnelles</h3>
+<p>Dans le contexte reglementaire gabonais et de la zone CEMAC :</p>
+<ul class="checklist">
+    <li>Collecte minimale de donnees (nom, telephone, historique de communication)</li>
+    <li>Pas de collecte de donnees financieres, numeros de compte ou mots de passe bancaires</li>
+    <li>Droit de desinscription immediat et automatise</li>
+    <li>Hebergement des donnees en region UE (Supabase EU, Railway EU)</li>
+    <li>Logs applicatifs avec masquage des donnees personnelles</li>
+    <li>Politique de retention des donnees configurable</li>
+</ul>
+
+<h3>6.3 Audit et tracabilite</h3>
+<ul class="checklist">
+    <li>Journalisation complete de toutes les operations API (Morgan + Winston)</li>
+    <li>Horodatage de chaque action (creation, modification, suppression)</li>
+    <li>Suivi de la derniere connexion de chaque utilisateur</li>
+    <li>Historique complet des campagnes avec statut de chaque message</li>
+    <li>Tracabilite des webhooks WhatsApp entrants et sortants</li>
+</ul>
+
+<!-- ==================== SECTION 7 ==================== -->
+<div class="page-break"></div>
+<h2 id="s7"><span class="section-num">7</span> Scenario A : Integration avec les bases de donnees BGFI</h2>
+
+<div class="scenario">
+    <div class="scenario-header">
+        <div class="scenario-icon blue">&#128450;</div>
+        <div>
+            <h3 style="margin:0">Connexion a une base de donnees BGFI existante</h3>
+            <p style="margin:0;color:var(--gray-500);font-size:0.9rem">Synchronisation des contacts, segments, ou donnees client</p>
+        </div>
+    </div>
+
+    <h4>Architecture recommandee</h4>
+    <p>La plateforme ne doit <strong>jamais acceder directement</strong> a la base de donnees de production de BGFI. L'integration doit se faire via une <strong>API intermediaire (middleware)</strong> controlee par l'equipe IT BGFI.</p>
+
+    <div class="architecture-diagram">
+        <div class="arch-box primary">
+            <h4>BGFI WhatsApp SaaS</h4>
+            <p>Notre plateforme</p>
+        </div>
+        <div class="arch-arrow">&harr;</div>
+        <div class="arch-box green">
+            <h4>API Gateway BGFI</h4>
+            <p>Middleware securise<br>controle par IT BGFI</p>
+        </div>
+        <div class="arch-arrow">&harr;</div>
+        <div class="arch-box">
+            <h4>Base BGFI</h4>
+            <p>Core Banking /<br>CRM / Data Lake</p>
+        </div>
+    </div>
+
+    <h4>Mesures de securite</h4>
+    <ul class="checklist">
+        <li><strong>API Gateway BGFI</strong> : Point d'entree unique, gere par l'equipe IT BGFI</li>
+        <li><strong>Authentification mutuelle (mTLS)</strong> : Certificats client + serveur pour chaque communication</li>
+        <li><strong>IP Whitelisting</strong> : Seule l'IP statique de Railway autorisee a appeler l'API BGFI</li>
+        <li><strong>OAuth 2.0 Client Credentials</strong> : Token de service avec scope limite (lecture contacts, pas d'ecriture bancaire)</li>
+        <li><strong>Chiffrement des donnees en transit</strong> : TLS 1.2+ obligatoire</li>
+        <li><strong>Limitation des champs exposes</strong> : L'API Gateway ne retourne que nom + telephone (jamais de solde, numero de compte, etc.)</li>
+        <li><strong>Rate limiting cote BGFI</strong> : L'API Gateway controle le volume de requetes</li>
+        <li><strong>Journalisation bilaterale</strong> : Logs des deux cotes pour tracabilite complete</li>
+    </ul>
+
+    <h4>Flux de donnees type : Synchronisation contacts</h4>
+    <ol class="flow-list">
+        <li><span class="flow-num">1</span><div class="flow-content"><strong>Demande authentifiee</strong><span>La plateforme envoie une requete GET signee avec token OAuth 2.0 vers l'API Gateway BGFI</span></div></li>
+        <li><span class="flow-num">2</span><div class="flow-content"><strong>Validation par le Gateway</strong><span>L'API Gateway verifie le token, l'IP source, le scope des permissions</span></div></li>
+        <li><span class="flow-num">3</span><div class="flow-content"><strong>Requete filtree</strong><span>Le Gateway interroge la base BGFI avec un SELECT limite aux champs autorises</span></div></li>
+        <li><span class="flow-num">4</span><div class="flow-content"><strong>Reponse minimale</strong><span>Seuls nom + telephone + segment commercial sont retournes (pas de donnees bancaires)</span></div></li>
+        <li><span class="flow-num">5</span><div class="flow-content"><strong>Stockage isole</strong><span>Les contacts sont stockes dans la base dediee de la plateforme WhatsApp (separee de la base bancaire)</span></div></li>
+    </ol>
+
+    <div class="box box-warning">
+        <strong>Responsabilite partagee</strong>
+        <p>L'equipe IT BGFI controle l'API Gateway et decide quelles donnees sont exposees. La plateforme WhatsApp consomme uniquement ce qui est mis a disposition. Aucun acces direct a la base bancaire n'est possible depuis la plateforme.</p>
+    </div>
+</div>
+
+<!-- ==================== SECTION 8 ==================== -->
+<h2 id="s8"><span class="section-num">8</span> Scenario B : Notifications utilitaires (paiements, alertes)</h2>
+
+<div class="scenario">
+    <div class="scenario-header">
+        <div class="scenario-icon green">&#128276;</div>
+        <div>
+            <h3 style="margin:0">Notifications transactionnelles WhatsApp</h3>
+            <p style="margin:0;color:var(--gray-500);font-size:0.9rem">Alertes de paiement, confirmations de virement, notifications de solde</p>
+        </div>
+    </div>
+
+    <h4>Cas d'usage</h4>
+    <ul>
+        <li><strong>Confirmation de virement</strong> : "Votre virement de {{montant}} FCFA a ete effectue avec succes."</li>
+        <li><strong>Alerte de paiement recu</strong> : "Un paiement de {{montant}} FCFA a ete credite sur votre compte."</li>
+        <li><strong>Rappel d'echeance</strong> : "Rappel : votre echeance de credit de {{montant}} FCFA est due le {{date}}."</li>
+        <li><strong>Alerte de securite</strong> : "Connexion detectee depuis un nouvel appareil. Si ce n'est pas vous, contactez le +241..."</li>
+    </ul>
+
+    <h4>Architecture securisee</h4>
+
+    <div class="architecture-diagram">
+        <div class="arch-box">
+            <h4>Core Banking</h4>
+            <p>Evenement de<br>transaction</p>
+        </div>
+        <div class="arch-arrow">&rarr;</div>
+        <div class="arch-box green">
+            <h4>Message Broker</h4>
+            <p>RabbitMQ / Kafka<br>reseau interne BGFI</p>
+        </div>
+        <div class="arch-arrow">&rarr;</div>
+        <div class="arch-box blue">
+            <h4>API Notification</h4>
+            <p>Service intermediaire<br>dans le DMZ BGFI</p>
+        </div>
+        <div class="arch-arrow">&rarr;</div>
+        <div class="arch-box primary">
+            <h4>WhatsApp SaaS</h4>
+            <p>Envoi via template<br>utilitaire Meta</p>
+        </div>
+    </div>
+
+    <h4>Mesures de securite specifiques</h4>
+    <ul class="checklist">
+        <li><strong>Aucun montant ni numero de compte stocke</strong> : Les donnees transactionnelles sont transmises en temps reel et jamais persistees dans la plateforme WhatsApp</li>
+        <li><strong>Templates utilitaires pre-approuves</strong> : Les templates de type UTILITY sont valides par Meta et contiennent des variables generiques ({{1}}, {{2}})</li>
+        <li><strong>Webhook securise avec signature</strong> : L'API de notification BGFI appelle la plateforme via un endpoint dedie, authentifie par API Key + signature HMAC</li>
+        <li><strong>File d'attente avec retry</strong> : En cas d'echec d'envoi WhatsApp, le message est re-tente automatiquement (max 3 fois)</li>
+        <li><strong>Idempotence</strong> : Un identifiant unique par notification empeche les envois en double</li>
+        <li><strong>Audit trail complet</strong> : Chaque notification envoyee est tracee avec : horodatage, destinataire (masque), template utilise, statut de livraison</li>
+    </ul>
+
+    <h4>Endpoint d'integration propose</h4>
+    <div class="box box-info">
+        <strong>POST /api/notifications/send</strong>
+        <p>Authentification : API Key + HMAC-SHA256 signature</p>
+        <p>Payload : { "phone": "+241...", "template": "payment_confirmation", "variables": {"1": "50000 FCFA", "2": "12/02/2026"} }</p>
+        <p>Les donnees sensibles (montant, date) sont transmises comme variables, utilisees pour l'envoi immediat, puis effacees de la memoire (jamais persistees en base).</p>
+    </div>
+
+    <div class="box box-danger">
+        <strong>Regles strictes pour les notifications utilitaires</strong>
+        <p>1. Jamais de numero de compte complet dans le message (uniquement les 4 derniers chiffres)</p>
+        <p>2. Jamais de solde total du compte</p>
+        <p>3. Les montants sont transmis comme variables temporaires, pas stockes</p>
+        <p>4. Le client doit avoir explicitement consenti (opt-in) aux notifications</p>
+    </div>
+</div>
+
+<!-- ==================== SECTION 9 ==================== -->
+<h2 id="s9"><span class="section-num">9</span> Scenario C : Connexion au Core Banking System</h2>
+
+<div class="scenario">
+    <div class="scenario-header">
+        <div class="scenario-icon purple">&#127974;</div>
+        <div>
+            <h3 style="margin:0">Integration avec le systeme bancaire central</h3>
+            <p style="margin:0;color:var(--gray-500);font-size:0.9rem">Consultation de solde, operations via chatbot WhatsApp</p>
+        </div>
+    </div>
+
+    <div class="box box-danger">
+        <strong>Avertissement : Niveau de securite maximal requis</strong>
+        <p>Ce scenario implique l'acces a des donnees bancaires sensibles. Il necessite une validation formelle par la Direction des Risques, la DSI, et la conformite reglementaire avant toute implementation.</p>
+    </div>
+
+    <h4>Architecture Zero Trust recommandee</h4>
+
+    <ol class="flow-list">
+        <li><span class="flow-num">1</span><div class="flow-content"><strong>Verification d'identite renforcee</strong><span>Avant toute consultation bancaire via WhatsApp, le client doit s'authentifier via un OTP (One-Time Password) envoye par SMS au numero enregistre dans le Core Banking.</span></div></li>
+        <li><span class="flow-num">2</span><div class="flow-content"><strong>API Gateway bancaire (DMZ)</strong><span>Un micro-service dedie, heberge dans le reseau interne BGFI (DMZ), sert d'intermediaire unique entre la plateforme WhatsApp et le Core Banking System. Il expose des endpoints en lecture seule.</span></div></li>
+        <li><span class="flow-num">3</span><div class="flow-content"><strong>Authentification mutuelle (mTLS)</strong><span>Communication chiffree avec certificats mutuels entre la plateforme et l'API Gateway bancaire. Les certificats sont emis par la PKI interne BGFI.</span></div></li>
+        <li><span class="flow-num">4</span><div class="flow-content"><strong>Tokenisation des donnees</strong><span>Les numeros de compte sont remplaces par des tokens opaques. Le mapping token ↔ compte est gere exclusivement par le Core Banking (jamais expose a la plateforme WhatsApp).</span></div></li>
+        <li><span class="flow-num">5</span><div class="flow-content"><strong>Reponses ephemeres</strong><span>Les donnees bancaires (solde, releve) sont affichees au client puis immediatement purgees de la memoire de la plateforme. Aucun solde ni historique de transaction n'est stocke dans la base WhatsApp.</span></div></li>
+        <li><span class="flow-num">6</span><div class="flow-content"><strong>Session timeout strict</strong><span>La session bancaire via WhatsApp expire apres 5 minutes d'inactivite. Toute nouvelle consultation necessite une re-authentification.</span></div></li>
+    </ol>
+
+    <h4>Donnees qui NE DOIVENT JAMAIS etre stockees par la plateforme</h4>
+    <table>
+        <thead><tr><th>Donnee</th><th>Stockage autorise</th><th>Raison</th></tr></thead>
+        <tbody>
+            <tr><td>Numero de compte complet</td><td><span class="badge badge-red">INTERDIT</span></td><td>Donnee bancaire confidentielle</td></tr>
+            <tr><td>Solde du compte</td><td><span class="badge badge-red">INTERDIT</span></td><td>Donnee financiere sensible</td></tr>
+            <tr><td>Historique de transactions</td><td><span class="badge badge-red">INTERDIT</span></td><td>Donnee bancaire confidentielle</td></tr>
+            <tr><td>Code PIN / mot de passe bancaire</td><td><span class="badge badge-red">INTERDIT</span></td><td>Credential critique</td></tr>
+            <tr><td>RIB / IBAN</td><td><span class="badge badge-red">INTERDIT</span></td><td>Donnee bancaire confidentielle</td></tr>
+            <tr><td>Nom + telephone du client</td><td><span class="badge badge-green">AUTORISE</span></td><td>Necessaire a la communication WhatsApp</td></tr>
+            <tr><td>Preference de notification</td><td><span class="badge badge-green">AUTORISE</span></td><td>Gestion du consentement</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- ==================== SECTION 10 ==================== -->
+<h2 id="s10"><span class="section-num">10</span> Plan de securisation & roadmap</h2>
+
+<h3>Phase 1 — Fondations (deja en place)</h3>
+<table>
+    <thead><tr><th>Mesure</th><th>Statut</th></tr></thead>
+    <tbody>
+        <tr><td>Authentification JWT avec RBAC</td><td><span class="badge badge-green">Deploye</span></td></tr>
+        <tr><td>Hachage bcrypt des mots de passe</td><td><span class="badge badge-green">Deploye</span></td></tr>
+        <tr><td>HTTPS/TLS force</td><td><span class="badge badge-green">Deploye</span></td></tr>
+        <tr><td>Rate limiting multi-niveaux</td><td><span class="badge badge-green">Deploye</span></td></tr>
+        <tr><td>En-tetes de securite Helmet.js</td><td><span class="badge badge-green">Deploye</span></td></tr>
+        <tr><td>ORM parametrise (anti-injection SQL)</td><td><span class="badge badge-green">Deploye</span></td></tr>
+        <tr><td>Gestion opt-out WhatsApp</td><td><span class="badge badge-green">Deploye</span></td></tr>
+        <tr><td>Masquage telephone dans les logs</td><td><span class="badge badge-green">Deploye</span></td></tr>
+        <tr><td>Chiffrement au repos (Supabase TDE)</td><td><span class="badge badge-green">Deploye</span></td></tr>
+    </tbody>
+</table>
+
+<h3>Phase 2 — Renforcement (en cours)</h3>
+<table>
+    <thead><tr><th>Mesure</th><th>Statut</th><th>Priorite</th></tr></thead>
+    <tbody>
+        <tr><td>Verification signature webhook HMAC-SHA256</td><td><span class="badge badge-amber">Planifie</span></td><td><span class="badge badge-red">Critique</span></td></tr>
+        <tr><td>Politique de complexite mot de passe</td><td><span class="badge badge-amber">Planifie</span></td><td><span class="badge badge-amber">Haute</span></td></tr>
+        <tr><td>Verrouillage de compte apres N echecs</td><td><span class="badge badge-amber">Planifie</span></td><td><span class="badge badge-amber">Haute</span></td></tr>
+        <tr><td>Content Security Policy (CSP)</td><td><span class="badge badge-amber">Planifie</span></td><td><span class="badge badge-amber">Haute</span></td></tr>
+        <tr><td>Singleton PrismaClient (pool optimise)</td><td><span class="badge badge-amber">Planifie</span></td><td><span class="badge badge-blue">Moyenne</span></td></tr>
+    </tbody>
+</table>
+
+<h3>Phase 3 — Integration securisee (a venir)</h3>
+<table>
+    <thead><tr><th>Mesure</th><th>Prerequis</th><th>Priorite</th></tr></thead>
+    <tbody>
+        <tr><td>API Gateway pour integration BGFI</td><td>Validation DSI + cahier des charges</td><td><span class="badge badge-amber">Haute</span></td></tr>
+        <tr><td>Authentification mTLS</td><td>PKI BGFI disponible</td><td><span class="badge badge-amber">Haute</span></td></tr>
+        <tr><td>Endpoint notifications utilitaires</td><td>Templates UTILITY approuves Meta</td><td><span class="badge badge-amber">Haute</span></td></tr>
+        <tr><td>Chiffrement des champs sensibles (AES)</td><td>Cle de chiffrement dediee</td><td><span class="badge badge-blue">Moyenne</span></td></tr>
+        <tr><td>Journalisation centralisee (SIEM)</td><td>Infrastructure SIEM BGFI</td><td><span class="badge badge-blue">Moyenne</span></td></tr>
+        <tr><td>Rotation automatique des secrets</td><td>Vault ou AWS Secrets Manager</td><td><span class="badge badge-blue">Moyenne</span></td></tr>
+    </tbody>
+</table>
+
+<!-- ==================== SECTION 11 ==================== -->
+<div class="page-break"></div>
+<h2 id="s11"><span class="section-num">11</span> FAQ — Questions anticipees DSI & Informaticiens</h2>
+
+<div class="scenario" style="border: none; background: white; padding: 0;">
+
+<h4>Q1 : Quelles donnees bancaires sont stockees ?</h4>
+<div class="box box-success">
+    <strong>Aucune donnee bancaire.</strong>
+    <p>La plateforme ne stocke ni numeros de compte, ni soldes, ni historiques de transactions, ni mots de passe bancaires. Seuls les noms, numeros de telephone et historiques de conversation marketing/support sont conserves.</p>
+</div>
+
+<h4>Q2 : Que se passe-t-il si le token WhatsApp est compromis ?</h4>
+<p>Le token Meta est stocke en variable d'environnement securisee (pas dans le code ni en base). En cas de compromission : revocation immediate depuis la console Meta Business, generation d'un nouveau token, mise a jour de la variable d'environnement. Aucun redemarrage necessaire, la prise d'effet est immediat.</p>
+
+<h4>Q3 : Comment garantir que la plateforme n'accede pas aux donnees bancaires ?</h4>
+<p>Par conception architecturale (<strong>separation des responsabilites</strong>) :</p>
+<ul>
+    <li>La plateforme n'a aucune connaissance de l'existence du Core Banking System</li>
+    <li>En cas d'integration future, un <strong>API Gateway controle par l'equipe IT BGFI</strong> sert d'intermediaire exclusif</li>
+    <li>Le Gateway decide quelles donnees exposer (principe du moindre privilege)</li>
+    <li>Audit de chaque requete des deux cotes</li>
+</ul>
+
+<h4>Q4 : Comment gerer les notifications de paiement sans stocker les montants ?</h4>
+<p>Le flux est de type <strong>"fire and forget"</strong> :</p>
+<ul>
+    <li>Le systeme bancaire envoie une requete avec telephone + variables du template (montant, date)</li>
+    <li>La plateforme injecte les variables dans le template WhatsApp et envoie immediatement</li>
+    <li>Les variables (montant, date) sont en memoire vive uniquement, jamais ecrites en base</li>
+    <li>Seul le statut de livraison (envoye/delivre/lu/echoue) est persiste, sans les variables</li>
+</ul>
+
+<h4>Q5 : Quel est le risque si la base de donnees est compromise ?</h4>
+<p>Impact limite car :</p>
+<ul>
+    <li>Les mots de passe sont haches (bcrypt, irreversible)</li>
+    <li>Aucune donnee bancaire en base</li>
+    <li>Les tokens API Meta et OpenAI ne sont pas en base (variables d'environnement)</li>
+    <li>L'attaquant obtiendrait : noms, telephones, historique de conversations chatbot</li>
+    <li>Mesure d'attenuation : chiffrement des champs telephone/email prevu en Phase 3</li>
+</ul>
+
+<h4>Q6 : Comment la plateforme gere-t-elle la conformite GDPR/donnees personnelles ?</h4>
+<ul>
+    <li>Collecte minimale (nom + telephone uniquement)</li>
+    <li>Droit de desinscription automatise (STOP par WhatsApp)</li>
+    <li>Suppression de contact possible par l'administrateur</li>
+    <li>Masquage des donnees personnelles dans les logs</li>
+    <li>Politique de retention des donnees configurable</li>
+</ul>
+
+<h4>Q7 : Peut-on heberger la plateforme sur les serveurs internes BGFI ?</h4>
+<p><strong>Oui, c'est possible et recommande pour un deploiement en production avancee.</strong> La plateforme est un serveur Node.js standard qui peut etre deploye sur :</p>
+<ul>
+    <li>Un serveur Linux interne (Docker ou bare metal)</li>
+    <li>Un cluster Kubernetes BGFI</li>
+    <li>Un cloud prive (VMware, OpenStack)</li>
+</ul>
+
+<h4>Q8 : Quelle est la disponibilite et la resilience ?</h4>
+<ul>
+    <li>Redemarrage automatique en cas de crash avec zero downtime</li>
+    <li>Replicas en lecture et backups automatiques quotidiens</li>
+    <li>Health check integre (/api/health) pour monitoring externe</li>
+    <li>Logs structures pour integration SIEM (format JSON)</li>
+</ul>
+
+<h4>Q9 : Peut-on auditer le code source ?</h4>
+<div class="box box-success">
+    <strong>Oui, absolument.</strong>
+    <p>Le code source complet est disponible sur le repository GitHub prive (FranckSowax/bgfi-wacbt). L'equipe securite BGFI peut effectuer un audit de code, un test d'intrusion, ou une revue architecturale a tout moment. Nous encourageons cette demarche.</p>
+</div>
+
+<h4>Q10 : Comment s'integrer avec l'Active Directory / LDAP de BGFI ?</h4>
+<p>L'integration SSO est realisable via :</p>
+<ul>
+    <li><strong>SAML 2.0</strong> : Integration avec ADFS (Active Directory Federation Services)</li>
+    <li><strong>OIDC / OAuth 2.0</strong> : Via Azure AD ou Keycloak</li>
+    <li><strong>LDAP direct</strong> : Ajout d'un middleware passport-ldapauth en Node.js</li>
+</ul>
+<p>L'implementation requiert la cooperation de l'equipe IT BGFI pour configurer le fournisseur d'identite.</p>
+
+<h4>Q11 : Quel est le cout de la plateforme en tokens IA ?</h4>
+<p>La plateforme integre un <strong>tableau de bord de suivi de consommation IA</strong> dans les Parametres, affichant en temps reel :</p>
+<ul>
+    <li>Nombre total de tokens consommes (prompt + completion)</li>
+    <li>Cout en FCFA par service (chatbot, embedding, enrichissement, rapports)</li>
+    <li>Historique quotidien sur 30 jours</li>
+    <li>Tarification transparente par modele utilise</li>
+</ul>
+
+</div>
+
+<!-- ==================== FOOTER ==================== -->
+<div class="doc-footer">
+    <p><strong>BGFI WhatsApp Business Platform — Guide de Securite v1.0</strong></p>
+    <p>Document confidentiel — Fevrier 2026</p>
+    <p>Prepare pour la Direction des Systemes d'Information — BGFI Bank Gabon</p>
+    <p style="margin-top: 1rem; font-size: 0.75rem;">Ce document est fourni a titre informatif dans le cadre de l'evaluation de la plateforme BGFI WhatsApp SaaS. Il peut etre mis a jour en fonction de l'evolution de l'architecture et des exigences de securite.</p>
+</div>
+
+</div>
+
+</body>
+</html>
