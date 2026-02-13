@@ -74,7 +74,9 @@ async function enrichConversation(sessionId) {
     return `${role}: ${m.content}`;
   }).join('\n');
 
-  const model = process.env.ENRICHMENT_MODEL || process.env.OPENAI_MODEL || 'gpt-4';
+  // response_format json_object requires gpt-4-turbo, gpt-4o or later (NOT base gpt-4)
+  const baseModel = process.env.ENRICHMENT_MODEL || process.env.OPENAI_MODEL || 'gpt-4';
+  const model = baseModel === 'gpt-4' ? 'gpt-4o' : baseModel;
 
   try {
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -89,7 +91,8 @@ async function enrichConversation(sessionId) {
         max_tokens: 500,
         response_format: { type: 'json_object' },
         messages: [
-          { role: 'system', content: ENRICHMENT_PROMPT + dialogue }
+          { role: 'system', content: ENRICHMENT_PROMPT },
+          { role: 'user', content: dialogue }
         ]
       })
     });
@@ -151,8 +154,8 @@ async function enrichConversation(sessionId) {
 
     return updated;
   } catch (error) {
-    logger.error('Enrichment failed', { sessionId, error: error.message });
-    return null;
+    logger.error('Enrichment failed', { sessionId, error: error.message, stack: error.stack });
+    return { error: error.message };
   }
 }
 
@@ -171,11 +174,16 @@ async function enrichBatch(limit = 50) {
 
   let enriched = 0;
   let failed = 0;
+  let lastError = null;
 
   for (const session of sessions) {
     const result = await enrichConversation(session.id);
-    if (result) enriched++;
-    else failed++;
+    if (result && !result.error) {
+      enriched++;
+    } else {
+      failed++;
+      lastError = result?.error || 'Unknown error';
+    }
 
     // Rate limiting: 500ms entre chaque appel
     if (sessions.indexOf(session) < sessions.length - 1) {
@@ -183,8 +191,8 @@ async function enrichBatch(limit = 50) {
     }
   }
 
-  logger.info('Enrichment batch completed', { enriched, failed, total: sessions.length });
-  return { enriched, failed, total: sessions.length };
+  logger.info('Enrichment batch completed', { enriched, failed, total: sessions.length, lastError });
+  return { enriched, failed, total: sessions.length, lastError };
 }
 
 /**
@@ -276,6 +284,9 @@ Retourne un JSON avec:
 - "keyInsights": paragraphe d'analyse des tendances (3-5 phrases, en francais)
 - "recommendations": paragraphe de recommandations pour ameliorer le service (3-5 phrases, en francais)`;
 
+      const reportBaseModel = process.env.ENRICHMENT_MODEL || process.env.OPENAI_MODEL || 'gpt-4';
+      const reportModel = reportBaseModel === 'gpt-4' ? 'gpt-4o' : reportBaseModel;
+
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -283,18 +294,21 @@ Retourne un JSON avec:
           'Authorization': `Bearer ${apiKey}`
         },
         body: JSON.stringify({
-          model: process.env.ENRICHMENT_MODEL || process.env.OPENAI_MODEL || 'gpt-4',
+          model: reportModel,
           temperature: 0.3,
           max_tokens: 800,
           response_format: { type: 'json_object' },
-          messages: [{ role: 'system', content: reportPrompt }]
+          messages: [
+            { role: 'system', content: reportPrompt },
+            { role: 'user', content: 'Genere le rapport JSON.' }
+          ]
         })
       });
 
       const data = await response.json();
       // Track token usage
       if (data.usage) {
-        logTokenUsage('report', process.env.ENRICHMENT_MODEL || process.env.OPENAI_MODEL || 'gpt-4', data.usage);
+        logTokenUsage('report', reportModel, data.usage);
       }
       if (response.ok && data.choices[0]?.message?.content) {
         const result = JSON.parse(data.choices[0].message.content);

@@ -469,7 +469,10 @@ router.post('/sessions/:id/enrich', authenticate, async (req, res) => {
 
     const result = await enrichmentService.enrichConversation(req.params.id);
     if (!result) {
-      return res.status(500).json({ error: 'Echec de l\'enrichissement' });
+      return res.status(500).json({ error: 'Echec de l\'enrichissement: aucun resultat' });
+    }
+    if (result.error) {
+      return res.status(500).json({ error: `Echec de l'enrichissement: ${result.error}` });
     }
 
     res.json({ success: true, session: result });
