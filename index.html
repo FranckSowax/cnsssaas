@@ -1297,7 +1297,7 @@
             useEffect(() => {
                 if (convTab === 'historique') fetchSessions();
                 if (convTab === 'rapports') fetchReports();
-                if (convTab === 'statistiques') fetchEnrichStats();
+                if (convTab === 'statistiques') { fetchEnrichStats(); fetchReports(); }
             }, [convTab, fetchSessions, fetchReports, fetchEnrichStats]);
 
             const handleGenerateReport = async () => {
@@ -1832,28 +1832,39 @@
 
                                     {(selectedReport.totalConversations > 0) && (
                                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                                            {/* Sentiment bar chart */}
+                                            {/* Sentiment area chart - evolution over time */}
                                             <Card className="p-4">
-                                                <h4 className="font-medium text-gray-900 mb-1">Repartition des sentiments</h4>
-                                                <p className="text-xs text-gray-500 mb-3">Analyse emotionnelle des conversations</p>
+                                                <h4 className="font-medium text-gray-900 mb-1">Evolution des sentiments</h4>
+                                                <p className="text-xs text-gray-500 mb-3">Tendance emotionnelle sur la periode</p>
                                                 {(() => {
-                                                    const sentData = [
-                                                        { name: 'Positif', value: selectedReport.sentimentPositive || 0, key: 'POSITIVE' },
-                                                        { name: 'Neutre', value: selectedReport.sentimentNeutral || 0, key: 'NEUTRAL' },
-                                                        { name: 'Negatif', value: selectedReport.sentimentNegative || 0, key: 'NEGATIVE' },
-                                                        { name: 'Frustre', value: selectedReport.sentimentFrustrated || 0, key: 'FRUSTRATED' }
-                                                    ].filter(d => d.value > 0);
-                                                    return sentData.length > 0 ? (
-                                                        <ResponsiveContainer width="100%" height={200}>
-                                                            <BarChart data={sentData}>
-                                                                <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="#f0f0f0" />
-                                                                <XAxis dataKey="name" tickLine={false} tickMargin={10} axisLine={false} tick={{ fontSize: 12 }} />
-                                                                <Tooltip cursor={false} />
-                                                                <Bar dataKey="value" radius={[4, 4, 0, 0]}>
-                                                                    {sentData.map((entry, i) => <Cell key={i} fill={sentimentChartColors[entry.key] || '#9ca3af'} />)}
-                                                                </Bar>
-                                                            </BarChart>
-                                                        </ResponsiveContainer>
+                                                    const sentTimeSeries = [...reports].filter(r => r.totalConversations > 0).sort((a, b) => new Date(a.date) - new Date(b.date)).map(r => ({
+                                                        date: new Date(r.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }),
+                                                        positif: r.sentimentPositive || 0,
+                                                        neutre: r.sentimentNeutral || 0,
+                                                        negatif: r.sentimentNegative || 0,
+                                                        frustre: r.sentimentFrustrated || 0
+                                                    }));
+                                                    return sentTimeSeries.length > 0 ? (
+                                                        <React.Fragment>
+                                                            <ResponsiveContainer width="100%" height={200}>
+                                                                <AreaChart data={sentTimeSeries} margin={{ left: -20, right: 12 }}>
+                                                                    <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="#f0f0f0" />
+                                                                    <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} tick={{ fontSize: 11 }} />
+                                                                    <YAxis tickLine={false} axisLine={false} tickMargin={8} tickCount={3} tick={{ fontSize: 11 }} />
+                                                                    <Tooltip cursor={false} />
+                                                                    <Area dataKey="positif" type="natural" fill="#22c55e" fillOpacity={0.4} stroke="#22c55e" stackId="a" />
+                                                                    <Area dataKey="neutre" type="natural" fill="#9ca3af" fillOpacity={0.4} stroke="#9ca3af" stackId="a" />
+                                                                    <Area dataKey="negatif" type="natural" fill="#f97316" fillOpacity={0.4} stroke="#f97316" stackId="a" />
+                                                                    <Area dataKey="frustre" type="natural" fill="#ef4444" fillOpacity={0.4} stroke="#ef4444" stackId="a" />
+                                                                </AreaChart>
+                                                            </ResponsiveContainer>
+                                                            <div className="flex flex-wrap gap-3 mt-2">
+                                                                <span className="flex items-center gap-1 text-xs text-gray-600"><span className="w-2.5 h-2.5 rounded-full bg-green-500 inline-block"></span> Positif</span>
+                                                                <span className="flex items-center gap-1 text-xs text-gray-600"><span className="w-2.5 h-2.5 rounded-full bg-gray-400 inline-block"></span> Neutre</span>
+                                                                <span className="flex items-center gap-1 text-xs text-gray-600"><span className="w-2.5 h-2.5 rounded-full bg-orange-500 inline-block"></span> Negatif</span>
+                                                                <span className="flex items-center gap-1 text-xs text-gray-600"><span className="w-2.5 h-2.5 rounded-full bg-red-500 inline-block"></span> Frustre</span>
+                                                            </div>
+                                                        </React.Fragment>
                                                     ) : <p className="text-sm text-gray-400 text-center py-8">Aucune donnee de sentiment</p>;
                                                 })()}
                                             </Card>
@@ -1950,25 +1961,39 @@
                                     </div>
 
                                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                                        {/* Sentiment bar chart */}
+                                        {/* Sentiment area chart - evolution over time */}
                                         <Card className="p-4">
                                             <h4 className="font-medium text-gray-900 mb-1">Sentiments</h4>
-                                            <p className="text-xs text-gray-500 mb-3">Repartition par type de sentiment</p>
+                                            <p className="text-xs text-gray-500 mb-3">Evolution des sentiments sur la periode</p>
                                             {(() => {
-                                                const sentData = breakdownToChartData(enrichStats.sentimentBreakdown, sentimentLabels);
-                                                return sentData.length > 0 ? (
+                                                const sentTimeSeries = [...reports].filter(r => r.totalConversations > 0).sort((a, b) => new Date(a.date) - new Date(b.date)).map(r => ({
+                                                    date: new Date(r.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }),
+                                                    positif: r.sentimentPositive || 0,
+                                                    neutre: r.sentimentNeutral || 0,
+                                                    negatif: r.sentimentNegative || 0,
+                                                    frustre: r.sentimentFrustrated || 0
+                                                }));
+                                                return sentTimeSeries.length > 0 ? (
                                                     <React.Fragment>
                                                         <ResponsiveContainer width="100%" height={220}>
-                                                            <BarChart data={sentData}>
+                                                            <AreaChart data={sentTimeSeries} margin={{ left: -20, right: 12 }}>
                                                                 <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="#f0f0f0" />
-                                                                <XAxis dataKey="name" tickLine={false} tickMargin={10} axisLine={false} tick={{ fontSize: 12 }} />
+                                                                <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} tick={{ fontSize: 11 }} />
+                                                                <YAxis tickLine={false} axisLine={false} tickMargin={8} tickCount={3} tick={{ fontSize: 11 }} />
                                                                 <Tooltip cursor={false} />
-                                                                <Bar dataKey="value" radius={[4, 4, 0, 0]}>
-                                                                    {sentData.map((entry, i) => <Cell key={i} fill={sentimentChartColors[entry.key] || '#9ca3af'} />)}
-                                                                </Bar>
-                                                            </BarChart>
+                                                                <Area dataKey="positif" type="natural" fill="#22c55e" fillOpacity={0.4} stroke="#22c55e" stackId="a" />
+                                                                <Area dataKey="neutre" type="natural" fill="#9ca3af" fillOpacity={0.4} stroke="#9ca3af" stackId="a" />
+                                                                <Area dataKey="negatif" type="natural" fill="#f97316" fillOpacity={0.4} stroke="#f97316" stackId="a" />
+                                                                <Area dataKey="frustre" type="natural" fill="#ef4444" fillOpacity={0.4} stroke="#ef4444" stackId="a" />
+                                                            </AreaChart>
                                                         </ResponsiveContainer>
-                                                        <p className="text-xs text-gray-500 mt-2">Score de satisfaction moyen : {enrichStats.avgSatisfaction?.toFixed(1) || 'N/A'}/5</p>
+                                                        <div className="flex flex-wrap gap-3 mt-2">
+                                                            <span className="flex items-center gap-1 text-xs text-gray-600"><span className="w-2.5 h-2.5 rounded-full bg-green-500 inline-block"></span> Positif</span>
+                                                            <span className="flex items-center gap-1 text-xs text-gray-600"><span className="w-2.5 h-2.5 rounded-full bg-gray-400 inline-block"></span> Neutre</span>
+                                                            <span className="flex items-center gap-1 text-xs text-gray-600"><span className="w-2.5 h-2.5 rounded-full bg-orange-500 inline-block"></span> Negatif</span>
+                                                            <span className="flex items-center gap-1 text-xs text-gray-600"><span className="w-2.5 h-2.5 rounded-full bg-red-500 inline-block"></span> Frustre</span>
+                                                        </div>
+                                                        <p className="text-xs text-gray-500 mt-1">Score de satisfaction moyen : {enrichStats.avgSatisfaction?.toFixed(1) || 'N/A'}/5</p>
                                                     </React.Fragment>
                                                 ) : <p className="text-sm text-gray-400 text-center py-8">Aucune donnee de sentiment</p>;
                                             })()}
