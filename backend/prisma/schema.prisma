@@ -238,6 +238,7 @@ model Message {
   sentAt      DateTime?
   deliveredAt DateTime?
   readAt      DateTime?
+  clickedAt   DateTime?
   failedAt    DateTime?
   error       String?
   
