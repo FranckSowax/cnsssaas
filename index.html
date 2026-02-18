@@ -3400,17 +3400,24 @@
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-2">En-tete (Header)</label>
                                         <div className="flex gap-2 mb-2">
-                                            {['NONE', 'IMAGE', 'TEXT'].map(ht => (
+                                            {['NONE', 'IMAGE', 'VIDEO', 'TEXT'].map(ht => (
                                                 <button key={ht} className={'px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ' + (form.headerType === ht ? 'bg-bgfi-primary text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200')} onClick={() => setForm({...form, headerType: ht, headerContent: ht === 'NONE' ? '' : form.headerContent})}>
-                                                    {ht === 'NONE' ? 'Aucun' : ht === 'IMAGE' ? 'Image' : 'Texte'}
+                                                    {ht === 'NONE' ? 'Aucun' : ht === 'IMAGE' ? 'Image' : ht === 'VIDEO' ? 'Video' : 'Texte'}
                                                 </button>
                                             ))}
                                         </div>
                                         {form.headerType === 'IMAGE' && (
                                             <div>
                                                 <Input label="URL ou chemin de l'image" placeholder="templates/bgfi-welcome.jpeg" value={form.headerContent} onChange={v => setForm({...form, headerContent: v})} />
-                                                <p className="text-xs text-gray-500 mt-1">Chemin relatif dans /public (ex: templates/bgfi-welcome.jpeg) ou URL publique complète.</p>
+                                                <p className="text-xs text-gray-500 mt-1">Chemin relatif dans /public (ex: templates/bgfi-welcome.jpeg) ou URL publique complete.</p>
                                                 {form.headerContent && <div className="mt-2 rounded-lg overflow-hidden border border-gray-200 max-w-xs"><img src={form.headerContent.startsWith('http') ? form.headerContent : '/' + form.headerContent} alt="Preview" className="w-full h-auto" onError={e => e.target.style.display='none'} /></div>}
+                                            </div>
+                                        )}
+                                        {form.headerType === 'VIDEO' && (
+                                            <div>
+                                                <Input label="Chemin de la video" placeholder="bgfi-pdg-vision.mp4" value={form.headerContent} onChange={v => setForm({...form, headerContent: v})} />
+                                                <p className="text-xs text-gray-500 mt-1">Chemin relatif dans /public (ex: bgfi-pdg-vision.mp4). Format MP4 uniquement.</p>
+                                                {form.headerContent && <div className="mt-2 rounded-lg overflow-hidden border border-gray-200 max-w-xs"><video src={form.headerContent.startsWith('http') ? form.headerContent : '/' + form.headerContent} className="w-full h-auto" controls onError={e => e.target.style.display='none'} /></div>}
                                             </div>
                                         )}
                                         {form.headerType === 'TEXT' && (
@@ -3468,9 +3475,9 @@
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-2">En-tete (Header)</label>
                                         <div className="flex gap-2 mb-2">
-                                            {['NONE', 'IMAGE', 'TEXT'].map(ht => (
+                                            {['NONE', 'IMAGE', 'VIDEO', 'TEXT'].map(ht => (
                                                 <button key={ht} className={'px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ' + (dupForm.headerType === ht ? 'bg-bgfi-primary text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200')} onClick={() => setDupForm({...dupForm, headerType: ht, headerContent: ht === 'NONE' ? '' : dupForm.headerContent})}>
-                                                    {ht === 'NONE' ? 'Aucun' : ht === 'IMAGE' ? 'Image' : 'Texte'}
+                                                    {ht === 'NONE' ? 'Aucun' : ht === 'IMAGE' ? 'Image' : ht === 'VIDEO' ? 'Video' : 'Texte'}
                                                 </button>
                                             ))}
                                         </div>
@@ -3479,6 +3486,13 @@
                                                 <Input label="URL ou chemin de l'image" placeholder="templates/bgfi-welcome.jpeg" value={dupForm.headerContent} onChange={v => setDupForm({...dupForm, headerContent: v})} />
                                                 <p className="text-xs text-gray-500 mt-1">Chemin relatif dans /public ou URL publique.</p>
                                                 {dupForm.headerContent && <div className="mt-2 rounded-lg overflow-hidden border border-gray-200 max-w-xs"><img src={dupForm.headerContent.startsWith('http') ? dupForm.headerContent : '/' + dupForm.headerContent} alt="Preview" className="w-full h-auto" onError={e => e.target.style.display='none'} /></div>}
+                                            </div>
+                                        )}
+                                        {dupForm.headerType === 'VIDEO' && (
+                                            <div>
+                                                <Input label="Chemin de la video" placeholder="bgfi-pdg-vision.mp4" value={dupForm.headerContent} onChange={v => setDupForm({...dupForm, headerContent: v})} />
+                                                <p className="text-xs text-gray-500 mt-1">Chemin relatif dans /public (ex: bgfi-pdg-vision.mp4). Format MP4.</p>
+                                                {dupForm.headerContent && <div className="mt-2 rounded-lg overflow-hidden border border-gray-200 max-w-xs"><video src={dupForm.headerContent.startsWith('http') ? dupForm.headerContent : '/' + dupForm.headerContent} className="w-full h-auto" controls onError={e => e.target.style.display='none'} /></div>}
                                             </div>
                                         )}
                                         {dupForm.headerType === 'TEXT' && <Input label="Texte de l'en-tete" value={dupForm.headerContent} onChange={v => setDupForm({...dupForm, headerContent: v})} />}
