@@ -95,47 +95,78 @@ app.use('/api/analytics', analyticsRoutes);
 app.use('/api/webhooks', webhookRoutes);
 
 // ============================================
-// Tracking redirect: GET /t/:trackingId
-// Enregistre le clic puis redirige vers l'URL cible
+// Tracking redirect: GET /t/:trackingId/:buttonIndex?
+// Enregistre le clic sur un bouton puis redirige vers l'URL cible
+// Supporte multi-boutons (0, 1, 2)
 // ============================================
-app.get('/t/:trackingId', async (req, res) => {
+app.get('/t/:trackingId/:buttonIndex?', async (req, res) => {
+  const fallback = process.env.TRACKING_FALLBACK_URL || 'https://bgfixstudia.com/';
   try {
     const { PrismaClient } = require('@prisma/client');
     const prisma = new PrismaClient();
     const { trackingId } = req.params;
+    const buttonIndex = parseInt(req.params.buttonIndex) || 0;
 
     const message = await prisma.message.findFirst({
       where: { trackingId },
-      include: { campaign: { select: { variables: true } } }
+      include: {
+        campaign: { select: { variables: true, template: { select: { buttons: true } } } }
+      }
     });
 
     if (!message) {
       await prisma.$disconnect();
-      return res.redirect(process.env.TRACKING_FALLBACK_URL || 'https://bgfixstudia.com/');
+      return res.redirect(fallback);
     }
 
-    // Enregistrer le clic (une seule fois par message)
-    if (!message.clickedAt) {
+    // Enregistrer le clic par bouton (clickedButtons = [{index, clickedAt}])
+    const clickedButtons = Array.isArray(message.clickedButtons) ? message.clickedButtons : [];
+    const alreadyClicked = clickedButtons.some(c => c.index === buttonIndex);
+
+    if (!alreadyClicked) {
+      clickedButtons.push({ index: buttonIndex, clickedAt: new Date().toISOString() });
+      const updateData = { clickedButtons };
+
+      // Premier clic tous boutons confondus → marquer clickedAt + incrementer compteur campagne
+      if (!message.clickedAt) {
+        updateData.clickedAt = new Date();
+      }
+
       await prisma.message.update({
         where: { id: message.id },
-        data: { clickedAt: new Date() }
+        data: updateData
       });
-      if (message.campaignId) {
+
+      if (message.campaignId && !message.clickedAt) {
         await prisma.campaign.update({
           where: { id: message.campaignId },
           data: { clicked: { increment: 1 } }
         });
       }
-      logger.info('Click tracked', { trackingId, campaignId: message.campaignId });
+      logger.info('Click tracked', { trackingId, buttonIndex, campaignId: message.campaignId });
     }
 
-    // Rediriger vers l'URL cible
-    const targetUrl = message.campaign?.variables?.buttonUrl || process.env.TRACKING_FALLBACK_URL || 'https://bgfixstudia.com/';
+    // Trouver l'URL de redirection pour ce bouton
+    let targetUrl = fallback;
+    const buttons = message.campaign?.template?.buttons;
+    if (Array.isArray(buttons) && buttons[buttonIndex]) {
+      targetUrl = buttons[buttonIndex].redirectUrl || fallback;
+    }
+    // Fallback: variable buttonUrls (tableau) ou buttonUrl (string)
+    if (targetUrl === fallback && message.campaign?.variables) {
+      const vars = message.campaign.variables;
+      if (Array.isArray(vars.buttonUrls) && vars.buttonUrls[buttonIndex]) {
+        targetUrl = vars.buttonUrls[buttonIndex];
+      } else if (vars.buttonUrl) {
+        targetUrl = vars.buttonUrl;
+      }
+    }
+
     await prisma.$disconnect();
     res.redirect(targetUrl);
   } catch (err) {
     logger.error('Tracking redirect error', { error: err.message, trackingId: req.params.trackingId });
-    res.redirect(process.env.TRACKING_FALLBACK_URL || 'https://bgfixstudia.com/');
+    res.redirect(fallback);
   }
 });
 
@@ -158,7 +189,8 @@ async function runAutoMigrations() {
     const migrations = [
       'ALTER TABLE "messages" ADD COLUMN IF NOT EXISTS "clickedAt" TIMESTAMP(3)',
       'ALTER TABLE "messages" ADD COLUMN IF NOT EXISTS "trackingId" TEXT',
-      'CREATE UNIQUE INDEX IF NOT EXISTS "messages_trackingId_key" ON "messages"("trackingId")'
+      'CREATE UNIQUE INDEX IF NOT EXISTS "messages_trackingId_key" ON "messages"("trackingId")',
+      'ALTER TABLE "messages" ADD COLUMN IF NOT EXISTS "clickedButtons" JSONB'
     ];
     for (const sql of migrations) {
       await prisma.$executeRawUnsafe(sql);

@@ -557,7 +557,9 @@
 
         const CampaignDetailView = ({ campaign, onBack, onSend, onDuplicate, templates }) => {
             const { data: msgData, loading: msgLoading } = useApi('/campaigns/' + campaign.id + '/messages?limit=500');
+            const { data: statsData } = useApi('/campaigns/' + campaign.id + '/stats');
             const messages = msgData?.data || [];
+            const buttonStats = statsData?.buttonStats || [];
 
             const c = campaign;
             const totalSent = c.sent || 0;
@@ -596,6 +598,30 @@
                         <Card className="text-center"><p className="text-lg sm:text-2xl font-bold text-amber-700">{formatNum(c.clicked || 0)}</p><p className="text-xs text-amber-600 mt-1">Cliques ({clickRate}%)</p></Card>
                         <Card className="text-center col-span-2 sm:col-span-1"><p className="text-lg sm:text-2xl font-bold text-red-700">{formatNum(c.failed || 0)}</p><p className="text-xs text-red-600 mt-1">Echoues</p></Card>
                     </div>
+
+                    {buttonStats.length > 0 && (
+                    <Card>
+                        <h3 className="text-sm font-semibold text-gray-700 mb-3">Clics par bouton</h3>
+                        <div className="space-y-2">
+                            {buttonStats.filter(b => b.type === 'URL').map(b => {
+                                const rate = totalSent > 0 ? ((b.clicks / totalSent) * 100).toFixed(1) : 0;
+                                return (
+                                    <div key={b.index} className="flex items-center justify-between bg-amber-50 rounded-lg px-4 py-3">
+                                        <div className="flex items-center gap-2">
+                                            <Icons.MousePointer className="w-4 h-4 text-amber-600" />
+                                            <span className="text-sm font-medium text-gray-800">{b.text}</span>
+                                            {b.redirectUrl && <span className="text-xs text-gray-400 truncate max-w-[200px]">{b.redirectUrl}</span>}
+                                        </div>
+                                        <div className="text-right">
+                                            <span className="text-lg font-bold text-amber-700">{b.clicks}</span>
+                                            <span className="text-xs text-amber-600 ml-1">({rate}%)</span>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </Card>
+                    )}
 
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
                         <div className="text-sm"><span className="text-gray-500">Creee le</span><p className="font-medium text-gray-900">{c.createdAt ? new Date(c.createdAt).toLocaleString('fr-FR') : '-'}</p></div>
@@ -3447,7 +3473,7 @@
                                         {form.buttons.length < 3 && <Button variant="secondary" size="sm" icon={Icons.Plus} onClick={() => setForm({...form, buttons: [...form.buttons, { type: 'URL', text: '', url: '' }]})}>Ajouter un bouton</Button>}
                                     </div>
 
-                                    <div className="bg-blue-50 p-4 rounded-xl"><p className="text-sm text-blue-800"><strong>Note :</strong> Les templates doivent etre approuves par Meta avant utilisation (24-48h). L'image est declaree au template, mais l'URL reelle est envoyee a chaque campagne.</p></div>
+                                    <div className="bg-blue-50 p-4 rounded-xl"><p className="text-sm text-blue-800"><strong>Note :</strong> Les templates doivent etre approuves par Meta avant utilisation (24-48h). Les boutons URL sont automatiquement configures avec le tracking des clics.</p></div>
                                 </div>
                                 <div className="p-6 border-t border-gray-200 flex justify-end gap-3">
                                     <Button variant="secondary" onClick={() => setShowCreateModal(false)}>Annuler</Button>
@@ -3512,7 +3538,7 @@
                                             <div key={i} className="flex gap-2 mb-2 items-end">
                                                 <Select label={i === 0 ? 'Type' : ''} value={btn.type} onChange={v => { const nb = [...dupForm.buttons]; nb[i] = {...nb[i], type: v}; setDupForm({...dupForm, buttons: nb}); }} options={[{ value: 'URL', label: 'Lien URL' }, { value: 'PHONE_NUMBER', label: 'Telephone' }, { value: 'QUICK_REPLY', label: 'Reponse rapide' }]} />
                                                 <Input label={i === 0 ? 'Texte' : ''} placeholder="Decouvrir" value={btn.text} onChange={v => { const nb = [...dupForm.buttons]; nb[i] = {...nb[i], text: v}; setDupForm({...dupForm, buttons: nb}); }} />
-                                                {btn.type === 'URL' && <Input label={i === 0 ? 'URL' : ''} placeholder="https://example.com" value={btn.url || ''} onChange={v => { const nb = [...dupForm.buttons]; nb[i] = {...nb[i], url: v}; setDupForm({...dupForm, buttons: nb}); }} />}
+                                                {btn.type === 'URL' && <Input label={i === 0 ? 'URL de redirection' : ''} placeholder="https://example.com" value={btn.redirectUrl || btn.url || ''} onChange={v => { const nb = [...dupForm.buttons]; nb[i] = {...nb[i], url: v, redirectUrl: undefined}; setDupForm({...dupForm, buttons: nb}); }} />}
                                                 {btn.type === 'PHONE_NUMBER' && <Input label={i === 0 ? 'Tel.' : ''} placeholder="+24107488716" value={btn.phone || ''} onChange={v => { const nb = [...dupForm.buttons]; nb[i] = {...nb[i], phone: v}; setDupForm({...dupForm, buttons: nb}); }} />}
                                                 <button className="text-red-500 hover:text-red-700 p-2 mb-0.5" onClick={() => setDupForm({...dupForm, buttons: dupForm.buttons.filter((_, j) => j !== i)})}><Icons.Trash2 /></button>
                                             </div>

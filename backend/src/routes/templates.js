@@ -10,6 +10,23 @@ const { templatesTotal } = require('../utils/metrics');
 
 const prisma = new PrismaClient();
 
+// Helper: auto-convertir les boutons URL en URL de tracking
+// Stocke l'URL originale dans redirectUrl et remplace par l'URL de tracking
+const TRACKING_BASE = process.env.TRACKING_BASE_URL || (process.env.RAILWAY_PUBLIC_DOMAIN
+  ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}/t/{{1}}`
+  : 'https://bgfi-wacbt-production.up.railway.app/t/{{1}}');
+
+function applyTrackingToButtons(buttons) {
+  if (!buttons || !Array.isArray(buttons)) return buttons;
+  return buttons.map(btn => {
+    if (btn.type === 'URL' && btn.url && !btn.url.includes('/t/{{1}}')) {
+      // Sauvegarder l'URL originale comme redirectUrl, remplacer par tracking
+      return { ...btn, redirectUrl: btn.url, url: TRACKING_BASE };
+    }
+    return btn;
+  });
+}
+
 // ============================================
 // GET /api/templates - Lister les templates
 // ============================================
@@ -186,6 +203,9 @@ router.post('/', authenticate, authorize(['template:create']), async (req, res) 
       }
     }
 
+    // Auto-tracking: convertir les boutons URL en liens de tracking
+    const trackedButtons = applyTrackingToButtons(buttons);
+
     // Créer le template dans la base de données
     const template = await prisma.template.create({
       data: {
@@ -197,7 +217,7 @@ router.post('/', authenticate, authorize(['template:create']), async (req, res) 
         language,
         headerType: headerType || 'NONE',
         headerContent: headerContent || null,
-        buttons: buttons || null,
+        buttons: trackedButtons || null,
         footer: footer || null,
         status: 'PENDING'
       }
@@ -212,7 +232,7 @@ router.post('/', authenticate, authorize(['template:create']), async (req, res) 
       headerType: headerType || 'NONE',
       headerContent,
       headerHandle,
-      buttons: buttons || null,
+      buttons: trackedButtons || null,
       footer: footer || null
     });
 
@@ -314,7 +334,8 @@ router.post('/:id/duplicate', authenticate, authorize(['template:create']), asyn
     const variables = variableMatches.map((_, index) => `var${index + 1}`);
     const newHeaderType = headerType !== undefined ? headerType : (source.headerType || 'NONE');
     const newHeaderContent = headerContent !== undefined ? headerContent : source.headerContent;
-    const newButtons = buttons !== undefined ? buttons : source.buttons;
+    const rawButtons = buttons !== undefined ? buttons : source.buttons;
+    const newButtons = applyTrackingToButtons(rawButtons);
     const newFooter = footer !== undefined ? footer : source.footer;
 
     // Upload media header if needed

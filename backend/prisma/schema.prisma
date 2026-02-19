@@ -236,12 +236,13 @@ model Message {
   trackingId  String?       @unique // UUID for click tracking redirect
 
   // Timestamps
-  sentAt      DateTime?
-  deliveredAt DateTime?
-  readAt      DateTime?
-  clickedAt   DateTime?
-  failedAt    DateTime?
-  error       String?
+  sentAt         DateTime?
+  deliveredAt    DateTime?
+  readAt         DateTime?
+  clickedAt      DateTime?
+  clickedButtons Json?       // [{index: 0, clickedAt: "..."}, ...]
+  failedAt       DateTime?
+  error          String?
   
   createdAt   DateTime      @default(now())
   

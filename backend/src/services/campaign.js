@@ -368,7 +368,10 @@ class CampaignService {
   }
 
   async getCampaignStats(campaignId) {
-    const campaign = await prisma.campaign.findUnique({ where: { id: campaignId } });
+    const campaign = await prisma.campaign.findUnique({
+      where: { id: campaignId },
+      include: { template: { select: { buttons: true } } }
+    });
     if (!campaign) throw new Error('Campagne non trouvée');
 
     const messages = await prisma.message.groupBy({
@@ -376,6 +379,31 @@ class CampaignService {
       where: { campaignId },
       _count: { status: true }
     });
+
+    // Calculer les clics par bouton
+    const clickedMessages = await prisma.message.findMany({
+      where: { campaignId, clickedButtons: { not: null } },
+      select: { clickedButtons: true }
+    });
+
+    const buttonClicks = {};
+    clickedMessages.forEach(msg => {
+      const clicks = Array.isArray(msg.clickedButtons) ? msg.clickedButtons : [];
+      clicks.forEach(c => {
+        const idx = c.index ?? 0;
+        buttonClicks[idx] = (buttonClicks[idx] || 0) + 1;
+      });
+    });
+
+    // Nommer les boutons à partir du template
+    const buttons = Array.isArray(campaign.template?.buttons) ? campaign.template.buttons : [];
+    const buttonStats = buttons.map((btn, index) => ({
+      index,
+      text: btn.text || `Bouton ${index + 1}`,
+      type: btn.type,
+      redirectUrl: btn.redirectUrl || btn.url || null,
+      clicks: buttonClicks[index] || 0
+    }));
 
     const stats = {
       total: campaign.sent,
@@ -388,7 +416,8 @@ class CampaignService {
         delivery: campaign.sent > 0 ? ((campaign.delivered / campaign.sent) * 100).toFixed(2) : 0,
         open: campaign.delivered > 0 ? ((campaign.read / campaign.delivered) * 100).toFixed(2) : 0,
         click: campaign.read > 0 ? ((campaign.clicked / campaign.read) * 100).toFixed(2) : 0
-      }
+      },
+      buttonStats
     };
 
     messages.forEach(m => {
@@ -484,12 +513,12 @@ class CampaignService {
       components.push({ type: 'body', parameters: bodyParams });
     }
 
-    // BUTTON components (dynamic URL suffix → tracking redirect)
+    // BUTTON components (dynamic URL suffix → tracking redirect per bouton)
     if (template.buttons && Array.isArray(template.buttons)) {
       template.buttons.forEach((btn, index) => {
         if (btn.type === 'URL' && btn.url && btn.url.includes('{{1}}')) {
-          // Utiliser le trackingId comme suffixe dynamique pour le suivi des clics
-          const suffix = trackingId || (variables?.buttonUrl || '');
+          // trackingId/buttonIndex pour identifier quel bouton est cliqué
+          const suffix = trackingId ? `${trackingId}/${index}` : (variables?.buttonUrl || '');
           components.push({
             type: 'button',
             sub_type: 'url',
