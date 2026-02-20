@@ -8,7 +8,9 @@ services:
   # Application Node.js (API + Frontend)
   # ============================================
   app:
-    build: .
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile
     container_name: bgfi-whatsapp-app
     env_file: .env
     environment:
