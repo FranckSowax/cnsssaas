@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guide de Deploiement On-Premise - BGFI WhatsApp Platform</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        :root {
+            --primary: #1e3a5f; --primary-dark: #0f1f33; --accent: #10b981; --accent-dark: #059669;
+            --gold: #d4a843; --gold-light: #f5ecd3;
+            --danger: #ef4444; --warning: #f59e0b; --info: #3b82f6;
+            --g50: #f9fafb; --g100: #f3f4f6; --g200: #e5e7eb; --g300: #d1d5db;
+            --g500: #6b7280; --g700: #374151; --g900: #111827;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; color: var(--g900); line-height: 1.7; background: #fff; }
+        @media print {
+            body { font-size: 10.5pt; }
+            .page-break { page-break-before: always; }
+            .no-print { display: none; }
+            .cover { min-height: auto; padding: 3rem 2rem; }
+            h2 { page-break-before: always; }
+            h2:first-of-type { page-break-before: auto; }
+            table { font-size: 9pt; }
+            pre { font-size: 8pt; }
+        }
+        @page { margin: 1.8cm; }
+
+        .cover {
+            min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center;
+            background: linear-gradient(160deg, #0f1f33 0%, #1e3a5f 50%, #2a5a8f 100%);
+            color: white; text-align: center; padding: 4rem; position: relative; overflow: hidden;
+        }
+        .cover::after {
+            content: ''; position: absolute; top: -50%; right: -30%; width: 80%; height: 200%;
+            background: radial-gradient(ellipse, rgba(212,168,67,0.08) 0%, transparent 70%);
+        }
+        .cover-badge-top { position: relative; z-index: 1; font-size: 0.7rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--gold); margin-bottom: 3rem; font-weight: 600; }
+        .cover h1 { position: relative; z-index: 1; font-size: 2.5rem; font-weight: 900; letter-spacing: -0.03em; margin-bottom: 0.5rem; }
+        .cover h1 span { color: var(--gold); }
+        .cover .sub { position: relative; z-index: 1; font-size: 1.1rem; font-weight: 300; opacity: 0.8; margin-bottom: 3rem; max-width: 650px; }
+        .cover-grid { position: relative; z-index: 1; display: flex; gap: 1.5rem; margin-bottom: 3rem; flex-wrap: wrap; justify-content: center; }
+        .cover-stat { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); border-radius: 16px; padding: 1.25rem 1.75rem; min-width: 140px; }
+        .cover-stat .num { font-size: 1.5rem; font-weight: 800; color: var(--gold); }
+        .cover-stat .label { font-size: 0.7rem; opacity: 0.6; margin-top: 0.25rem; }
+        .cover-conf { position: relative; z-index: 1; margin-top: 2rem; border: 1px solid rgba(212,168,67,0.3); color: var(--gold); padding: 0.6rem 1.5rem; border-radius: 8px; font-size: 0.75rem; letter-spacing: 0.15em; text-transform: uppercase; }
+        .cover-footer { position: relative; z-index: 1; display: flex; gap: 2rem; font-size: 0.8rem; opacity: 0.5; margin-top: 2rem; }
+
+        .content { max-width: 900px; margin: 0 auto; padding: 3rem 2rem; }
+        h2 { font-size: 1.5rem; font-weight: 700; color: var(--primary); margin: 3rem 0 1.5rem; padding-bottom: 0.75rem; border-bottom: 3px solid var(--primary); }
+        h3 { font-size: 1.15rem; font-weight: 600; color: var(--g900); margin: 2rem 0 0.75rem; }
+        h4 { font-size: 1rem; font-weight: 600; color: var(--g700); margin: 1.5rem 0 0.5rem; }
+        p { margin-bottom: 1rem; color: var(--g700); font-size: 0.95rem; }
+        ul, ol { margin: 0.75rem 0 1.25rem 1.5rem; color: var(--g700); font-size: 0.95rem; }
+        li { margin-bottom: 0.5rem; }
+
+        table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; font-size: 0.9rem; }
+        th { background: var(--primary); color: white; padding: 0.75rem 1rem; text-align: left; font-weight: 600; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; }
+        td { padding: 0.75rem 1rem; border-bottom: 1px solid var(--g200); vertical-align: top; }
+        tr:nth-child(even) td { background: var(--g50); }
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+        .font-bold { font-weight: 700; }
+        .font-mono { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.85em; }
+
+        pre {
+            background: #1e293b; color: #e2e8f0; padding: 1.25rem 1.5rem; border-radius: 10px;
+            font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace; font-size: 0.82rem;
+            overflow-x: auto; margin: 1rem 0 1.5rem; line-height: 1.6;
+        }
+        code {
+            background: var(--g100); color: var(--primary); padding: 0.15em 0.4em; border-radius: 4px;
+            font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.85em;
+        }
+        pre code { background: none; color: inherit; padding: 0; }
+        .cmd { color: var(--accent); }
+        .comment { color: #64748b; }
+        .string { color: #fbbf24; }
+
+        .box { border-radius: 12px; padding: 1.25rem 1.5rem; margin: 1.5rem 0; font-size: 0.9rem; }
+        .box-info { background: #eff6ff; border-left: 4px solid var(--info); }
+        .box-success { background: #f0fdf4; border-left: 4px solid var(--accent); }
+        .box-warning { background: #fffbeb; border-left: 4px solid var(--warning); }
+        .box-danger { background: #fef2f2; border-left: 4px solid var(--danger); }
+        .box-gold { background: var(--gold-light); border-left: 4px solid var(--gold); }
+        .box strong { display: block; margin-bottom: 0.25rem; }
+        .box p { margin-bottom: 0.25rem; }
+
+        .step-num {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 32px; height: 32px; background: var(--primary); color: white;
+            border-radius: 50%; font-weight: 700; font-size: 0.85rem; margin-right: 0.75rem;
+            flex-shrink: 0;
+        }
+        .step-title { display: flex; align-items: center; margin: 2rem 0 1rem; }
+        .step-title h3 { margin: 0; }
+
+        .arch-diagram {
+            background: var(--g50); border: 2px solid var(--g200); border-radius: 16px;
+            padding: 2rem; margin: 1.5rem 0; text-align: center; font-size: 0.8rem;
+            font-family: 'SF Mono', monospace; line-height: 2;
+        }
+
+        .check-list { list-style: none; margin-left: 0; padding-left: 0; }
+        .check-list li { padding: 0.5rem 0; padding-left: 2rem; position: relative; }
+        .check-list li::before {
+            content: '☐'; position: absolute; left: 0; color: var(--primary);
+            font-size: 1.1rem; font-weight: 700;
+        }
+
+        .toc { background: var(--g50); border-radius: 12px; padding: 1.5rem 2rem; margin: 2rem 0; }
+        .toc h3 { margin-top: 0; color: var(--primary); }
+        .toc ol { counter-reset: toc; list-style: none; margin-left: 0; padding-left: 0; }
+        .toc li { counter-increment: toc; padding: 0.35rem 0; border-bottom: 1px solid var(--g200); }
+        .toc li:last-child { border-bottom: none; }
+        .toc li::before { content: counter(toc) "."; color: var(--primary); font-weight: 700; margin-right: 0.5rem; }
+        .toc a { color: var(--g700); text-decoration: none; }
+        .toc a:hover { color: var(--primary); }
+
+        .badge { display: inline-block; padding: 0.2em 0.6em; border-radius: 6px; font-size: 0.75rem; font-weight: 600; }
+        .badge-green { background: #dcfce7; color: #166534; }
+        .badge-blue { background: #dbeafe; color: #1e40af; }
+        .badge-orange { background: #ffedd5; color: #9a3412; }
+        .badge-red { background: #fee2e2; color: #991b1b; }
+    </style>
+</head>
+<body>
+
+<!-- ============================================ -->
+<!-- COUVERTURE -->
+<!-- ============================================ -->
+<div class="cover">
+    <div class="cover-badge-top">BGFI Bank Group &bull; Direction des Systemes d'Information</div>
+    <h1>Guide de Deploiement <span>On-Premise</span></h1>
+    <p class="sub">WhatsApp Business Intelligence Platform<br>Installation, configuration et mise en production sur infrastructure BGFI</p>
+
+    <div class="cover-grid">
+        <div class="cover-stat">
+            <div class="num">Docker</div>
+            <div class="label">Conteneurisation</div>
+        </div>
+        <div class="cover-stat">
+            <div class="num">PostgreSQL</div>
+            <div class="label">Base de donnees</div>
+        </div>
+        <div class="cover-stat">
+            <div class="num">Nginx</div>
+            <div class="label">Reverse Proxy SSL</div>
+        </div>
+        <div class="cover-stat">
+            <div class="num">pgvector</div>
+            <div class="label">IA / RAG</div>
+        </div>
+    </div>
+
+    <div class="cover-conf">Confidentiel - Usage interne BGFI</div>
+    <div class="cover-footer">
+        <span>Version 1.0</span>
+        <span>Fevrier 2026</span>
+    </div>
+</div>
+
+<!-- ============================================ -->
+<!-- CONTENU -->
+<!-- ============================================ -->
+<div class="content">
+
+    <div class="toc">
+        <h3>Table des matieres</h3>
+        <ol>
+            <li><a href="#s1">Architecture de deploiement</a></li>
+            <li><a href="#s2">Pre-requis serveur</a></li>
+            <li><a href="#s3">Preparation des fichiers</a></li>
+            <li><a href="#s4">Configuration des variables d'environnement</a></li>
+            <li><a href="#s5">Certificats SSL/TLS</a></li>
+            <li><a href="#s6">Installation avec Docker</a></li>
+            <li><a href="#s7">Configuration du webhook Meta</a></li>
+            <li><a href="#s8">Configuration reseau et firewall</a></li>
+            <li><a href="#s9">Verification post-installation</a></li>
+            <li><a href="#s10">Operations courantes</a></li>
+            <li><a href="#s11">Sauvegarde et restauration</a></li>
+            <li><a href="#s12">Checklist de mise en production</a></li>
+        </ol>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- SECTION 1 : ARCHITECTURE -->
+    <!-- ============================================ -->
+    <h2 id="s1">1. Architecture de deploiement</h2>
+
+    <p>La plateforme est deployee sous forme de 3 conteneurs Docker isoles, communiquant via des reseaux internes securises.</p>
+
+    <div class="arch-diagram">
+        <pre style="background:none;color:var(--g700);text-align:left;padding:0;font-size:0.75rem;line-height:1.8;">
+    ┌─────────────────────────────────────────────────────────────────┐
+    │                     SERVEUR BGFI (Docker Host)                  │
+    │                                                                 │
+    │   ┌─────────────────────────────────────────────────────────┐   │
+    │   │            Reseau externe (bgfi-external)               │   │
+    │   │                                                         │   │
+    │   │   ┌───────────────────────────────┐                     │   │
+    │   │   │      NGINX (port 443/80)      │ ◄── Internet        │   │
+    │   │   │   SSL + Filtrage IP Meta      │     (Webhooks Meta) │   │
+    │   │   │   Restriction reseau BGFI     │     (Clics clients) │   │
+    │   │   └──────────────┬────────────────┘                     │   │
+    │   └──────────────────┼──────────────────────────────────────┘   │
+    │                      │                                          │
+    │   ┌──────────────────┼──────────────────────────────────────┐   │
+    │   │            Reseau interne (bgfi-internal)               │   │
+    │   │                  │   Pas d'acces Internet direct         │   │
+    │   │                  ▼                                       │   │
+    │   │   ┌───────────────────────────────┐                     │   │
+    │   │   │   APP Node.js (port 3000)     │ ──► API Meta        │   │
+    │   │   │   Express + Prisma ORM        │ ──► API OpenAI      │   │
+    │   │   │   Frontend SPA (index.html)   │     (via Nginx)     │   │
+    │   │   └──────────────┬────────────────┘                     │   │
+    │   │                  │                                       │   │
+    │   │                  ▼                                       │   │
+    │   │   ┌───────────────────────────────┐                     │   │
+    │   │   │  PostgreSQL 16 + pgvector     │                     │   │
+    │   │   │  Base: bgfi_whatsapp          │                     │   │
+    │   │   │  Volume persistant: pgdata    │                     │   │
+    │   │   └───────────────────────────────┘                     │   │
+    │   └─────────────────────────────────────────────────────────┘   │
+    └─────────────────────────────────────────────────────────────────┘
+        </pre>
+    </div>
+
+    <h3>Composants</h3>
+    <table>
+        <thead>
+            <tr><th>Service</th><th>Image</th><th>Role</th><th>Port</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="font-bold">nginx</td>
+                <td class="font-mono">nginx:alpine</td>
+                <td>Reverse proxy SSL, filtrage IP Meta, restriction reseau interne BGFI</td>
+                <td class="font-mono">443, 80</td>
+            </tr>
+            <tr>
+                <td class="font-bold">app</td>
+                <td class="font-mono">bgfi-whatsapp-app</td>
+                <td>API backend (Express.js) + frontend SPA + service IA (RAG/OpenAI)</td>
+                <td class="font-mono">3000 (interne)</td>
+            </tr>
+            <tr>
+                <td class="font-bold">db</td>
+                <td class="font-mono">pgvector/pgvector:pg16</td>
+                <td>Base de donnees PostgreSQL avec extension vectorielle pour le chatbot IA</td>
+                <td class="font-mono">5432 (interne)</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>Reseaux Docker</h3>
+    <table>
+        <thead>
+            <tr><th>Reseau</th><th>Type</th><th>Services</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="font-bold font-mono">bgfi-internal</td>
+                <td><span class="badge badge-green">Interne</span></td>
+                <td>nginx, app, db</td>
+                <td>Reseau isole sans acces Internet. Communication inter-services uniquement.</td>
+            </tr>
+            <tr>
+                <td class="font-bold font-mono">bgfi-external</td>
+                <td><span class="badge badge-orange">Externe</span></td>
+                <td>nginx</td>
+                <td>Acces Internet pour recevoir les webhooks Meta et servir les redirections de tracking.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- ============================================ -->
+    <!-- SECTION 2 : PRE-REQUIS -->
+    <!-- ============================================ -->
+    <h2 id="s2">2. Pre-requis serveur</h2>
+
+    <h3>Configuration materielle minimale</h3>
+    <table>
+        <thead>
+            <tr><th>Ressource</th><th>Minimum</th><th>Recommande</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>CPU</td><td>2 vCPU</td><td>4 vCPU</td></tr>
+            <tr><td>RAM</td><td>4 Go</td><td>8 Go</td></tr>
+            <tr><td>Stockage</td><td>40 Go SSD</td><td>100 Go SSD</td></tr>
+            <tr><td>OS</td><td colspan="2">Ubuntu 22.04 LTS / RHEL 8+ / Debian 12</td></tr>
+        </tbody>
+    </table>
+
+    <h3>Logiciels requis</h3>
+    <table>
+        <thead>
+            <tr><th>Logiciel</th><th>Version minimale</th><th>Commande de verification</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="font-bold">Docker Engine</td>
+                <td>24.0+</td>
+                <td class="font-mono">docker --version</td>
+            </tr>
+            <tr>
+                <td class="font-bold">Docker Compose</td>
+                <td>2.20+</td>
+                <td class="font-mono">docker compose version</td>
+            </tr>
+            <tr>
+                <td class="font-bold">OpenSSL</td>
+                <td>1.1+</td>
+                <td class="font-mono">openssl version</td>
+            </tr>
+            <tr>
+                <td class="font-bold">curl</td>
+                <td>7.0+</td>
+                <td class="font-mono">curl --version</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>Connectivite reseau requise (sorties)</h3>
+    <table>
+        <thead>
+            <tr><th>Destination</th><th>Port</th><th>Protocole</th><th>Usage</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="font-mono">graph.facebook.com</td>
+                <td class="text-center">443</td>
+                <td>HTTPS</td>
+                <td>API WhatsApp Cloud (envoi de messages)</td>
+            </tr>
+            <tr>
+                <td class="font-mono">api.openai.com</td>
+                <td class="text-center">443</td>
+                <td>HTTPS</td>
+                <td>API OpenAI (chatbot IA, enrichissement, RAG)</td>
+            </tr>
+            <tr>
+                <td class="font-mono">lookaside.fbsbx.com</td>
+                <td class="text-center">443</td>
+                <td>HTTPS</td>
+                <td>CDN Meta (telechargement medias WhatsApp)</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>Connectivite reseau requise (entrees)</h3>
+    <table>
+        <thead>
+            <tr><th>Source</th><th>Port</th><th>Usage</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Plages IP Meta (voir section 8)</td>
+                <td class="text-center">443</td>
+                <td>Webhooks WhatsApp (messages entrants, statuts)</td>
+            </tr>
+            <tr>
+                <td>Reseau interne BGFI</td>
+                <td class="text-center">443</td>
+                <td>Acces interface d'administration</td>
+            </tr>
+            <tr>
+                <td>Internet (tous)</td>
+                <td class="text-center">443</td>
+                <td>Tracking des clics (redirection boutons WhatsApp)</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- ============================================ -->
+    <!-- SECTION 3 : PREPARATION -->
+    <!-- ============================================ -->
+    <h2 id="s3">3. Preparation des fichiers</h2>
+
+    <h3>Structure du package de deploiement</h3>
+    <pre><code>bgfi-whatsapp-saas/
+├── backend/
+│   ├── src/                    <span class="comment"># Code source API</span>
+│   ├── prisma/
+│   │   └── schema.prisma       <span class="comment"># Schema base de donnees</span>
+│   └── package.json
+├── public/                     <span class="comment"># Assets statiques</span>
+├── deploy/
+│   ├── nginx.conf              <span class="comment"># Configuration Nginx</span>
+│   └── ssl/
+│       ├── fullchain.pem       <span class="comment"># Certificat SSL (a fournir)</span>
+│       └── privkey.pem         <span class="comment"># Cle privee SSL (a fournir)</span>
+├── index.html                  <span class="comment"># Frontend SPA</span>
+├── Dockerfile                  <span class="comment"># Build de l'application</span>
+├── docker-compose.yml          <span class="comment"># Orchestration des services</span>
+├── .env.example                <span class="comment"># Template des variables</span>
+├── .env                        <span class="comment"># Variables (a creer)</span>
+└── deploy.sh                   <span class="comment"># Script d'installation</span></code></pre>
+
+    <h3>Transfert des fichiers sur le serveur</h3>
+    <pre><code><span class="comment"># Option 1: depuis un depot Git</span>
+<span class="cmd">git clone</span> https://github.com/FranckSowax/bgfi-wacbt.git bgfi-whatsapp-saas
+<span class="cmd">cd</span> bgfi-whatsapp-saas
+
+<span class="comment"># Option 2: transfert par archive</span>
+<span class="cmd">scp</span> bgfi-whatsapp-saas.tar.gz user@serveur-bgfi:/opt/
+<span class="cmd">ssh</span> user@serveur-bgfi
+<span class="cmd">tar</span> -xzf /opt/bgfi-whatsapp-saas.tar.gz -C /opt/
+<span class="cmd">cd</span> /opt/bgfi-whatsapp-saas</code></pre>
+
+    <!-- ============================================ -->
+    <!-- SECTION 4 : CONFIGURATION -->
+    <!-- ============================================ -->
+    <h2 id="s4">4. Configuration des variables d'environnement</h2>
+
+    <pre><code><span class="comment"># Copier le template</span>
+<span class="cmd">cp</span> .env.example .env
+
+<span class="comment"># Editer avec vos valeurs</span>
+<span class="cmd">nano</span> .env</code></pre>
+
+    <h3>Variables critiques</h3>
+    <table>
+        <thead>
+            <tr><th>Variable</th><th>Description</th><th>Exemple</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="font-bold font-mono">DB_PASSWORD</td>
+                <td>Mot de passe PostgreSQL <span class="badge badge-red">Securite</span></td>
+                <td class="font-mono">Un_M0t_De_P4sse_Tr3s_Long!</td>
+            </tr>
+            <tr>
+                <td class="font-bold font-mono">JWT_SECRET</td>
+                <td>Cle secrete pour les tokens JWT <span class="badge badge-red">Securite</span></td>
+                <td class="font-mono">openssl rand -base64 64</td>
+            </tr>
+            <tr>
+                <td class="font-bold font-mono">WHATSAPP_ACCESS_TOKEN</td>
+                <td>Token permanent Meta Business</td>
+                <td class="font-mono">EAAx... (depuis developers.facebook.com)</td>
+            </tr>
+            <tr>
+                <td class="font-bold font-mono">WHATSAPP_PHONE_NUMBER_ID</td>
+                <td>ID du numero WhatsApp Business</td>
+                <td class="font-mono">974528235744348</td>
+            </tr>
+            <tr>
+                <td class="font-bold font-mono">WHATSAPP_BUSINESS_ACCOUNT_ID</td>
+                <td>ID du compte WhatsApp Business</td>
+                <td class="font-mono">1664087661616394</td>
+            </tr>
+            <tr>
+                <td class="font-bold font-mono">WHATSAPP_VERIFY_TOKEN</td>
+                <td>Token de verification pour le webhook</td>
+                <td class="font-mono">bgfi_webhook_verify_2026</td>
+            </tr>
+            <tr>
+                <td class="font-bold font-mono">WHATSAPP_APP_SECRET</td>
+                <td>Secret de l'app Meta (verification signatures)</td>
+                <td class="font-mono">abc123... (depuis Meta App Dashboard)</td>
+            </tr>
+            <tr>
+                <td class="font-bold font-mono">OPENAI_API_KEY</td>
+                <td>Cle API OpenAI pour le chatbot IA</td>
+                <td class="font-mono">sk-proj-... (depuis platform.openai.com)</td>
+            </tr>
+            <tr>
+                <td class="font-bold font-mono">TRACKING_BASE_URL</td>
+                <td>URL publique pour le tracking des clics</td>
+                <td class="font-mono">https://whatsapp.bgfi.com/t/{{1}}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="box box-warning">
+        <strong>Generation de cles securisees</strong>
+        <pre style="margin:0.5rem 0 0;background:#78350f;font-size:0.8rem;"><code><span class="comment"># Mot de passe base de donnees</span>
+<span class="cmd">openssl</span> rand -base64 32
+
+<span class="comment"># Secret JWT</span>
+<span class="cmd">openssl</span> rand -base64 64</code></pre>
+    </div>
+
+    <h3>Variables Meta WhatsApp - Ou les trouver</h3>
+    <ol>
+        <li>Aller sur <strong>developers.facebook.com</strong> → Votre App → WhatsApp → Configuration API</li>
+        <li><strong>WHATSAPP_ACCESS_TOKEN</strong> : Generer un token permanent via System Users dans Business Settings</li>
+        <li><strong>WHATSAPP_PHONE_NUMBER_ID</strong> : Visible dans la page Configuration API sous "Numero de telephone"</li>
+        <li><strong>WHATSAPP_BUSINESS_ACCOUNT_ID</strong> : Visible dans Business Settings → WhatsApp Accounts</li>
+        <li><strong>WHATSAPP_APP_SECRET</strong> : Settings → Basic → App Secret</li>
+        <li><strong>WHATSAPP_APP_ID</strong> : Visible en haut du dashboard de l'app</li>
+    </ol>
+
+    <div class="box box-danger">
+        <strong>IMPORTANT : Mode Live</strong>
+        <p>L'application Meta doit etre en mode <strong>Live</strong> (pas Development). Verifier dans App Dashboard → Basic Settings → App Mode.</p>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- SECTION 5 : SSL -->
+    <!-- ============================================ -->
+    <h2 id="s5">5. Certificats SSL/TLS</h2>
+
+    <p>Le serveur Nginx requiert un certificat SSL valide pour le HTTPS. Deux options :</p>
+
+    <h3>Option A : Certificat interne BGFI (PKI d'entreprise)</h3>
+    <p>Si BGFI dispose d'une autorite de certification interne :</p>
+    <pre><code><span class="comment"># Placer les fichiers du certificat</span>
+<span class="cmd">cp</span> /chemin/vers/bgfi-cert.pem deploy/ssl/fullchain.pem
+<span class="cmd">cp</span> /chemin/vers/bgfi-key.pem deploy/ssl/privkey.pem
+<span class="cmd">chmod</span> 600 deploy/ssl/privkey.pem</code></pre>
+
+    <h3>Option B : Certificat Let's Encrypt (domaine public)</h3>
+    <p>Si le serveur est accessible depuis Internet avec un nom de domaine :</p>
+    <pre><code><span class="comment"># Installer certbot</span>
+<span class="cmd">apt install</span> certbot
+
+<span class="comment"># Generer le certificat (arreter Nginx d'abord)</span>
+<span class="cmd">certbot</span> certonly --standalone -d whatsapp.bgfi.com
+
+<span class="comment"># Copier les certificats</span>
+<span class="cmd">cp</span> /etc/letsencrypt/live/whatsapp.bgfi.com/fullchain.pem deploy/ssl/
+<span class="cmd">cp</span> /etc/letsencrypt/live/whatsapp.bgfi.com/privkey.pem deploy/ssl/</code></pre>
+
+    <h3>Option C : Certificat auto-signe (tests uniquement)</h3>
+    <pre><code><span class="comment"># Le script deploy.sh peut generer un certificat auto-signe</span>
+<span class="cmd">openssl</span> req -x509 -nodes -days 365 -newkey rsa:2048 \
+    -keyout deploy/ssl/privkey.pem \
+    -out deploy/ssl/fullchain.pem \
+    -subj "/C=GA/ST=Estuaire/L=Libreville/O=BGFI Bank/CN=whatsapp.bgfi.com"</code></pre>
+
+    <div class="box box-warning">
+        <strong>Certificat auto-signe</strong>
+        <p>Un certificat auto-signe declenchera des alertes de securite dans les navigateurs. Acceptable uniquement pour les tests internes. Meta exige un certificat valide pour les webhooks.</p>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- SECTION 6 : INSTALLATION -->
+    <!-- ============================================ -->
+    <h2 id="s6">6. Installation avec Docker</h2>
+
+    <h3>Installation automatique (recommandee)</h3>
+    <pre><code><span class="comment"># Rendre le script executable et lancer</span>
+<span class="cmd">chmod</span> +x deploy.sh
+<span class="cmd">./deploy.sh</span></code></pre>
+
+    <p>Le script effectue automatiquement :</p>
+    <ol>
+        <li>Verification de Docker et Docker Compose</li>
+        <li>Creation/verification du fichier <code>.env</code></li>
+        <li>Verification des certificats SSL</li>
+        <li>Construction des images Docker</li>
+        <li>Demarrage de PostgreSQL + verification de sante</li>
+        <li>Execution des migrations de base de donnees</li>
+        <li>Creation du compte administrateur initial</li>
+        <li>Demarrage de tous les services</li>
+    </ol>
+
+    <h3>Installation manuelle</h3>
+    <pre><code><span class="comment"># 1. Configurer l'environnement</span>
+<span class="cmd">cp</span> .env.example .env
+<span class="cmd">nano</span> .env
+
+<span class="comment"># 2. Construire les images</span>
+<span class="cmd">docker compose</span> build
+
+<span class="comment"># 3. Demarrer PostgreSQL</span>
+<span class="cmd">docker compose</span> up -d db
+<span class="cmd">sleep</span> 10
+
+<span class="comment"># 4. Executer les migrations</span>
+<span class="cmd">docker compose</span> run --rm app sh -c "cd backend && npx prisma migrate deploy"
+
+<span class="comment"># 5. Demarrer tous les services</span>
+<span class="cmd">docker compose</span> up -d
+
+<span class="comment"># 6. Verifier les logs</span>
+<span class="cmd">docker compose</span> logs -f</code></pre>
+
+    <div class="box box-success">
+        <strong>Compte administrateur par defaut</strong>
+        <p>Email : <code>admin@bgfi.ga</code> &nbsp;|&nbsp; Mot de passe : <code>admin123</code></p>
+        <p>Changez ce mot de passe immediatement apres la premiere connexion.</p>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- SECTION 7 : WEBHOOK META -->
+    <!-- ============================================ -->
+    <h2 id="s7">7. Configuration du webhook Meta</h2>
+
+    <p>Le webhook permet a Meta d'envoyer les messages WhatsApp entrants et les notifications de statut a votre serveur.</p>
+
+    <div class="step-title">
+        <span class="step-num">1</span>
+        <h3>Acceder a la configuration du webhook</h3>
+    </div>
+    <p>Sur <strong>developers.facebook.com</strong> → Votre App → WhatsApp → Configuration</p>
+
+    <div class="step-title">
+        <span class="step-num">2</span>
+        <h3>Configurer l'URL du webhook</h3>
+    </div>
+    <table>
+        <tbody>
+            <tr>
+                <td class="font-bold">URL de rappel</td>
+                <td class="font-mono">https://votre-domaine.bgfi.com/api/webhooks/whatsapp</td>
+            </tr>
+            <tr>
+                <td class="font-bold">Token de verification</td>
+                <td class="font-mono">(valeur de WHATSAPP_VERIFY_TOKEN dans .env)</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="step-title">
+        <span class="step-num">3</span>
+        <h3>S'abonner aux evenements</h3>
+    </div>
+    <p>Cocher les champs suivants dans "Webhooks fields" :</p>
+    <ul>
+        <li><code>messages</code> — Messages entrants des clients</li>
+        <li><code>message_template_status_update</code> — Statut des templates</li>
+    </ul>
+
+    <div class="step-title">
+        <span class="step-num">4</span>
+        <h3>Tester le webhook</h3>
+    </div>
+    <pre><code><span class="comment"># Tester depuis le serveur BGFI</span>
+<span class="cmd">curl</span> -X GET "https://votre-domaine.bgfi.com/api/webhooks/whatsapp?hub.mode=subscribe&hub.verify_token=VOTRE_TOKEN&hub.challenge=test123"
+
+<span class="comment"># Reponse attendue: test123</span></code></pre>
+
+    <div class="box box-info">
+        <strong>Webhook et Tracking URL</strong>
+        <p>La variable <code>TRACKING_BASE_URL</code> doit pointer vers le meme domaine que le webhook. Exemple : <code>https://whatsapp.bgfi.com/t/{{1}}</code></p>
+        <p>Si vous avez un template WhatsApp avec un bouton URL dynamique, Meta remplacera <code>{{1}}</code> par l'identifiant de tracking unique de chaque message.</p>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- SECTION 8 : RESEAU -->
+    <!-- ============================================ -->
+    <h2 id="s8">8. Configuration reseau et firewall</h2>
+
+    <h3>Regles de sortie (serveur vers Internet)</h3>
+    <pre><code><span class="comment"># Autoriser les API Meta et OpenAI</span>
+<span class="cmd">iptables</span> -A OUTPUT -p tcp --dport 443 -d graph.facebook.com -j ACCEPT
+<span class="cmd">iptables</span> -A OUTPUT -p tcp --dport 443 -d api.openai.com -j ACCEPT
+<span class="cmd">iptables</span> -A OUTPUT -p tcp --dport 443 -d lookaside.fbsbx.com -j ACCEPT
+<span class="cmd">iptables</span> -A OUTPUT -p tcp --dport 443 -d scontent.whatsapp.net -j ACCEPT
+
+<span class="comment"># Autoriser DNS</span>
+<span class="cmd">iptables</span> -A OUTPUT -p udp --dport 53 -j ACCEPT
+<span class="cmd">iptables</span> -A OUTPUT -p tcp --dport 53 -j ACCEPT</code></pre>
+
+    <h3>Regles d'entree (Internet vers serveur)</h3>
+    <pre><code><span class="comment"># Autoriser HTTPS depuis les plages IP Meta (webhooks)</span>
+<span class="cmd">iptables</span> -A INPUT -p tcp --dport 443 -s 157.240.0.0/16 -j ACCEPT
+<span class="cmd">iptables</span> -A INPUT -p tcp --dport 443 -s 31.13.24.0/21 -j ACCEPT
+<span class="cmd">iptables</span> -A INPUT -p tcp --dport 443 -s 31.13.64.0/18 -j ACCEPT
+<span class="cmd">iptables</span> -A INPUT -p tcp --dport 443 -s 66.220.144.0/20 -j ACCEPT
+<span class="cmd">iptables</span> -A INPUT -p tcp --dport 443 -s 69.63.176.0/20 -j ACCEPT
+<span class="cmd">iptables</span> -A INPUT -p tcp --dport 443 -s 69.171.224.0/19 -j ACCEPT
+<span class="cmd">iptables</span> -A INPUT -p tcp --dport 443 -s 102.132.96.0/20 -j ACCEPT
+<span class="cmd">iptables</span> -A INPUT -p tcp --dport 443 -s 129.134.0.0/16 -j ACCEPT
+<span class="cmd">iptables</span> -A INPUT -p tcp --dport 443 -s 157.240.0.0/16 -j ACCEPT
+<span class="cmd">iptables</span> -A INPUT -p tcp --dport 443 -s 173.252.64.0/18 -j ACCEPT
+<span class="cmd">iptables</span> -A INPUT -p tcp --dport 443 -s 185.60.216.0/22 -j ACCEPT
+<span class="cmd">iptables</span> -A INPUT -p tcp --dport 443 -s 204.15.20.0/22 -j ACCEPT
+
+<span class="comment"># Autoriser HTTPS depuis le reseau interne BGFI</span>
+<span class="cmd">iptables</span> -A INPUT -p tcp --dport 443 -s 10.0.0.0/8 -j ACCEPT
+<span class="cmd">iptables</span> -A INPUT -p tcp --dport 443 -s 172.16.0.0/12 -j ACCEPT
+<span class="cmd">iptables</span> -A INPUT -p tcp --dport 443 -s 192.168.0.0/16 -j ACCEPT
+
+<span class="comment"># Autoriser le tracking des clics (tout Internet)</span>
+<span class="comment"># Deja couvert par les regles ci-dessus sur le port 443</span></code></pre>
+
+    <div class="box box-info">
+        <strong>Filtrage IP au niveau Nginx</strong>
+        <p>En complement du firewall, Nginx est configure pour filtrer les IPs au niveau applicatif. Les webhooks (<code>/api/webhooks/whatsapp</code>) n'acceptent que les IPs Meta. L'interface d'administration (<code>/</code> et <code>/api/</code>) n'est accessible que depuis le reseau interne BGFI.</p>
+    </div>
+
+    <h3>Plages IP Meta officielles</h3>
+    <table>
+        <thead>
+            <tr><th>Plage CIDR</th><th>Region</th></tr>
+        </thead>
+        <tbody>
+            <tr><td class="font-mono">157.240.0.0/16</td><td>Meta Global</td></tr>
+            <tr><td class="font-mono">129.134.0.0/16</td><td>Meta Global</td></tr>
+            <tr><td class="font-mono">31.13.24.0/21</td><td>Europe</td></tr>
+            <tr><td class="font-mono">31.13.64.0/18</td><td>Europe</td></tr>
+            <tr><td class="font-mono">66.220.144.0/20</td><td>Amerique du Nord</td></tr>
+            <tr><td class="font-mono">69.63.176.0/20</td><td>Amerique du Nord</td></tr>
+            <tr><td class="font-mono">69.171.224.0/19</td><td>Amerique du Nord</td></tr>
+            <tr><td class="font-mono">102.132.96.0/20</td><td>Afrique</td></tr>
+            <tr><td class="font-mono">173.252.64.0/18</td><td>Amerique du Nord</td></tr>
+            <tr><td class="font-mono">185.60.216.0/22</td><td>Europe</td></tr>
+            <tr><td class="font-mono">204.15.20.0/22</td><td>Amerique du Nord</td></tr>
+        </tbody>
+    </table>
+
+    <div class="box box-warning">
+        <strong>Mise a jour des plages IP</strong>
+        <p>Les plages IP Meta peuvent evoluer. Consultez regulierement la documentation officielle : <code>developers.facebook.com/docs/whatsapp/cloud-api/support/network-requirements</code></p>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- SECTION 9 : VERIFICATION -->
+    <!-- ============================================ -->
+    <h2 id="s9">9. Verification post-installation</h2>
+
+    <h3>Tests de sante des services</h3>
+    <pre><code><span class="comment"># Verifier que tous les conteneurs tournent</span>
+<span class="cmd">docker compose</span> ps
+
+<span class="comment"># Resultat attendu :</span>
+<span class="comment"># bgfi-whatsapp-db      running (healthy)</span>
+<span class="comment"># bgfi-whatsapp-app     running (healthy)</span>
+<span class="comment"># bgfi-whatsapp-nginx   running</span>
+
+<span class="comment"># Tester l'API health</span>
+<span class="cmd">curl</span> -k https://localhost/api/health
+
+<span class="comment"># Reponse attendue :</span>
+<span class="comment"># {"status":"ok","timestamp":"...","version":"1.0.0","services":{"whatsapp":true,"openai":true,...}}</span></code></pre>
+
+    <h3>Tests de connectivite</h3>
+    <pre><code><span class="comment"># Tester la connexion a Meta depuis le conteneur app</span>
+<span class="cmd">docker compose</span> exec app curl -s -o /dev/null -w "%{http_code}" https://graph.facebook.com/v21.0/
+
+<span class="comment"># Reponse attendue : 200 ou 400 (l'important est de ne pas avoir de timeout)</span>
+
+<span class="comment"># Tester la connexion a OpenAI</span>
+<span class="cmd">docker compose</span> exec app curl -s -o /dev/null -w "%{http_code}" https://api.openai.com/v1/models
+
+<span class="comment"># Reponse attendue : 401 (pas de token, mais connexion OK)</span></code></pre>
+
+    <h3>Test de connexion a la base de donnees</h3>
+    <pre><code><span class="comment"># Verifier les tables creees</span>
+<span class="cmd">docker compose</span> exec db psql -U bgfi_user -d bgfi_whatsapp -c "\dt"
+
+<span class="comment"># Tables attendues : users, contacts, campaigns, messages, templates,</span>
+<span class="comment"># segments, chat_sessions, rag_documents, rag_chunks, etc.</span></code></pre>
+
+    <h3>Test de l'interface web</h3>
+    <p>Ouvrir dans un navigateur : <code>https://votre-domaine.bgfi.com</code></p>
+    <ol>
+        <li>La page de connexion doit s'afficher</li>
+        <li>Se connecter avec <code>admin@bgfi.ga</code> / <code>admin123</code></li>
+        <li>Le dashboard doit s'afficher avec les statistiques</li>
+        <li>Verifier que les onglets Contacts, Campagnes, Templates fonctionnent</li>
+    </ol>
+
+    <!-- ============================================ -->
+    <!-- SECTION 10 : OPERATIONS -->
+    <!-- ============================================ -->
+    <h2 id="s10">10. Operations courantes</h2>
+
+    <h3>Gestion des services</h3>
+    <pre><code><span class="comment"># Demarrer tous les services</span>
+<span class="cmd">docker compose</span> up -d
+
+<span class="comment"># Arreter tous les services</span>
+<span class="cmd">docker compose</span> down
+
+<span class="comment"># Redemarrer l'application (apres un changement de .env)</span>
+<span class="cmd">docker compose</span> restart app
+
+<span class="comment"># Voir les logs en temps reel</span>
+<span class="cmd">docker compose</span> logs -f app
+
+<span class="comment"># Voir les logs de la base de donnees</span>
+<span class="cmd">docker compose</span> logs -f db
+
+<span class="comment"># Voir les logs Nginx</span>
+<span class="cmd">docker compose</span> logs -f nginx</code></pre>
+
+    <h3>Mise a jour de l'application</h3>
+    <pre><code><span class="comment"># Recuperer la derniere version</span>
+<span class="cmd">git pull</span> origin main
+
+<span class="comment"># Reconstruire et redemarrer</span>
+<span class="cmd">docker compose</span> build app
+<span class="cmd">docker compose</span> up -d app
+
+<span class="comment"># Verifier les logs apres la mise a jour</span>
+<span class="cmd">docker compose</span> logs -f app --tail=50</code></pre>
+
+    <div class="box box-info">
+        <strong>Migrations automatiques</strong>
+        <p>Les migrations de base de donnees sont executees automatiquement au demarrage de l'application. Aucune action manuelle n'est necessaire apres une mise a jour.</p>
+    </div>
+
+    <h3>Acces a la base de donnees</h3>
+    <pre><code><span class="comment"># Console PostgreSQL</span>
+<span class="cmd">docker compose</span> exec db psql -U bgfi_user -d bgfi_whatsapp
+
+<span class="comment"># Exemples de requetes utiles :</span>
+<span class="comment"># Nombre de contacts</span>
+SELECT COUNT(*) FROM contacts;
+
+<span class="comment"># Derniers messages envoyes</span>
+SELECT * FROM messages ORDER BY "createdAt" DESC LIMIT 10;
+
+<span class="comment"># Statut des campagnes</span>
+SELECT name, status, "sentCount", "deliveredCount", clicked FROM campaigns ORDER BY "createdAt" DESC;</code></pre>
+
+    <!-- ============================================ -->
+    <!-- SECTION 11 : SAUVEGARDE -->
+    <!-- ============================================ -->
+    <h2 id="s11">11. Sauvegarde et restauration</h2>
+
+    <h3>Sauvegarde de la base de donnees</h3>
+    <pre><code><span class="comment"># Sauvegarde complete (avec pgvector)</span>
+<span class="cmd">docker compose</span> exec db pg_dump -U bgfi_user -d bgfi_whatsapp \
+    --format=custom --compress=9 \
+    > backup_$(date +%Y%m%d_%H%M%S).dump
+
+<span class="comment"># Sauvegarde SQL (lisible)</span>
+<span class="cmd">docker compose</span> exec db pg_dump -U bgfi_user -d bgfi_whatsapp \
+    > backup_$(date +%Y%m%d_%H%M%S).sql</code></pre>
+
+    <h3>Sauvegarde automatique (cron)</h3>
+    <pre><code><span class="comment"># Ajouter au crontab (sauvegarde quotidienne a 2h du matin)</span>
+<span class="cmd">crontab</span> -e
+
+<span class="comment"># Ajouter cette ligne :</span>
+0 2 * * * cd /opt/bgfi-whatsapp-saas && docker compose exec -T db pg_dump -U bgfi_user -d bgfi_whatsapp --format=custom --compress=9 > /opt/backups/bgfi_$(date +\%Y\%m\%d).dump 2>&1
+
+<span class="comment"># Creer le dossier de sauvegardes</span>
+<span class="cmd">mkdir</span> -p /opt/backups</code></pre>
+
+    <h3>Restauration</h3>
+    <pre><code><span class="comment"># Restaurer depuis un fichier .dump</span>
+<span class="cmd">docker compose</span> exec -T db pg_restore -U bgfi_user -d bgfi_whatsapp \
+    --clean --if-exists < backup_20260219.dump
+
+<span class="comment"># Restaurer depuis un fichier .sql</span>
+<span class="cmd">docker compose</span> exec -T db psql -U bgfi_user -d bgfi_whatsapp < backup_20260219.sql</code></pre>
+
+    <h3>Sauvegarde des volumes Docker</h3>
+    <pre><code><span class="comment"># Sauvegarde du volume PostgreSQL</span>
+<span class="cmd">docker</span> run --rm -v bgfi-whatsapp-saas_pgdata:/data -v /opt/backups:/backup \
+    alpine tar czf /backup/pgdata_$(date +%Y%m%d).tar.gz /data</code></pre>
+
+    <!-- ============================================ -->
+    <!-- SECTION 12 : CHECKLIST -->
+    <!-- ============================================ -->
+    <h2 id="s12">12. Checklist de mise en production</h2>
+
+    <h3>Avant l'installation</h3>
+    <ul class="check-list">
+        <li>Serveur provisionne (4 vCPU, 8 Go RAM, 100 Go SSD)</li>
+        <li>Docker et Docker Compose installes</li>
+        <li>Nom de domaine configure (DNS A record vers le serveur)</li>
+        <li>Certificat SSL valide obtenu (Let's Encrypt ou PKI BGFI)</li>
+        <li>Token WhatsApp permanent genere (System User sur Meta Business)</li>
+        <li>Cle API OpenAI creee avec budget configure</li>
+        <li>Regles firewall en place (ports 80/443 ouverts)</li>
+    </ul>
+
+    <h3>Pendant l'installation</h3>
+    <ul class="check-list">
+        <li>Fichier <code>.env</code> configure avec des mots de passe forts</li>
+        <li>Certificats SSL places dans <code>deploy/ssl/</code></li>
+        <li>Script <code>deploy.sh</code> execute avec succes</li>
+        <li>3 conteneurs en statut "running"</li>
+        <li>Migrations de base de donnees appliquees</li>
+        <li>Compte administrateur cree</li>
+    </ul>
+
+    <h3>Apres l'installation</h3>
+    <ul class="check-list">
+        <li>Interface web accessible via HTTPS</li>
+        <li>Connexion admin fonctionnelle</li>
+        <li>Webhook Meta configure et verifie</li>
+        <li>Envoi d'un message test WhatsApp reussi</li>
+        <li>Reception d'un message WhatsApp entrant fonctionnelle</li>
+        <li>Chatbot IA (Stella) repond aux messages</li>
+        <li>Mot de passe admin par defaut change</li>
+        <li>Sauvegarde automatique configuree (cron)</li>
+        <li>Monitoring des logs en place</li>
+    </ul>
+
+    <h3>Securite post-installation</h3>
+    <ul class="check-list">
+        <li>Acces SSH restreint par cle uniquement (pas de mot de passe)</li>
+        <li>Port PostgreSQL (5432) non expose en dehors de Docker</li>
+        <li>Plages IP Meta a jour dans la configuration Nginx</li>
+        <li>Interface d'administration restreinte au reseau interne</li>
+        <li>Logs applicatifs transmis au SIEM BGFI (si applicable)</li>
+        <li>Politique de rotation des sauvegardes definie (retention 30 jours)</li>
+    </ul>
+
+    <div class="box box-gold" style="margin-top: 3rem;">
+        <strong>Support technique</strong>
+        <p>Pour toute question relative au deploiement ou a la configuration, contactez l'equipe de developpement.</p>
+        <p>Documentation complementaire :</p>
+        <ul style="margin-bottom:0;">
+            <li>Securite reseau : <code>securite-reseau-bgfi-whatsapp.html</code></li>
+            <li>Simulation des couts : <code>simulation-cout-whatsapp-groupe-bgfi.html</code></li>
+            <li>Devis plateforme : <code>devis-bgfi-whatsapp-platform.html</code></li>
+        </ul>
+    </div>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proposition Commerciale - BGFI WhatsApp Business Intelligence Platform</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        :root {
+            --primary: #1e3a5f; --primary-dark: #0f1f33; --accent: #10b981; --accent-dark: #059669;
+            --gold: #d4a843; --gold-light: #f5ecd3;
+            --danger: #ef4444; --warning: #f59e0b; --info: #3b82f6;
+            --g50: #f9fafb; --g100: #f3f4f6; --g200: #e5e7eb; --g300: #d1d5db;
+            --g500: #6b7280; --g700: #374151; --g900: #111827;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; color: var(--g900); line-height: 1.7; background: #fff; }
+        @media print {
+            body { font-size: 10.5pt; }
+            .page-break { page-break-before: always; }
+            .no-print { display: none; }
+            h2 { page-break-before: always; }
+            h2:first-of-type { page-break-before: auto; }
+            table { font-size: 9pt; }
+        }
+        @page { margin: 1.8cm; }
+
+        /* Cover */
+        .cover {
+            min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center;
+            background: linear-gradient(160deg, #0f1f33 0%, #1e3a5f 50%, #2a5a8f 100%);
+            color: white; text-align: center; padding: 4rem; position: relative; overflow: hidden;
+        }
+        .cover::after {
+            content: ''; position: absolute; top: -50%; right: -30%; width: 80%; height: 200%;
+            background: radial-gradient(ellipse, rgba(212,168,67,0.08) 0%, transparent 70%);
+        }
+        .cover-badge-top { position: relative; z-index: 1; font-size: 0.7rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--gold); margin-bottom: 3rem; font-weight: 600; }
+        .cover h1 { position: relative; z-index: 1; font-size: 2.8rem; font-weight: 900; letter-spacing: -0.03em; margin-bottom: 0.5rem; }
+        .cover h1 span { color: var(--gold); }
+        .cover .sub { position: relative; z-index: 1; font-size: 1.2rem; font-weight: 300; opacity: 0.8; margin-bottom: 3.5rem; max-width: 600px; }
+        .cover-grid { position: relative; z-index: 1; display: flex; gap: 1.5rem; margin-bottom: 3rem; flex-wrap: wrap; justify-content: center; }
+        .cover-stat { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); border-radius: 16px; padding: 1.25rem 1.75rem; min-width: 140px; }
+        .cover-stat .num { font-size: 1.8rem; font-weight: 800; color: var(--gold); }
+        .cover-stat .label { font-size: 0.75rem; opacity: 0.6; margin-top: 0.25rem; }
+        .cover-footer { position: relative; z-index: 1; display: flex; gap: 2rem; font-size: 0.8rem; opacity: 0.5; margin-top: 2rem; }
+        .cover-conf { position: relative; z-index: 1; margin-top: 2rem; border: 1px solid rgba(212,168,67,0.3); color: var(--gold); padding: 0.6rem 1.5rem; border-radius: 8px; font-size: 0.75rem; letter-spacing: 0.15em; text-transform: uppercase; }
+
+        .content { max-width: 900px; margin: 0 auto; padding: 3rem 2rem; }
+
+        /* Section headers */
+        h2 { font-size: 1.5rem; font-weight: 700; color: var(--primary); margin: 3rem 0 1.5rem; padding-bottom: 0.75rem; border-bottom: 3px solid var(--primary); }
+        h3 { font-size: 1.15rem; font-weight: 600; color: var(--g900); margin: 2rem 0 0.75rem; }
+        h4 { font-size: 1rem; font-weight: 600; color: var(--g700); margin: 1.5rem 0 0.5rem; }
+        p { margin-bottom: 1rem; color: var(--g700); font-size: 0.95rem; }
+
+        /* Tables */
+        table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; font-size: 0.9rem; }
+        th { background: var(--primary); color: white; padding: 0.75rem 1rem; text-align: left; font-weight: 600; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; }
+        td { padding: 0.75rem 1rem; border-bottom: 1px solid var(--g200); vertical-align: top; }
+        tr:nth-child(even) td { background: var(--g50); }
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+        .font-bold { font-weight: 700; }
+        .font-mono { font-family: 'SF Mono', 'Fira Code', monospace; }
+
+        /* Price highlight */
+        .price { font-size: 2rem; font-weight: 900; color: var(--primary); }
+        .price-sub { font-size: 0.85rem; color: var(--g500); font-weight: 400; }
+        .price-currency { font-size: 1rem; font-weight: 600; vertical-align: super; }
+
+        /* Boxes */
+        .box { border-radius: 12px; padding: 1.25rem 1.5rem; margin: 1.5rem 0; font-size: 0.9rem; }
+        .box-info { background: #eff6ff; border-left: 4px solid var(--info); }
+        .box-success { background: #f0fdf4; border-left: 4px solid var(--accent); }
+        .box-warning { background: #fffbeb; border-left: 4px solid var(--warning); }
+        .box-gold { background: var(--gold-light); border-left: 4px solid var(--gold); }
+        .box strong { display: block; margin-bottom: 0.25rem; }
+        .box p { margin-bottom: 0.25rem; }
+
+        /* Badges */
+        .badge { display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.2rem 0.6rem; border-radius: 6px; font-size: 0.75rem; font-weight: 600; }
+        .badge-green { background: #dcfce7; color: #166534; }
+        .badge-blue { background: #dbeafe; color: #1e40af; }
+        .badge-amber { background: #fef3c7; color: #92400e; }
+        .badge-red { background: #fecaca; color: #991b1b; }
+        .badge-gold { background: var(--gold-light); color: #92400e; }
+
+        /* Tier cards */
+        .tiers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin: 2rem 0; }
+        .tier { border: 2px solid var(--g200); border-radius: 16px; padding: 2rem; position: relative; }
+        .tier.featured { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold), 0 8px 30px rgba(212,168,67,0.15); }
+        .tier-badge { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--gold); color: white; font-size: 0.7rem; font-weight: 700; padding: 0.3rem 1rem; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.1em; white-space: nowrap; }
+        .tier-name { font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--g500); margin-bottom: 0.5rem; }
+        .tier-price { font-size: 2.2rem; font-weight: 900; color: var(--primary); margin-bottom: 0.25rem; }
+        .tier-price span { font-size: 0.85rem; font-weight: 500; color: var(--g500); }
+        .tier-desc { font-size: 0.85rem; color: var(--g500); margin-bottom: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--g200); }
+        .tier ul { list-style: none; padding: 0; }
+        .tier li { padding: 0.4rem 0; padding-left: 1.5rem; position: relative; font-size: 0.85rem; color: var(--g700); }
+        .tier li::before { content: '✓'; position: absolute; left: 0; color: var(--accent); font-weight: 700; }
+
+        /* TOC */
+        .toc { background: var(--g50); border-radius: 16px; padding: 2rem; margin: 2rem 0; }
+        .toc h3 { margin-top: 0; }
+        .toc-item { display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px dashed var(--g200); font-size: 0.9rem; }
+        .toc-item:last-child { border-bottom: none; }
+        .toc-num { color: var(--primary); font-weight: 700; margin-right: 0.75rem; }
+
+        ul.check { list-style: none; padding: 0; margin: 0.5rem 0; }
+        ul.check li { padding: 0.35rem 0 0.35rem 1.75rem; position: relative; font-size: 0.9rem; color: var(--g700); }
+        ul.check li::before { content: '✓'; position: absolute; left: 0; color: var(--accent); font-weight: 700; background: #dcfce7; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; top: 0.45rem; }
+
+        .total-row td { background: var(--primary) !important; color: white !important; font-weight: 700; font-size: 1rem; }
+        .subtotal-row td { background: var(--g100) !important; font-weight: 600; }
+        .separator td { height: 8px; padding: 0; background: white !important; border: none; }
+        .doc-footer { margin-top: 4rem; padding-top: 2rem; border-top: 2px solid var(--g200); text-align: center; color: var(--g500); font-size: 0.8rem; }
+        .sig-block { display: flex; gap: 3rem; margin: 3rem 0; }
+        .sig-box { flex: 1; border-top: 2px solid var(--g300); padding-top: 1rem; }
+        .sig-box p { font-size: 0.85rem; margin-bottom: 0.25rem; }
+    </style>
+</head>
+<body>
+
+<!-- ==================== COVER ==================== -->
+<div class="cover">
+    <div class="cover-badge-top">Proposition Commerciale &bull; Ref. BGFI-WA-2026-001</div>
+    <h1>BGFI WhatsApp<br><span>Business Intelligence</span><br>Platform</h1>
+    <p class="sub">Plateforme de communication client, marketing automation et intelligence artificielle conversationnelle pour le secteur bancaire</p>
+    <div class="cover-grid">
+        <div class="cover-stat"><div class="num">7</div><div class="label">Modules integres</div></div>
+        <div class="cover-stat"><div class="num">IA</div><div class="label">Chatbot RAG + Enrichissement</div></div>
+        <div class="cover-stat"><div class="num">10+</div><div class="label">Pays deployables</div></div>
+        <div class="cover-stat"><div class="num">24/7</div><div class="label">Service client automatise</div></div>
+    </div>
+    <div class="cover-footer">
+        <span>Prepare pour BGFI Bank Gabon</span>
+        <span>Fevrier 2026</span>
+        <span>Validite : 90 jours</span>
+    </div>
+    <div class="cover-conf">CONFIDENTIEL &mdash; USAGE INTERNE UNIQUEMENT</div>
+</div>
+
+<div class="content">
+
+<!-- ==================== TOC ==================== -->
+<div class="toc">
+    <h3>Sommaire</h3>
+    <div class="toc-item"><span><span class="toc-num">01</span> Resume executif & proposition de valeur</span></div>
+    <div class="toc-item"><span><span class="toc-num">02</span> Perimetre fonctionnel de la plateforme</span></div>
+    <div class="toc-item"><span><span class="toc-num">03</span> Benchmark concurrentiel & positionnement tarifaire</span></div>
+    <div class="toc-item"><span><span class="toc-num">04</span> Offre de licence &mdash; 3 formules</span></div>
+    <div class="toc-item"><span><span class="toc-num">05</span> Devis detaille &mdash; Deploiement Gabon (Phase 1)</span></div>
+    <div class="toc-item"><span><span class="toc-num">06</span> Devis deploiement multi-pays (Phase 2)</span></div>
+    <div class="toc-item"><span><span class="toc-num">07</span> Maintenance, support & SLA</span></div>
+    <div class="toc-item"><span><span class="toc-num">08</span> Cout total de possession (TCO) sur 3 ans</span></div>
+    <div class="toc-item"><span><span class="toc-num">09</span> ROI projete & avantage concurrentiel</span></div>
+    <div class="toc-item"><span><span class="toc-num">10</span> Conditions commerciales & calendrier</span></div>
+</div>
+
+<!-- ==================== SECTION 1 ==================== -->
+<h2>1. Resume executif & proposition de valeur</h2>
+
+<p>La <strong>BGFI WhatsApp Business Intelligence Platform</strong> est une solution SaaS proprietaire concue exclusivement pour les besoins du secteur bancaire africain. Elle combine trois piliers technologiques differenciants :</p>
+
+<table>
+    <thead><tr><th>Pilier</th><th>Capacite</th><th>Impact business</th></tr></thead>
+    <tbody>
+        <tr><td><strong>Marketing Automation WhatsApp</strong></td><td>Campagnes segmentees, templates visuels, tracking temps reel</td><td>+150% de taux d'engagement vs SMS/email</td></tr>
+        <tr><td><strong>Chatbot IA Conversationnel (RAG)</strong></td><td>Base de connaissances vectorielle, reponses contextuelles 24/7</td><td>-30% de charge call center, service instantane</td></tr>
+        <tr><td><strong>Intelligence Client IA</strong></td><td>Enrichissement automatique : sentiment, intention, urgence, satisfaction</td><td>Insights clients en temps reel, detection proactive des insatisfactions</td></tr>
+    </tbody>
+</table>
+
+<div class="box box-gold">
+    <strong>Avantage strategique pour le Groupe BGFI</strong>
+    <p>BGFI Bank deviendrait la <strong>premiere banque d'Afrique Centrale</strong> a deployer une plateforme WhatsApp + IA conversationnelle integree, avec enrichissement automatique des conversations. Cet avantage technologique est estimee a <strong>18-24 mois d'avance</strong> sur la concurrence regionale.</p>
+</div>
+
+<!-- ==================== SECTION 2 ==================== -->
+<h2>2. Perimetre fonctionnel de la plateforme</h2>
+
+<table>
+    <thead><tr><th>Module</th><th>Fonctionnalites</th><th>Statut</th></tr></thead>
+    <tbody>
+        <tr><td><strong>1. Campagnes WhatsApp</strong></td><td>Creation, segmentation, envoi massif, tracking delivre/lu/echoue, duplication, planification</td><td><span class="badge badge-green">Operationnel</span></td></tr>
+        <tr><td><strong>2. Templates Meta</strong></td><td>Creation visuelle (texte, image, boutons, footer), soumission Meta, sync statut, duplication</td><td><span class="badge badge-green">Operationnel</span></td></tr>
+        <tr><td><strong>3. Gestion Contacts</strong></td><td>Import CSV/Excel, segments dynamiques, opt-in/opt-out automatique, historique activite</td><td><span class="badge badge-green">Operationnel</span></td></tr>
+        <tr><td><strong>4. Chatbot IA RAG</strong></td><td>Base de connaissances vectorielle (pgvector), upload documents (PDF/DOCX), reponses contextuelles GPT-4</td><td><span class="badge badge-green">Operationnel</span></td></tr>
+        <tr><td><strong>5. Enrichissement IA</strong></td><td>Analyse automatique : sentiment, intention, produit, urgence, satisfaction, besoins client</td><td><span class="badge badge-green">Operationnel</span></td></tr>
+        <tr><td><strong>6. Rapports & Analytics</strong></td><td>Dashboard temps reel, rapports quotidiens IA, suivi consommation tokens, cout par campagne</td><td><span class="badge badge-green">Operationnel</span></td></tr>
+        <tr><td><strong>7. Administration</strong></td><td>Gestion utilisateurs (RBAC), configuration chatbot, grille tarifaire WhatsApp, securite</td><td><span class="badge badge-green">Operationnel</span></td></tr>
+    </tbody>
+</table>
+
+<!-- ==================== SECTION 3 ==================== -->
+<h2>3. Benchmark concurrentiel & positionnement tarifaire</h2>
+
+<p>Le marche des solutions WhatsApp Business pour le secteur bancaire se segmente en 3 niveaux :</p>
+
+<table>
+    <thead><tr><th>Segment</th><th>Solutions</th><th>Prix annuel</th><th>IA Conversationnelle</th><th>Enrichissement IA</th></tr></thead>
+    <tbody>
+        <tr><td><span class="badge badge-green">Entry</span></td><td>WATI, AiSensy, Engati</td><td>700 - 4 000 USD</td><td>Basique / Regles</td><td>Non</td></tr>
+        <tr><td><span class="badge badge-blue">Mid-Market</span></td><td>Respond.io, Haptik</td><td>5 000 - 50 000 USD</td><td>IA limitee</td><td>Non</td></tr>
+        <tr><td><span class="badge badge-amber">Enterprise</span></td><td>Kore.ai, Yellow.ai, Infobip</td><td>100 000 - 500 000 USD</td><td>IA avancee</td><td>Partiel</td></tr>
+        <tr style="background: var(--gold-light);">
+            <td><span class="badge badge-gold">Notre offre</span></td>
+            <td><strong>BGFI WhatsApp BI Platform</strong></td>
+            <td><strong>35 000 - 85 000 USD</strong></td>
+            <td><strong>RAG + GPT-4</strong></td>
+            <td><strong>Complet &amp; automatise</strong></td>
+        </tr>
+    </tbody>
+</table>
+
+<div class="box box-success">
+    <strong>Positionnement : Enterprise a prix Mid-Market</strong>
+    <p>Notre plateforme offre des capacites de niveau Enterprise (IA conversationnelle RAG, enrichissement automatique, analytics avances) au prix du segment Mid-Market. L'economie par rapport a une solution Kore.ai ou Yellow.ai est de <strong>65 000 a 415 000 USD par an</strong>.</p>
+</div>
+
+<!-- ==================== SECTION 4 ==================== -->
+<div class="page-break"></div>
+<h2>4. Offre de licence &mdash; 3 formules</h2>
+
+<div class="tiers">
+    <div class="tier">
+        <div class="tier-name">Starter</div>
+        <div class="tier-price">15 000 <span>USD / an</span></div>
+        <div class="tier-desc">Ideal pour un lancement pilote sur un seul pays</div>
+        <ul>
+            <li>1 numero WhatsApp Business</li>
+            <li>5 utilisateurs inclus</li>
+            <li>Campagnes & templates</li>
+            <li>Gestion contacts + segments</li>
+            <li>Chatbot IA RAG (base)</li>
+            <li>Dashboard analytics</li>
+            <li>Support email (48h)</li>
+        </ul>
+    </div>
+    <div class="tier featured">
+        <div class="tier-badge">Recommande</div>
+        <div class="tier-name">Business</div>
+        <div class="tier-price">35 000 <span>USD / an</span></div>
+        <div class="tier-desc">Solution complete pour une filiale avec IA avancee</div>
+        <ul>
+            <li>1 numero WhatsApp Business</li>
+            <li>15 utilisateurs inclus</li>
+            <li>Tout Starter +</li>
+            <li>Enrichissement IA complet</li>
+            <li>Rapports quotidiens IA</li>
+            <li>Base RAG alimentee par rapports</li>
+            <li>Suivi consommation tokens</li>
+            <li>API d'integration (webhook)</li>
+            <li>Support prioritaire (24h)</li>
+        </ul>
+    </div>
+    <div class="tier">
+        <div class="tier-name">Enterprise</div>
+        <div class="tier-price">85 000 <span>USD / an</span></div>
+        <div class="tier-desc">Deploiement groupe multi-pays avec personnalisation</div>
+        <ul>
+            <li>Jusqu'a 5 numeros WhatsApp</li>
+            <li>Utilisateurs illimites</li>
+            <li>Tout Business +</li>
+            <li>Deploiement multi-pays</li>
+            <li>API notifications utilitaires</li>
+            <li>SSO / LDAP / Active Directory</li>
+            <li>Hebergement on-premise possible</li>
+            <li>SLA 99.9% garanti</li>
+            <li>Account manager dedie</li>
+            <li>Support 24/7 (4h max)</li>
+        </ul>
+    </div>
+</div>
+
+<div class="box box-info">
+    <strong>Licence par pays supplementaire (a partir de la formule Business)</strong>
+    <p>Chaque pays additionnel beneficie d'un tarif degressif : -20% sur la licence annuelle du pays d'origine. Exemple : Business Gabon (35 000 USD) + Congo (28 000 USD) + Cameroun (28 000 USD) = 91 000 USD au lieu de 105 000 USD.</p>
+</div>
+
+<!-- ==================== SECTION 5 ==================== -->
+<h2>5. Devis detaille &mdash; Deploiement Gabon (Phase 1)</h2>
+
+<h3>5.1 Frais de mise en service (one-time)</h3>
+<table>
+    <thead><tr><th>Poste</th><th>Description</th><th class="text-right">Montant USD</th><th class="text-right">Montant FCFA</th></tr></thead>
+    <tbody>
+        <tr><td><strong>Licence de deploiement</strong></td><td>Droit d'installation, configuration initiale, personnalisation branding BGFI</td><td class="text-right font-mono">8 000</td><td class="text-right font-mono">4 800 000</td></tr>
+        <tr><td><strong>Configuration WhatsApp Business API</strong></td><td>Activation Meta Business, verification Green Tick, configuration webhook, templates initiaux</td><td class="text-right font-mono">2 500</td><td class="text-right font-mono">1 500 000</td></tr>
+        <tr><td><strong>Base de connaissances IA</strong></td><td>Structuration, import et vectorisation des documents BGFI (FAQ, produits, procedures) - jusqu'a 50 documents</td><td class="text-right font-mono">3 500</td><td class="text-right font-mono">2 100 000</td></tr>
+        <tr><td><strong>Integration & Tests</strong></td><td>Integration environnement BGFI, tests de charge, validation securite, recette fonctionnelle</td><td class="text-right font-mono">4 000</td><td class="text-right font-mono">2 400 000</td></tr>
+        <tr><td><strong>Formation equipes</strong></td><td>Formation administrateurs (1 jour), operateurs (1 jour), documentation utilisateur, guide de prise en main</td><td class="text-right font-mono">2 000</td><td class="text-right font-mono">1 200 000</td></tr>
+        <tr class="subtotal-row"><td colspan="2"><strong>Sous-total mise en service</strong></td><td class="text-right font-mono font-bold">20 000</td><td class="text-right font-mono font-bold">12 000 000</td></tr>
+    </tbody>
+</table>
+
+<h3>5.2 Licence annuelle (formule Business recommandee)</h3>
+<table>
+    <thead><tr><th>Poste</th><th>Description</th><th class="text-right">Montant USD</th><th class="text-right">Montant FCFA</th></tr></thead>
+    <tbody>
+        <tr><td><strong>Licence plateforme Business</strong></td><td>Acces complet a tous les modules (campagnes, chatbot IA, enrichissement, analytics, administration)</td><td class="text-right font-mono">35 000</td><td class="text-right font-mono">21 000 000</td></tr>
+        <tr><td><strong>Infrastructure cloud</strong></td><td>Hebergement Railway/Supabase (EU), SSL, backups quotidiens, monitoring 24/7</td><td class="text-right font-mono">4 800</td><td class="text-right font-mono">2 880 000</td></tr>
+        <tr><td><strong>Credits IA inclus</strong></td><td>Budget OpenAI inclus : ~500 000 tokens/mois (chatbot + enrichissement + rapports)</td><td class="text-right font-mono">3 600</td><td class="text-right font-mono">2 160 000</td></tr>
+        <tr><td><strong>Mises a jour & evolutions</strong></td><td>Nouvelles fonctionnalites, patches securite, mises a jour Meta API, optimisations</td><td class="text-right font-mono">Inclus</td><td class="text-right font-mono">Inclus</td></tr>
+        <tr class="subtotal-row"><td colspan="2"><strong>Sous-total licence annuelle</strong></td><td class="text-right font-mono font-bold">43 400</td><td class="text-right font-mono font-bold">26 040 000</td></tr>
+    </tbody>
+</table>
+
+<h3>5.3 Couts variables (a la consommation)</h3>
+<table>
+    <thead><tr><th>Poste</th><th>Unite</th><th class="text-right">Prix unitaire</th><th>Note</th></tr></thead>
+    <tbody>
+        <tr><td><strong>Messages WhatsApp Marketing</strong></td><td>Par message delivre</td><td class="text-right font-mono">35 FCFA</td><td>Tarif Meta "Rest of Africa" applique</td></tr>
+        <tr><td><strong>Messages WhatsApp Utilitaire</strong></td><td>Par message delivre</td><td class="text-right font-mono">11 FCFA</td><td>Notifications, confirmations</td></tr>
+        <tr><td><strong>Messages WhatsApp Service</strong></td><td>Par message (24h)</td><td class="text-right font-mono">Gratuit</td><td>Reponses dans la fenetre 24h</td></tr>
+        <tr><td><strong>Tokens IA supplementaires</strong></td><td>Par 1M tokens</td><td class="text-right font-mono">36 000 FCFA</td><td>Au-dela du quota inclus</td></tr>
+        <tr><td><strong>Utilisateurs supplementaires</strong></td><td>Par utilisateur / mois</td><td class="text-right font-mono">15 000 FCFA</td><td>Au-dela des 15 inclus</td></tr>
+    </tbody>
+</table>
+
+<h3>5.4 Total Phase 1 - Annee 1</h3>
+<table>
+    <thead><tr><th>Poste</th><th class="text-right">USD</th><th class="text-right">FCFA</th></tr></thead>
+    <tbody>
+        <tr><td>Mise en service (one-time)</td><td class="text-right font-mono">20 000</td><td class="text-right font-mono">12 000 000</td></tr>
+        <tr><td>Licence annuelle Business</td><td class="text-right font-mono">43 400</td><td class="text-right font-mono">26 040 000</td></tr>
+        <tr><td>Messages WhatsApp (estimation 50 000 msg marketing/an)</td><td class="text-right font-mono">~2 900</td><td class="text-right font-mono">~1 750 000</td></tr>
+        <tr class="total-row"><td><strong>TOTAL ANNEE 1 (estimation)</strong></td><td class="text-right font-mono">~66 300</td><td class="text-right font-mono">~39 790 000</td></tr>
+    </tbody>
+</table>
+
+<!-- ==================== SECTION 6 ==================== -->
+<div class="page-break"></div>
+<h2>6. Devis deploiement multi-pays (Phase 2)</h2>
+
+<p>Le Groupe BGFI est present dans <strong>10 pays d'Afrique</strong>. Chaque filiale peut beneficier de sa propre instance avec numero WhatsApp local, base de connaissances adaptee et branding personnalise.</p>
+
+<h3>6.1 Tarification par pays (licence Business)</h3>
+<table>
+    <thead><tr><th>Pays</th><th>Mise en service</th><th>Licence annuelle</th><th>Remise groupe</th><th class="text-right">Total An 1</th></tr></thead>
+    <tbody>
+        <tr><td><strong>Gabon</strong> (pilote)</td><td class="font-mono">20 000 USD</td><td class="font-mono">43 400 USD</td><td>-</td><td class="text-right font-mono font-bold">63 400 USD</td></tr>
+        <tr><td><strong>Congo-Brazzaville</strong></td><td class="font-mono">12 000 USD</td><td class="font-mono">34 720 USD</td><td>-20%</td><td class="text-right font-mono font-bold">46 720 USD</td></tr>
+        <tr><td><strong>RD Congo</strong></td><td class="font-mono">12 000 USD</td><td class="font-mono">34 720 USD</td><td>-20%</td><td class="text-right font-mono font-bold">46 720 USD</td></tr>
+        <tr><td><strong>Cameroun</strong></td><td class="font-mono">12 000 USD</td><td class="font-mono">34 720 USD</td><td>-20%</td><td class="text-right font-mono font-bold">46 720 USD</td></tr>
+        <tr><td><strong>Cote d'Ivoire</strong></td><td class="font-mono">12 000 USD</td><td class="font-mono">30 380 USD</td><td>-30%</td><td class="text-right font-mono font-bold">42 380 USD</td></tr>
+        <tr><td><strong>Senegal</strong></td><td class="font-mono">12 000 USD</td><td class="font-mono">30 380 USD</td><td>-30%</td><td class="text-right font-mono font-bold">42 380 USD</td></tr>
+        <tr><td><strong>Guinee Equatoriale</strong></td><td class="font-mono">10 000 USD</td><td class="font-mono">30 380 USD</td><td>-30%</td><td class="text-right font-mono font-bold">40 380 USD</td></tr>
+        <tr><td><strong>Madagascar</strong></td><td class="font-mono">10 000 USD</td><td class="font-mono">30 380 USD</td><td>-30%</td><td class="text-right font-mono font-bold">40 380 USD</td></tr>
+        <tr><td><strong>Benin</strong></td><td class="font-mono">10 000 USD</td><td class="font-mono">26 040 USD</td><td>-40%</td><td class="text-right font-mono font-bold">36 040 USD</td></tr>
+        <tr><td><strong>Sao Tome</strong></td><td class="font-mono">8 000 USD</td><td class="font-mono">26 040 USD</td><td>-40%</td><td class="text-right font-mono font-bold">34 040 USD</td></tr>
+        <tr class="separator"><td colspan="5"></td></tr>
+        <tr class="total-row"><td><strong>TOTAL GROUPE (10 pays) - Annee 1</strong></td><td colspan="3"></td><td class="text-right font-mono">439 160 USD</td></tr>
+    </tbody>
+</table>
+
+<h3>6.2 Offre Groupe &mdash; Forfait negociable</h3>
+<div class="box box-gold">
+    <strong>Offre speciale deploiement integral Groupe BGFI</strong>
+    <p>Pour un engagement de deploiement sur <strong>5 pays minimum</strong> en 24 mois, nous proposons un forfait groupe :</p>
+    <p style="font-size: 1.5rem; font-weight: 900; color: var(--primary); margin: 0.5rem 0;"><span style="text-decoration: line-through; color: var(--g500); font-size: 1rem;">439 160 USD</span> &rarr; 350 000 USD / Annee 1</p>
+    <p>Soit une economie de <strong>89 160 USD</strong> (-20% supplementaire sur le prix groupe deja remise).</p>
+    <p>Annee 2+ : 280 000 USD/an (licences uniquement, pas de frais de mise en service recurrents).</p>
+</div>
+
+<!-- ==================== SECTION 7 ==================== -->
+<h2>7. Maintenance, support & SLA</h2>
+
+<table>
+    <thead><tr><th>Niveau</th><th>Inclus dans</th><th>Temps de reponse</th><th>Couverture</th><th>Canal</th></tr></thead>
+    <tbody>
+        <tr><td><span class="badge badge-green">Standard</span></td><td>Starter</td><td>48h ouvrables</td><td>Lundi-Vendredi 9h-18h</td><td>Email</td></tr>
+        <tr><td><span class="badge badge-blue">Prioritaire</span></td><td>Business</td><td>24h ouvrables</td><td>Lundi-Samedi 8h-20h</td><td>Email + WhatsApp</td></tr>
+        <tr><td><span class="badge badge-amber">Premium 24/7</span></td><td>Enterprise</td><td>4h (critique), 8h (haute)</td><td>24/7/365</td><td>Email + WhatsApp + Tel</td></tr>
+    </tbody>
+</table>
+
+<h3>7.1 Services inclus dans la maintenance</h3>
+<ul class="check">
+    <li>Mises a jour de securite et correctifs critiques (deploiement sous 48h)</li>
+    <li>Compatibilite Meta WhatsApp Cloud API (suivi des changements de version)</li>
+    <li>Mises a jour des modeles OpenAI (migration transparente)</li>
+    <li>Monitoring proactif de la disponibilite (uptime)</li>
+    <li>Backups automatiques quotidiens avec retention 30 jours</li>
+    <li>Rapport mensuel de performance et consommation</li>
+</ul>
+
+<h3>7.2 SLA de disponibilite</h3>
+<table>
+    <thead><tr><th>Formule</th><th>SLA Uptime</th><th>Credits en cas de non-respect</th></tr></thead>
+    <tbody>
+        <tr><td>Starter</td><td>99.5%</td><td>5% de la licence mensuelle par tranche de 0.1% sous le SLA</td></tr>
+        <tr><td>Business</td><td>99.7%</td><td>10% de la licence mensuelle par tranche de 0.1% sous le SLA</td></tr>
+        <tr><td>Enterprise</td><td>99.9%</td><td>15% de la licence mensuelle par tranche de 0.1% sous le SLA</td></tr>
+    </tbody>
+</table>
+
+<!-- ==================== SECTION 8 ==================== -->
+<h2>8. Cout total de possession (TCO) sur 3 ans</h2>
+
+<h3>8.1 TCO Gabon seul (formule Business)</h3>
+<table>
+    <thead><tr><th>Poste</th><th class="text-right">Annee 1</th><th class="text-right">Annee 2</th><th class="text-right">Annee 3</th><th class="text-right">Total 3 ans</th></tr></thead>
+    <tbody>
+        <tr><td>Mise en service</td><td class="text-right font-mono">20 000</td><td class="text-right font-mono">-</td><td class="text-right font-mono">-</td><td class="text-right font-mono">20 000</td></tr>
+        <tr><td>Licence annuelle</td><td class="text-right font-mono">43 400</td><td class="text-right font-mono">43 400</td><td class="text-right font-mono">43 400</td><td class="text-right font-mono">130 200</td></tr>
+        <tr><td>Messages WhatsApp (est.)</td><td class="text-right font-mono">2 900</td><td class="text-right font-mono">4 500</td><td class="text-right font-mono">6 800</td><td class="text-right font-mono">14 200</td></tr>
+        <tr class="total-row"><td><strong>TCO 3 ANS - GABON</strong></td><td class="text-right"></td><td class="text-right"></td><td class="text-right"></td><td class="text-right font-mono">164 400 USD</td></tr>
+    </tbody>
+</table>
+
+<h3>8.2 Comparaison avec les alternatives</h3>
+<table>
+    <thead><tr><th>Solution</th><th class="text-right">TCO 3 ans (estimation)</th><th>Ecart</th></tr></thead>
+    <tbody>
+        <tr><td>Kore.ai Enterprise</td><td class="text-right font-mono">900 000 - 1 500 000 USD</td><td class="badge badge-red">5x - 9x plus cher</td></tr>
+        <tr><td>Yellow.ai Enterprise</td><td class="text-right font-mono">600 000 - 1 000 000 USD</td><td class="badge badge-red">4x - 6x plus cher</td></tr>
+        <tr><td>Infobip Custom (Afrique)</td><td class="text-right font-mono">400 000 - 750 000 USD</td><td class="badge badge-amber">2.5x - 4.5x plus cher</td></tr>
+        <tr><td>Developpement interne</td><td class="text-right font-mono">540 000+ USD</td><td class="badge badge-amber">3x+ plus cher (equipe de 3 devs)</td></tr>
+        <tr style="background: var(--gold-light);"><td><strong>BGFI WhatsApp BI Platform</strong></td><td class="text-right font-mono font-bold">164 400 USD</td><td class="badge badge-green">Reference</td></tr>
+    </tbody>
+</table>
+
+<!-- ==================== SECTION 9 ==================== -->
+<div class="page-break"></div>
+<h2>9. ROI projete & avantage concurrentiel</h2>
+
+<h3>9.1 Retour sur investissement</h3>
+<table>
+    <thead><tr><th>Indicateur</th><th>Avant plateforme</th><th>Avec plateforme</th><th>Impact</th></tr></thead>
+    <tbody>
+        <tr><td>Taux d'ouverture communications</td><td>15-20% (SMS/email)</td><td>85-95% (WhatsApp)</td><td><span class="badge badge-green">+400%</span></td></tr>
+        <tr><td>Cout par contact touche</td><td>50-80 FCFA (SMS)</td><td>35 FCFA (WhatsApp Marketing)</td><td><span class="badge badge-green">-50%</span></td></tr>
+        <tr><td>Disponibilite service client</td><td>8h-17h (jours ouvres)</td><td>24/7/365 (chatbot IA)</td><td><span class="badge badge-green">+300%</span></td></tr>
+        <tr><td>Temps de reponse moyen</td><td>2-24h (email/telephone)</td><td>&lt; 5 secondes (chatbot)</td><td><span class="badge badge-green">-99%</span></td></tr>
+        <tr><td>Volume appels call center</td><td>100%</td><td>70% (30% absorbe par chatbot)</td><td><span class="badge badge-green">-30%</span></td></tr>
+        <tr><td>Insights clients en temps reel</td><td>Aucun</td><td>Sentiment, intention, satisfaction automatiques</td><td><span class="badge badge-green">Nouveau</span></td></tr>
+        <tr><td>Delai de campagne marketing</td><td>5-10 jours (conception a envoi)</td><td>30 minutes (template pre-approuve)</td><td><span class="badge badge-green">-98%</span></td></tr>
+    </tbody>
+</table>
+
+<h3>9.2 Economies projetes Annee 1</h3>
+<table>
+    <thead><tr><th>Source d'economie</th><th class="text-right">Estimation annuelle</th></tr></thead>
+    <tbody>
+        <tr><td>Reduction cout SMS (remplacement par WhatsApp)</td><td class="text-right font-mono">8 000 000 FCFA</td></tr>
+        <tr><td>Reduction charge call center (-30% appels absorbes par chatbot IA)</td><td class="text-right font-mono">12 000 000 FCFA</td></tr>
+        <tr><td>Reduction delai campagnes (gain productivite equipe marketing)</td><td class="text-right font-mono">4 000 000 FCFA</td></tr>
+        <tr><td>Detection proactive insatisfaction (retention clients)</td><td class="text-right font-mono">6 000 000 FCFA</td></tr>
+        <tr class="subtotal-row"><td><strong>Economies estimees Annee 1</strong></td><td class="text-right font-mono font-bold">30 000 000 FCFA</td></tr>
+    </tbody>
+</table>
+
+<div class="box box-success">
+    <strong>ROI Annee 1 : Investissement rembourse en 16 mois</strong>
+    <p>Investissement Annee 1 : 39 790 000 FCFA &mdash; Economies estimees : 30 000 000 FCFA</p>
+    <p>A partir de l'Annee 2 (pas de frais de mise en service), le ROI est positif des le premier trimestre.</p>
+</div>
+
+<h3>9.3 Avantage concurrentiel pour le Groupe BGFI</h3>
+<ul class="check">
+    <li><strong>Premiere banque d'Afrique Centrale</strong> avec un chatbot IA conversationnel sur WhatsApp</li>
+    <li><strong>Unique capacite d'enrichissement IA</strong> des conversations clients dans le secteur bancaire CEMAC</li>
+    <li><strong>Canal WhatsApp prefere</strong> : 90%+ de penetration WhatsApp dans les pays BGFI</li>
+    <li><strong>Propriete intellectuelle</strong> : plateforme proprietaire, pas de dependance a un editeur tiers</li>
+    <li><strong>Scalabilite groupe</strong> : deployable sur les 10 pays en 12-18 mois</li>
+    <li><strong>Avance technologique estimee</strong> : 18-24 mois sur la concurrence regionale</li>
+</ul>
+
+<!-- ==================== SECTION 10 ==================== -->
+<h2>10. Conditions commerciales & calendrier</h2>
+
+<h3>10.1 Conditions de paiement</h3>
+<table>
+    <thead><tr><th>Echeance</th><th>Montant</th><th>Declencheur</th></tr></thead>
+    <tbody>
+        <tr><td><strong>A la signature</strong></td><td>40% de la mise en service + 25% de la licence annuelle</td><td>Signature du contrat</td></tr>
+        <tr><td><strong>A la mise en production</strong></td><td>60% de la mise en service + 25% de la licence annuelle</td><td>Recette validee</td></tr>
+        <tr><td><strong>Trimestriel</strong></td><td>50% restant de la licence (2 versements trimestriels)</td><td>T3 et T4</td></tr>
+        <tr><td><strong>Consommation</strong></td><td>Mensuel a terme echu</td><td>Releve mensuel WhatsApp + IA</td></tr>
+    </tbody>
+</table>
+
+<h3>10.2 Calendrier de deploiement</h3>
+<table>
+    <thead><tr><th>Phase</th><th>Activite</th><th>Duree</th></tr></thead>
+    <tbody>
+        <tr><td><span class="badge badge-blue">Semaine 1-2</span></td><td>Kickoff, configuration environnement, activation Meta Business API</td><td>2 semaines</td></tr>
+        <tr><td><span class="badge badge-blue">Semaine 3-4</span></td><td>Import contacts, creation templates, structuration base de connaissances IA</td><td>2 semaines</td></tr>
+        <tr><td><span class="badge badge-amber">Semaine 5-6</span></td><td>Tests fonctionnels, tests de charge, validation securite DSI</td><td>2 semaines</td></tr>
+        <tr><td><span class="badge badge-green">Semaine 7</span></td><td>Formation equipes + mise en production</td><td>1 semaine</td></tr>
+        <tr><td><span class="badge badge-green">Semaine 8-12</span></td><td>Accompagnement post-lancement, optimisation, premieres campagnes</td><td>5 semaines</td></tr>
+    </tbody>
+</table>
+
+<h3>10.3 Validite & engagement</h3>
+<div class="box box-warning">
+    <strong>Conditions</strong>
+    <p><strong>Validite de l'offre :</strong> 90 jours a compter de la date d'emission (12 fevrier 2026)</p>
+    <p><strong>Engagement minimum :</strong> 12 mois pour la formule Starter/Business, 24 mois pour Enterprise</p>
+    <p><strong>Clause de sortie :</strong> Preavis de 90 jours avant la date anniversaire</p>
+    <p><strong>Propriete des donnees :</strong> BGFI Bank reste proprietaire de toutes les donnees (contacts, conversations, rapports). En cas de resiliation, export complet sous 30 jours.</p>
+    <p><strong>Code source :</strong> Le code source est disponible pour audit securite par la DSI BGFI a tout moment.</p>
+</div>
+
+<!-- ==================== SIGNATURES ==================== -->
+<h3>Acceptation</h3>
+<p>En signant ce document, les parties acceptent les termes de la proposition commerciale decrite ci-dessus.</p>
+
+<div class="sig-block">
+    <div class="sig-box">
+        <p><strong>Pour le Prestataire</strong></p>
+        <p>Nom : ____________________________</p>
+        <p>Fonction : ____________________________</p>
+        <p>Date : ____________________________</p>
+        <p>Signature :</p>
+        <br><br><br>
+    </div>
+    <div class="sig-box">
+        <p><strong>Pour BGFI Bank Gabon</strong></p>
+        <p>Nom : ____________________________</p>
+        <p>Fonction : ____________________________</p>
+        <p>Date : ____________________________</p>
+        <p>Signature :</p>
+        <br><br><br>
+    </div>
+</div>
+
+<!-- ==================== FOOTER ==================== -->
+<div class="doc-footer">
+    <p><strong>BGFI WhatsApp Business Intelligence Platform</strong></p>
+    <p>Proposition Commerciale Ref. BGFI-WA-2026-001 &mdash; Fevrier 2026</p>
+    <p>Document confidentiel &mdash; Reproduction interdite sans autorisation</p>
+</div>
+
+</div>
+</body>
+</html>

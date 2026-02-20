@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BGFI WhatsApp Platform - Configuration Securite Reseau</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; color: #1a1a2e; background: #f8f9fa; line-height: 1.7; }
+
+        .cover { background: linear-gradient(135deg, #003366 0%, #001a33 60%, #000d1a 100%); color: white; min-height: 100vh; display: flex; flex-direction: column; justify-content: center; padding: 80px; position: relative; overflow: hidden; }
+        .cover::before { content: ''; position: absolute; top: -50%; right: -20%; width: 800px; height: 800px; background: radial-gradient(circle, rgba(0,180,90,0.15) 0%, transparent 70%); }
+        .cover::after { content: ''; position: absolute; bottom: -30%; left: -10%; width: 600px; height: 600px; background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%); }
+        .cover-badge { display: inline-block; background: rgba(0,180,90,0.2); border: 1px solid rgba(0,180,90,0.4); color: #00b45a; padding: 8px 20px; border-radius: 50px; font-size: 13px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 40px; }
+        .cover h1 { font-size: 48px; font-weight: 800; line-height: 1.15; margin-bottom: 20px; max-width: 700px; }
+        .cover h1 span { color: #00b45a; }
+        .cover .subtitle { font-size: 20px; color: rgba(255,255,255,0.7); max-width: 600px; margin-bottom: 50px; font-weight: 300; }
+        .cover-meta { display: flex; gap: 40px; color: rgba(255,255,255,0.5); font-size: 14px; }
+        .cover-meta strong { color: rgba(255,255,255,0.8); }
+
+        .container { max-width: 900px; margin: 0 auto; padding: 60px 40px; }
+
+        h2 { font-size: 28px; font-weight: 700; color: #003366; margin: 60px 0 25px; padding-bottom: 12px; border-bottom: 3px solid #00b45a; }
+        h2 .num { color: #00b45a; }
+        h3 { font-size: 20px; font-weight: 600; color: #1a1a2e; margin: 35px 0 15px; }
+        h4 { font-size: 16px; font-weight: 600; color: #003366; margin: 20px 0 10px; }
+        p { margin-bottom: 15px; color: #444; }
+
+        .toc { background: white; border-radius: 16px; padding: 40px; margin: 40px 0; box-shadow: 0 2px 15px rgba(0,0,0,0.06); }
+        .toc h2 { margin-top: 0; }
+        .toc ol { padding-left: 0; list-style: none; counter-reset: toc; }
+        .toc li { counter-increment: toc; padding: 10px 0; border-bottom: 1px solid #f0f0f0; }
+        .toc li:last-child { border-bottom: none; }
+        .toc li::before { content: counter(toc) "."; color: #00b45a; font-weight: 700; margin-right: 12px; }
+        .toc a { color: #003366; text-decoration: none; font-weight: 500; }
+        .toc a:hover { color: #00b45a; }
+
+        .section { background: white; border-radius: 16px; padding: 40px; margin: 30px 0; box-shadow: 0 2px 15px rgba(0,0,0,0.06); }
+
+        .arch-diagram { background: #f0f4f8; border-radius: 12px; padding: 30px; margin: 25px 0; font-family: 'Courier New', monospace; font-size: 13px; line-height: 1.9; white-space: pre; overflow-x: auto; color: #003366; }
+
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px; }
+        th { background: #003366; color: white; padding: 12px 16px; text-align: left; font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
+        td { padding: 11px 16px; border-bottom: 1px solid #eee; color: #444; }
+        tr:hover td { background: #f8fbff; }
+
+        .rule-box { background: #f0f8f0; border-left: 4px solid #00b45a; padding: 20px 25px; border-radius: 0 12px 12px 0; margin: 20px 0; }
+        .rule-box.warning { background: #fff8f0; border-left-color: #ff8c00; }
+        .rule-box.critical { background: #fff0f0; border-left-color: #dc3545; }
+        .rule-box.info { background: #f0f4ff; border-left-color: #003366; }
+        .rule-box h4 { margin-top: 0; color: inherit; }
+        .rule-box code { background: rgba(0,0,0,0.06); padding: 2px 8px; border-radius: 4px; font-size: 13px; font-family: 'Courier New', monospace; }
+
+        .fw-rule { background: #1a1a2e; color: #e0e0e0; border-radius: 10px; padding: 20px 25px; margin: 15px 0; font-family: 'Courier New', monospace; font-size: 13px; line-height: 1.8; overflow-x: auto; }
+        .fw-rule .comment { color: #6a9955; }
+        .fw-rule .keyword { color: #569cd6; }
+        .fw-rule .value { color: #ce9178; }
+        .fw-rule .action { color: #4ec9b0; }
+
+        .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+        .badge-green { background: #e6f9ee; color: #00874a; }
+        .badge-blue { background: #e6f0ff; color: #003366; }
+        .badge-orange { background: #fff3e0; color: #e65100; }
+        .badge-red { background: #fce4ec; color: #c62828; }
+
+        .checklist { list-style: none; padding: 0; }
+        .checklist li { padding: 8px 0 8px 30px; position: relative; color: #444; }
+        .checklist li::before { content: '✓'; position: absolute; left: 0; color: #00b45a; font-weight: 700; font-size: 16px; }
+
+        .flow-step { display: flex; align-items: flex-start; gap: 15px; margin: 15px 0; }
+        .flow-num { min-width: 32px; height: 32px; background: #003366; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; }
+        .flow-content { flex: 1; }
+        .flow-content strong { color: #003366; }
+
+        .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 20px 0; }
+        .col-card { background: #f8f9fa; border-radius: 12px; padding: 25px; border: 1px solid #e0e0e0; }
+        .col-card h4 { margin-top: 0; }
+
+        @media print {
+            .cover { min-height: auto; padding: 60px; page-break-after: always; }
+            .section { box-shadow: none; border: 1px solid #e0e0e0; break-inside: avoid; }
+            body { background: white; }
+        }
+        @media (max-width: 768px) {
+            .cover { padding: 40px 25px; }
+            .cover h1 { font-size: 32px; }
+            .container { padding: 30px 20px; }
+            .section { padding: 25px; }
+            .two-col { grid-template-columns: 1fr; }
+            .arch-diagram { font-size: 11px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- COUVERTURE -->
+<div class="cover">
+    <div class="cover-badge">Document Technique Confidentiel</div>
+    <h1>Configuration <span>Securite Reseau</span> pour la Plateforme WhatsApp BGFI</h1>
+    <p class="subtitle">Guide de configuration des pare-feu, regles de filtrage et securisation des flux API pour un deploiement sur infrastructure BGFI Bank.</p>
+    <div class="cover-meta">
+        <div><strong>Version</strong> 1.0</div>
+        <div><strong>Date</strong> Fevrier 2026</div>
+        <div><strong>Classification</strong> Confidentiel</div>
+        <div><strong>Destinataires</strong> DSI / RSSI / Equipe Infra</div>
+    </div>
+</div>
+
+<div class="container">
+
+    <!-- TABLE DES MATIERES -->
+    <div class="toc">
+        <h2>Table des matieres</h2>
+        <ol>
+            <li><a href="#s1">Architecture des flux reseau</a></li>
+            <li><a href="#s2">Connexions sortantes a autoriser (Outbound)</a></li>
+            <li><a href="#s3">Connexions entrantes a autoriser (Inbound)</a></li>
+            <li><a href="#s4">Regles de pare-feu detaillees</a></li>
+            <li><a href="#s5">Chiffrement et certificats TLS</a></li>
+            <li><a href="#s6">Verification des webhooks Meta (Signature)</a></li>
+            <li><a href="#s7">Protection des donnees et conformite</a></li>
+            <li><a href="#s8">Configuration DNS et proxy</a></li>
+            <li><a href="#s9">Monitoring et audit des connexions</a></li>
+            <li><a href="#s10">Checklist de mise en production</a></li>
+        </ol>
+    </div>
+
+    <!-- SECTION 1 : ARCHITECTURE -->
+    <div class="section" id="s1">
+        <h2><span class="num">1.</span> Architecture des flux reseau</h2>
+
+        <p>La plateforme WhatsApp BGFI communique avec <strong>3 services externes</strong> via HTTPS (TLS 1.2+). Aucune connexion en clair n'est utilisee. Voici le schema des flux :</p>
+
+        <div class="arch-diagram">
+┌─────────────────────────────────────────────────────────────────────┐
+│                    RESEAU BGFI BANK (DMZ)                          │
+│                                                                     │
+│   ┌─────────────────────────┐                                       │
+│   │   SERVEUR APPLICATION   │                                       │
+│   │   (Node.js / Express)   │                                       │
+│   │                         │                                       │
+│   │   Port interne : 3000   │                                       │
+│   └────────┬───┬───┬────────┘                                       │
+│            │   │   │                                                │
+└────────────┼───┼───┼────────────────────────────────────────────────┘
+             │   │   │
+    ┌────────┘   │   └────────┐
+    ▼            ▼            ▼
+┌────────┐ ┌─────────┐ ┌──────────┐
+│  META  │ │ OPENAI  │ │ SUPABASE │
+│ (WhatsApp│ │  (GPT)  │ │  (BDD)   │
+│ Cloud  │ │         │ │          │
+│  API)  │ │         │ │          │
+└────────┘ └─────────┘ └──────────┘
+
+FLUX SORTANTS (du serveur BGFI vers Internet) :
+  ➜ graph.facebook.com        (443/TCP)  Envoi messages WhatsApp
+  ➜ api.openai.com            (443/TCP)  Chatbot IA / Embeddings
+  ➜ *.pooler.supabase.com     (6543/TCP) Base de donnees PostgreSQL
+
+FLUX ENTRANT (d'Internet vers le serveur BGFI) :
+  ➜ Webhooks Meta → Serveur   (443/TCP)  Reception messages WhatsApp
+        </div>
+
+        <div class="rule-box info">
+            <h4>Principe de moindre privilege</h4>
+            <p>Seuls les flux strictement necessaires sont autorises. Tout le reste est bloque par defaut (politique <strong>deny-all</strong>). Les 3 connexions sortantes + 1 entrante ci-dessus sont les <strong>seules</strong> requises.</p>
+        </div>
+    </div>
+
+    <!-- SECTION 2 : SORTANT -->
+    <div class="section" id="s2">
+        <h2><span class="num">2.</span> Connexions sortantes a autoriser (Outbound)</h2>
+
+        <h3>2.1 Meta WhatsApp Cloud API</h3>
+        <p>L'application envoie des messages WhatsApp et gere les templates via l'API Graph de Meta.</p>
+
+        <table>
+            <thead>
+                <tr><th>Parametre</th><th>Valeur</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><strong>Domaine</strong></td><td><code>graph.facebook.com</code></td></tr>
+                <tr><td><strong>Port</strong></td><td>443 (HTTPS/TLS)</td></tr>
+                <tr><td><strong>Protocole</strong></td><td>TCP</td></tr>
+                <tr><td><strong>TLS minimum</strong></td><td>TLS 1.2</td></tr>
+                <tr><td><strong>Authentification</strong></td><td>Bearer Token (variable <code>WHATSAPP_ACCESS_TOKEN</code>)</td></tr>
+                <tr><td><strong>API Version</strong></td><td>v21.0</td></tr>
+                <tr><td><strong>Endpoints utilises</strong></td><td><code>/{phone_id}/messages</code>, <code>/{waba_id}/message_templates</code>, <code>/app/uploads</code></td></tr>
+            </tbody>
+        </table>
+
+        <div class="rule-box warning">
+            <h4>Domaines supplementaires Meta (CDN media)</h4>
+            <p>Pour l'envoi et la reception de medias (images, videos des templates), autoriser egalement :</p>
+            <ul style="margin-top:10px;padding-left:20px;color:#444">
+                <li><code>scontent.whatsapp.net</code> — CDN images/videos des templates</li>
+                <li><code>lookaside.fbsbx.com</code> — Upload de medias (Resumable Upload API)</li>
+                <li><code>*.fbcdn.net</code> — CDN Facebook (images partagees)</li>
+            </ul>
+        </div>
+
+        <h3>2.2 OpenAI API</h3>
+        <p>Utilisee pour le chatbot RAG (reponses automatiques) et la generation d'embeddings pour la base de connaissances.</p>
+
+        <table>
+            <thead>
+                <tr><th>Parametre</th><th>Valeur</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><strong>Domaine</strong></td><td><code>api.openai.com</code></td></tr>
+                <tr><td><strong>Port</strong></td><td>443 (HTTPS/TLS)</td></tr>
+                <tr><td><strong>Protocole</strong></td><td>TCP</td></tr>
+                <tr><td><strong>TLS minimum</strong></td><td>TLS 1.2</td></tr>
+                <tr><td><strong>Authentification</strong></td><td>Bearer Token (variable <code>OPENAI_API_KEY</code>)</td></tr>
+                <tr><td><strong>Modeles utilises</strong></td><td><code>gpt-4.1</code> (chat), <code>text-embedding-3-small</code> (embeddings)</td></tr>
+                <tr><td><strong>Donnees envoyees</strong></td><td>Messages texte des clients (anonymisables), documents de la base de connaissances</td></tr>
+            </tbody>
+        </table>
+
+        <div class="rule-box">
+            <h4>Politique de donnees OpenAI (API)</h4>
+            <p>Via l'API (et non ChatGPT), OpenAI <strong>ne conserve pas les donnees</strong> pour entrainer ses modeles. Les donnees sont conservees 30 jours maximum pour detection d'abus, puis supprimees. OpenAI est certifie <strong>SOC 2 Type II</strong>. Pour une securite maximale, BGFI peut opter pour l'offre <strong>OpenAI Enterprise</strong> avec retention zero.</p>
+        </div>
+
+        <h3>2.3 Supabase (Base de donnees PostgreSQL)</h3>
+        <p>Base de donnees hebergee chez Supabase (region EU - Irlande). Connexion via le pooler Supavisor.</p>
+
+        <table>
+            <thead>
+                <tr><th>Parametre</th><th>Valeur</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><strong>Domaine</strong></td><td><code>aws-1-eu-west-1.pooler.supabase.com</code></td></tr>
+                <tr><td><strong>Port</strong></td><td>6543 (PostgreSQL sur pooler Supavisor)</td></tr>
+                <tr><td><strong>Protocole</strong></td><td>TCP</td></tr>
+                <tr><td><strong>Chiffrement</strong></td><td>SSL/TLS obligatoire (<code>?sslmode=require</code>)</td></tr>
+                <tr><td><strong>Authentification</strong></td><td>Mot de passe PostgreSQL (dans <code>DATABASE_URL</code>)</td></tr>
+                <tr><td><strong>Region</strong></td><td>EU West 1 (Irlande) — donnees en Europe</td></tr>
+            </tbody>
+        </table>
+
+        <div class="rule-box info">
+            <h4>Alternative : base de donnees on-premise</h4>
+            <p>Pour une souverainete totale des donnees, BGFI peut heberger la base PostgreSQL <strong>sur ses propres serveurs</strong>. Il suffit de changer la variable <code>DATABASE_URL</code> pour pointer vers le PostgreSQL interne. Dans ce cas, <strong>aucune connexion sortante vers Supabase n'est necessaire</strong> et toutes les donnees restent dans le reseau BGFI.</p>
+        </div>
+    </div>
+
+    <!-- SECTION 3 : ENTRANT -->
+    <div class="section" id="s3">
+        <h2><span class="num">3.</span> Connexions entrantes a autoriser (Inbound)</h2>
+
+        <h3>3.1 Webhooks Meta (Reception de messages WhatsApp)</h3>
+        <p>Meta envoie les messages entrants et les mises a jour de statut (delivre, lu, echoue) vers votre serveur via des webhooks HTTPS POST.</p>
+
+        <table>
+            <thead>
+                <tr><th>Parametre</th><th>Valeur</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><strong>URL du webhook</strong></td><td><code>https://[votre-domaine]/api/webhooks/whatsapp</code></td></tr>
+                <tr><td><strong>Port</strong></td><td>443 (HTTPS obligatoire)</td></tr>
+                <tr><td><strong>Methodes HTTP</strong></td><td>GET (verification), POST (messages)</td></tr>
+                <tr><td><strong>Source</strong></td><td>Serveurs Meta (voir plages IP ci-dessous)</td></tr>
+                <tr><td><strong>Verification</strong></td><td>Signature HMAC SHA-256 (header <code>X-Hub-Signature-256</code>)</td></tr>
+            </tbody>
+        </table>
+
+        <h4>Plages IP des serveurs Meta (webhooks)</h4>
+        <p>Meta publie ses plages IP officiellement. Pour restreindre les connexions entrantes aux seuls serveurs Meta :</p>
+
+        <div class="fw-rule">
+<span class="comment"># Plages IP officielles Meta pour les webhooks</span>
+<span class="comment"># Source : https://developers.facebook.com/docs/sharing/webmasters/crawler</span>
+<span class="comment"># et AS32934 (Meta Platforms, Inc.)</span>
+
+<span class="value">31.13.24.0/21</span>
+<span class="value">31.13.64.0/18</span>
+<span class="value">45.64.40.0/22</span>
+<span class="value">66.220.144.0/20</span>
+<span class="value">69.63.176.0/20</span>
+<span class="value">69.171.224.0/19</span>
+<span class="value">74.119.76.0/22</span>
+<span class="value">102.132.96.0/20</span>
+<span class="value">103.4.96.0/22</span>
+<span class="value">129.134.0.0/16</span>
+<span class="value">147.75.208.0/20</span>
+<span class="value">157.240.0.0/16</span>
+<span class="value">173.252.64.0/18</span>
+<span class="value">179.60.192.0/22</span>
+<span class="value">185.60.216.0/22</span>
+<span class="value">204.15.20.0/22</span>
+
+<span class="comment"># Pour obtenir la liste a jour :</span>
+<span class="keyword">whois</span> -h whois.radb.net -- '-i origin AS32934' | <span class="keyword">grep</span> ^route
+        </div>
+
+        <div class="rule-box critical">
+            <h4>Important : Certificat SSL obligatoire</h4>
+            <p>Meta exige un <strong>certificat SSL valide</strong> (pas auto-signe) sur votre endpoint webhook. Le serveur BGFI doit avoir un certificat emis par une autorite de certification reconnue (Let's Encrypt, DigiCert, etc.). Meta refuse les connexions vers des endpoints HTTP non chiffres ou avec des certificats invalides.</p>
+        </div>
+
+        <h3>3.2 Acces utilisateurs (Interface d'administration)</h3>
+        <p>L'interface web d'administration est accessible uniquement par les operateurs BGFI.</p>
+
+        <table>
+            <thead>
+                <tr><th>Parametre</th><th>Valeur recommandee</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><strong>Port</strong></td><td>443 (HTTPS)</td></tr>
+                <tr><td><strong>Source</strong></td><td>Reseau interne BGFI uniquement (ou VPN)</td></tr>
+                <tr><td><strong>Authentification</strong></td><td>JWT + identifiants (email/mot de passe)</td></tr>
+                <tr><td><strong>Recommandation</strong></td><td>Restreindre aux plages IP du siege et des agences via le pare-feu ou un reverse proxy</td></tr>
+            </tbody>
+        </table>
+
+        <div class="rule-box">
+            <h4>Recommandation : Separation des flux</h4>
+            <p>Utiliser un <strong>reverse proxy</strong> (Nginx, HAProxy) devant l'application Node.js :</p>
+            <ul style="margin-top:10px;padding-left:20px;color:#444">
+                <li><code>/api/webhooks/whatsapp</code> → ouvert aux IP Meta uniquement</li>
+                <li><code>/t/*</code> → ouvert a tous (tracking des clics depuis les telephones)</li>
+                <li>Toutes les autres routes → restreintes au reseau interne BGFI / VPN</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- SECTION 4 : REGLES PARE-FEU -->
+    <div class="section" id="s4">
+        <h2><span class="num">4.</span> Regles de pare-feu detaillees</h2>
+
+        <h3>4.1 Regles Sortantes (Outbound)</h3>
+        <table>
+            <thead>
+                <tr><th>#</th><th>Source</th><th>Destination</th><th>Port</th><th>Proto</th><th>Action</th><th>Description</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>OUT-1</td><td>Serveur App</td><td>graph.facebook.com</td><td>443</td><td>TCP</td><td><span class="badge badge-green">ALLOW</span></td><td>API WhatsApp Cloud</td></tr>
+                <tr><td>OUT-2</td><td>Serveur App</td><td>scontent.whatsapp.net</td><td>443</td><td>TCP</td><td><span class="badge badge-green">ALLOW</span></td><td>CDN medias WhatsApp</td></tr>
+                <tr><td>OUT-3</td><td>Serveur App</td><td>lookaside.fbsbx.com</td><td>443</td><td>TCP</td><td><span class="badge badge-green">ALLOW</span></td><td>Upload medias Meta</td></tr>
+                <tr><td>OUT-4</td><td>Serveur App</td><td>*.fbcdn.net</td><td>443</td><td>TCP</td><td><span class="badge badge-green">ALLOW</span></td><td>CDN Facebook</td></tr>
+                <tr><td>OUT-5</td><td>Serveur App</td><td>api.openai.com</td><td>443</td><td>TCP</td><td><span class="badge badge-green">ALLOW</span></td><td>API OpenAI (Chatbot)</td></tr>
+                <tr><td>OUT-6</td><td>Serveur App</td><td>*.pooler.supabase.com</td><td>6543</td><td>TCP</td><td><span class="badge badge-green">ALLOW</span></td><td>Base de donnees *</td></tr>
+                <tr><td>OUT-7</td><td>Serveur App</td><td>*</td><td>*</td><td>*</td><td><span class="badge badge-red">DENY</span></td><td>Tout le reste bloque</td></tr>
+            </tbody>
+        </table>
+        <p style="font-size:13px;color:#888;">* Si BDD on-premise, la regle OUT-6 est remplacee par une connexion locale (pas de sortie Internet).</p>
+
+        <h3>4.2 Regles Entrantes (Inbound)</h3>
+        <table>
+            <thead>
+                <tr><th>#</th><th>Source</th><th>Destination</th><th>Port</th><th>Proto</th><th>Action</th><th>Description</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>IN-1</td><td>Plages IP Meta *</td><td>Serveur App</td><td>443</td><td>TCP</td><td><span class="badge badge-green">ALLOW</span></td><td>Webhooks WhatsApp</td></tr>
+                <tr><td>IN-2</td><td>0.0.0.0/0</td><td>Serveur App</td><td>443</td><td>TCP</td><td><span class="badge badge-green">ALLOW</span></td><td>Tracking clics (/t/*) **</td></tr>
+                <tr><td>IN-3</td><td>Reseau BGFI interne</td><td>Serveur App</td><td>443</td><td>TCP</td><td><span class="badge badge-green">ALLOW</span></td><td>Interface admin</td></tr>
+                <tr><td>IN-4</td><td>*</td><td>Serveur App</td><td>*</td><td>*</td><td><span class="badge badge-red">DENY</span></td><td>Tout le reste bloque</td></tr>
+            </tbody>
+        </table>
+        <p style="font-size:13px;color:#888;">* Voir plages IP en section 3.1<br>** Les destinataires WhatsApp cliquent sur les boutons depuis leur telephone — source IP non previsible.</p>
+
+        <h3>4.3 Exemple de configuration iptables</h3>
+        <div class="fw-rule">
+<span class="comment"># === OUTBOUND : Meta WhatsApp API ===</span>
+<span class="keyword">iptables</span> -A OUTPUT -p tcp -d graph.facebook.com --dport 443 -j <span class="action">ACCEPT</span>
+<span class="keyword">iptables</span> -A OUTPUT -p tcp -d scontent.whatsapp.net --dport 443 -j <span class="action">ACCEPT</span>
+<span class="keyword">iptables</span> -A OUTPUT -p tcp -d lookaside.fbsbx.com --dport 443 -j <span class="action">ACCEPT</span>
+
+<span class="comment"># === OUTBOUND : OpenAI API ===</span>
+<span class="keyword">iptables</span> -A OUTPUT -p tcp -d api.openai.com --dport 443 -j <span class="action">ACCEPT</span>
+
+<span class="comment"># === OUTBOUND : Supabase (si BDD externe) ===</span>
+<span class="keyword">iptables</span> -A OUTPUT -p tcp -d aws-1-eu-west-1.pooler.supabase.com --dport 6543 -j <span class="action">ACCEPT</span>
+
+<span class="comment"># === OUTBOUND : DNS (necessaire pour resolution de noms) ===</span>
+<span class="keyword">iptables</span> -A OUTPUT -p udp --dport 53 -j <span class="action">ACCEPT</span>
+<span class="keyword">iptables</span> -A OUTPUT -p tcp --dport 53 -j <span class="action">ACCEPT</span>
+
+<span class="comment"># === OUTBOUND : Bloquer tout le reste ===</span>
+<span class="keyword">iptables</span> -A OUTPUT -j <span class="action">DROP</span>
+
+<span class="comment"># === INBOUND : Webhooks Meta (plages IP principales) ===</span>
+<span class="keyword">iptables</span> -A INPUT -p tcp -s 157.240.0.0/16 --dport 443 -j <span class="action">ACCEPT</span>
+<span class="keyword">iptables</span> -A INPUT -p tcp -s 129.134.0.0/16 --dport 443 -j <span class="action">ACCEPT</span>
+<span class="keyword">iptables</span> -A INPUT -p tcp -s 185.60.216.0/22 --dport 443 -j <span class="action">ACCEPT</span>
+<span class="keyword">iptables</span> -A INPUT -p tcp -s 31.13.24.0/21 --dport 443 -j <span class="action">ACCEPT</span>
+<span class="keyword">iptables</span> -A INPUT -p tcp -s 31.13.64.0/18 --dport 443 -j <span class="action">ACCEPT</span>
+<span class="keyword">iptables</span> -A INPUT -p tcp -s 66.220.144.0/20 --dport 443 -j <span class="action">ACCEPT</span>
+<span class="keyword">iptables</span> -A INPUT -p tcp -s 69.63.176.0/20 --dport 443 -j <span class="action">ACCEPT</span>
+<span class="keyword">iptables</span> -A INPUT -p tcp -s 69.171.224.0/19 --dport 443 -j <span class="action">ACCEPT</span>
+<span class="keyword">iptables</span> -A INPUT -p tcp -s 102.132.96.0/20 --dport 443 -j <span class="action">ACCEPT</span>
+<span class="keyword">iptables</span> -A INPUT -p tcp -s 173.252.64.0/18 --dport 443 -j <span class="action">ACCEPT</span>
+<span class="keyword">iptables</span> -A INPUT -p tcp -s 204.15.20.0/22 --dport 443 -j <span class="action">ACCEPT</span>
+
+<span class="comment"># === INBOUND : Tracking clics (tous les telephones) ===</span>
+<span class="comment"># Route /t/* uniquement - filtrage applicatif via Nginx</span>
+<span class="keyword">iptables</span> -A INPUT -p tcp --dport 443 -j <span class="action">ACCEPT</span>
+
+<span class="comment"># === INBOUND : Interface admin (reseau interne) ===</span>
+<span class="keyword">iptables</span> -A INPUT -p tcp -s 10.0.0.0/8 --dport 443 -j <span class="action">ACCEPT</span>
+
+<span class="comment"># === INBOUND : Bloquer tout le reste ===</span>
+<span class="keyword">iptables</span> -A INPUT -j <span class="action">DROP</span>
+        </div>
+    </div>
+
+    <!-- SECTION 5 : TLS -->
+    <div class="section" id="s5">
+        <h2><span class="num">5.</span> Chiffrement et certificats TLS</h2>
+
+        <h3>5.1 Chiffrement en transit</h3>
+        <p><strong>Toutes les communications</strong> entre le serveur BGFI et les services externes sont chiffrees via TLS :</p>
+
+        <table>
+            <thead>
+                <tr><th>Connexion</th><th>Protocole</th><th>TLS min.</th><th>Cipher Suites recommandees</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Serveur → Meta API</td><td>HTTPS</td><td>TLS 1.2</td><td>AES-256-GCM, ChaCha20-Poly1305</td></tr>
+                <tr><td>Serveur → OpenAI API</td><td>HTTPS</td><td>TLS 1.2</td><td>AES-256-GCM, ChaCha20-Poly1305</td></tr>
+                <tr><td>Serveur → Supabase BDD</td><td>PostgreSQL SSL</td><td>TLS 1.2</td><td>AES-256-GCM</td></tr>
+                <tr><td>Meta → Serveur (webhooks)</td><td>HTTPS</td><td>TLS 1.2</td><td>Certificat valide requis</td></tr>
+                <tr><td>Navigateur → Serveur (admin)</td><td>HTTPS</td><td>TLS 1.2</td><td>AES-256-GCM</td></tr>
+            </tbody>
+        </table>
+
+        <h3>5.2 Configuration Nginx recommandee</h3>
+        <div class="fw-rule">
+<span class="comment"># /etc/nginx/conf.d/bgfi-whatsapp.conf</span>
+
+server {
+    listen 443 ssl http2;
+    server_name whatsapp.bgfi.local;
+
+    <span class="comment"># Certificat SSL</span>
+    ssl_certificate     /etc/ssl/certs/bgfi-whatsapp.crt;
+    ssl_certificate_key /etc/ssl/private/bgfi-whatsapp.key;
+
+    <span class="comment"># Protocoles et ciphers securises</span>
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers <span class="value">ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384</span>;
+    ssl_prefer_server_ciphers on;
+
+    <span class="comment"># Headers de securite</span>
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+    add_header X-Content-Type-Options nosniff;
+    add_header X-Frame-Options DENY;
+
+    <span class="comment"># Webhook Meta : ouvert aux IP Meta</span>
+    location /api/webhooks/whatsapp {
+        <span class="keyword">allow</span> 157.240.0.0/16;
+        <span class="keyword">allow</span> 129.134.0.0/16;
+        <span class="keyword">allow</span> 185.60.216.0/22;
+        <span class="keyword">allow</span> 31.13.24.0/21;
+        <span class="keyword">allow</span> 31.13.64.0/18;
+        <span class="keyword">allow</span> 102.132.96.0/20;
+        <span class="keyword">deny</span>  all;
+        proxy_pass http://127.0.0.1:3000;
+    }
+
+    <span class="comment"># Tracking clics : ouvert a tous (telephones des clients)</span>
+    location /t/ {
+        proxy_pass http://127.0.0.1:3000;
+    }
+
+    <span class="comment"># API et interface admin : reseau interne uniquement</span>
+    location / {
+        <span class="keyword">allow</span> 10.0.0.0/8;
+        <span class="keyword">allow</span> 172.16.0.0/12;
+        <span class="keyword">allow</span> 192.168.0.0/16;
+        <span class="keyword">deny</span>  all;
+        proxy_pass http://127.0.0.1:3000;
+    }
+}
+        </div>
+
+        <h3>5.3 Chiffrement au repos</h3>
+        <div class="two-col">
+            <div class="col-card">
+                <h4>Base de donnees</h4>
+                <ul class="checklist">
+                    <li>Supabase : chiffrement AES-256 au repos (AWS EBS)</li>
+                    <li>PostgreSQL on-premise : activer <code>data_checksums</code> + chiffrement disque (LUKS/BitLocker)</li>
+                    <li>Mots de passe haches en bcrypt (12 rounds)</li>
+                </ul>
+            </div>
+            <div class="col-card">
+                <h4>Tokens et secrets</h4>
+                <ul class="checklist">
+                    <li>Variables d'environnement (jamais dans le code)</li>
+                    <li>Rotation trimestrielle des tokens API</li>
+                    <li>Acces restreint au fichier <code>.env</code> (chmod 600)</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECTION 6 : WEBHOOK SIGNATURE -->
+    <div class="section" id="s6">
+        <h2><span class="num">6.</span> Verification des webhooks Meta (Signature)</h2>
+
+        <p>Meta signe chaque requete webhook avec un HMAC SHA-256. Le serveur <strong>doit verifier cette signature</strong> pour s'assurer que la requete provient bien de Meta et n'a pas ete alteree.</p>
+
+        <h3>6.1 Fonctionnement</h3>
+        <div class="flow-step">
+            <div class="flow-num">1</div>
+            <div class="flow-content"><strong>Meta envoie</strong> une requete POST avec le header <code>X-Hub-Signature-256</code> contenant <code>sha256=&lt;hash&gt;</code></div>
+        </div>
+        <div class="flow-step">
+            <div class="flow-num">2</div>
+            <div class="flow-content"><strong>Le serveur calcule</strong> le HMAC SHA-256 du body avec le secret <code>WHATSAPP_WEBHOOK_SECRET</code></div>
+        </div>
+        <div class="flow-step">
+            <div class="flow-num">3</div>
+            <div class="flow-content"><strong>Comparaison</strong> : si les hash correspondent → requete authentique. Sinon → rejet avec HTTP 401.</div>
+        </div>
+
+        <h3>6.2 Implementation recommandee</h3>
+        <div class="fw-rule">
+<span class="comment">// Middleware de verification de signature Meta</span>
+const crypto = require('crypto');
+
+function verifyWebhookSignature(req, res, next) {
+    const signature = req.headers['x-hub-signature-256'];
+    if (!signature) {
+        return res.status(401).json({ error: 'Signature manquante' });
+    }
+
+    const secret = process.env.WHATSAPP_WEBHOOK_SECRET;
+    const expectedHash = 'sha256=' + crypto
+        .createHmac('sha256', secret)
+        .update(JSON.stringify(req.body))
+        .digest('hex');
+
+    if (!crypto.timingSafeEqual(
+        Buffer.from(signature),
+        Buffer.from(expectedHash)
+    )) {
+        return res.status(401).json({ error: 'Signature invalide' });
+    }
+
+    next(); <span class="comment">// Signature valide</span>
+}
+        </div>
+
+        <div class="rule-box critical">
+            <h4>crypto.timingSafeEqual est obligatoire</h4>
+            <p>Toujours utiliser <code>timingSafeEqual</code> pour la comparaison des signatures afin d'eviter les attaques par timing. Ne jamais utiliser <code>===</code> pour comparer des hash cryptographiques.</p>
+        </div>
+    </div>
+
+    <!-- SECTION 7 : DONNEES -->
+    <div class="section" id="s7">
+        <h2><span class="num">7.</span> Protection des donnees et conformite</h2>
+
+        <h3>7.1 Flux de donnees par service</h3>
+        <table>
+            <thead>
+                <tr><th>Service</th><th>Donnees transitant</th><th>Stockage</th><th>Localisation</th><th>Conformite</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Meta WhatsApp</strong></td>
+                    <td>Numeros de telephone, messages texte, medias</td>
+                    <td>Messages en transit uniquement (pas de stockage long terme par Meta)</td>
+                    <td>Global (Meta)</td>
+                    <td>GDPR, propres conditions Meta Business</td>
+                </tr>
+                <tr>
+                    <td><strong>OpenAI</strong></td>
+                    <td>Messages texte des clients (pour reponse IA)</td>
+                    <td>30 jours max (detection abus), non utilise pour entrainement</td>
+                    <td>USA</td>
+                    <td>SOC 2 Type II, Zero data retention (option Enterprise)</td>
+                </tr>
+                <tr>
+                    <td><strong>Supabase</strong></td>
+                    <td>Contacts, messages, campagnes, sessions, documents RAG</td>
+                    <td>Persistant (base de donnees)</td>
+                    <td>EU (Irlande) ou on-premise</td>
+                    <td>SOC 2 Type II, GDPR, HIPAA (option)</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>7.2 Recommandations pour une securite maximale</h3>
+        <div class="two-col">
+            <div class="col-card">
+                <h4>Option A : Configuration actuelle (Cloud)</h4>
+                <ul class="checklist">
+                    <li>BDD Supabase en region EU (Irlande)</li>
+                    <li>API OpenAI standard (retention 30j)</li>
+                    <li>Chiffrement TLS sur tous les flux</li>
+                    <li>Tokens dans variables d'environnement</li>
+                </ul>
+                <p style="margin-top:10px;font-size:13px;color:#888;">Niveau : <span class="badge badge-blue">Securite Standard</span></p>
+            </div>
+            <div class="col-card">
+                <h4>Option B : Securite renforcee (Recommandee)</h4>
+                <ul class="checklist">
+                    <li>PostgreSQL <strong>on-premise</strong> BGFI (zero donnees en cloud)</li>
+                    <li>OpenAI <strong>Enterprise</strong> (zero data retention)</li>
+                    <li>Signature webhook Meta verifiee</li>
+                    <li>Reverse proxy Nginx avec IP whitelisting</li>
+                    <li>Logs d'audit sur toutes les connexions</li>
+                    <li>Rotation automatique des tokens</li>
+                </ul>
+                <p style="margin-top:10px;font-size:13px;color:#888;">Niveau : <span class="badge badge-green">Securite Maximale</span></p>
+            </div>
+        </div>
+
+        <div class="rule-box warning">
+            <h4>Note importante sur WhatsApp</h4>
+            <p>L'utilisation de l'API WhatsApp Cloud impose que les messages transitent par les serveurs Meta. C'est une contrainte incontournable. L'alternative pour une souverainete totale serait WhatsApp <strong>On-Premises API</strong> (hebergement du connecteur WhatsApp sur vos serveurs), mais cette solution est reservee aux tres grands comptes et necessite une validation directe par Meta.</p>
+        </div>
+    </div>
+
+    <!-- SECTION 8 : DNS & PROXY -->
+    <div class="section" id="s8">
+        <h2><span class="num">8.</span> Configuration DNS et proxy</h2>
+
+        <h3>8.1 Resolution DNS</h3>
+        <p>Le serveur applicatif doit pouvoir resoudre les noms de domaine suivants :</p>
+
+        <table>
+            <thead>
+                <tr><th>Domaine</th><th>Usage</th><th>Port</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><code>graph.facebook.com</code></td><td>API WhatsApp</td><td>443</td></tr>
+                <tr><td><code>scontent.whatsapp.net</code></td><td>CDN medias</td><td>443</td></tr>
+                <tr><td><code>lookaside.fbsbx.com</code></td><td>Upload medias</td><td>443</td></tr>
+                <tr><td><code>api.openai.com</code></td><td>API IA</td><td>443</td></tr>
+                <tr><td><code>aws-1-eu-west-1.pooler.supabase.com</code></td><td>BDD *</td><td>6543</td></tr>
+            </tbody>
+        </table>
+        <p style="font-size:13px;color:#888;">* Uniquement si base de donnees cloud. Pas necessaire en mode on-premise.</p>
+
+        <h3>8.2 Proxy HTTPS sortant</h3>
+        <p>Si le reseau BGFI utilise un proxy sortant, configurer les variables d'environnement :</p>
+
+        <div class="fw-rule">
+<span class="comment"># Variables d'environnement pour proxy sortant</span>
+HTTPS_PROXY=<span class="value">http://proxy.bgfi.local:8080</span>
+HTTP_PROXY=<span class="value">http://proxy.bgfi.local:8080</span>
+NO_PROXY=<span class="value">localhost,127.0.0.1,10.0.0.0/8</span>
+
+<span class="comment"># Si le proxy necessite une authentification</span>
+HTTPS_PROXY=<span class="value">http://user:password@proxy.bgfi.local:8080</span>
+        </div>
+
+        <div class="rule-box warning">
+            <h4>Proxy et inspection SSL (DPI)</h4>
+            <p>Si le proxy BGFI effectue une <strong>inspection SSL (DPI / Man-in-the-Middle)</strong>, il faut ajouter le certificat CA du proxy dans le trust store de Node.js :</p>
+            <p style="margin-top:10px"><code>NODE_EXTRA_CA_CERTS=/etc/ssl/certs/bgfi-proxy-ca.pem</code></p>
+            <p style="margin-top:10px">Sans cette configuration, les connexions HTTPS vers Meta et OpenAI echoueront avec une erreur <code>UNABLE_TO_VERIFY_LEAF_SIGNATURE</code>.</p>
+        </div>
+    </div>
+
+    <!-- SECTION 9 : MONITORING -->
+    <div class="section" id="s9">
+        <h2><span class="num">9.</span> Monitoring et audit des connexions</h2>
+
+        <h3>9.1 Logs applicatifs</h3>
+        <p>L'application genere des logs structures (JSON) pour chaque evenement important :</p>
+
+        <table>
+            <thead>
+                <tr><th>Evenement</th><th>Niveau</th><th>Informations loguees</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Message envoye</td><td><span class="badge badge-blue">INFO</span></td><td>campaignId, contactPhone (masque), templateName, status</td></tr>
+                <tr><td>Webhook recu</td><td><span class="badge badge-blue">INFO</span></td><td>Type (message/status), contactPhone, messageId</td></tr>
+                <tr><td>Clic tracke</td><td><span class="badge badge-blue">INFO</span></td><td>trackingId, buttonIndex, campaignId</td></tr>
+                <tr><td>Erreur API Meta</td><td><span class="badge badge-orange">WARN</span></td><td>Code erreur, message, endpoint</td></tr>
+                <tr><td>Erreur API OpenAI</td><td><span class="badge badge-orange">WARN</span></td><td>Code erreur, modele, tokens utilises</td></tr>
+                <tr><td>Connexion BDD echouee</td><td><span class="badge badge-red">ERROR</span></td><td>Code erreur PostgreSQL</td></tr>
+                <tr><td>Authentification echouee</td><td><span class="badge badge-red">ERROR</span></td><td>Email, IP source</td></tr>
+            </tbody>
+        </table>
+
+        <h3>9.2 Surveillance recommandee</h3>
+        <ul class="checklist">
+            <li><strong>Connexions sortantes</strong> : alerter si connexion vers un domaine non autorise</li>
+            <li><strong>Webhooks entrants</strong> : alerter si requete depuis une IP hors plages Meta</li>
+            <li><strong>Volume de messages</strong> : alerter si le volume depasse le seuil normal (envoi de masse non autorise)</li>
+            <li><strong>Tokens API</strong> : alerter si un appel retourne HTTP 401 (token expire ou compromis)</li>
+            <li><strong>Health check</strong> : verifier <code>/api/health</code> toutes les 60 secondes</li>
+            <li><strong>Espace disque / memoire</strong> : alerter si >85% d'utilisation</li>
+        </ul>
+
+        <h3>9.3 Integration SIEM</h3>
+        <p>Les logs JSON peuvent etre envoyes vers un SIEM (Splunk, ELK, Graylog) via syslog ou filebeat pour une analyse centralisee et des alertes en temps reel.</p>
+
+        <div class="fw-rule">
+<span class="comment"># Exemple : rediriger les logs vers syslog</span>
+<span class="comment"># Dans le fichier systemd du service</span>
+[Service]
+ExecStart=/usr/bin/node /opt/bgfi-whatsapp/backend/src/server.js
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=bgfi-whatsapp
+
+<span class="comment"># Ou via rsyslog vers le SIEM</span>
+<span class="comment"># /etc/rsyslog.d/bgfi-whatsapp.conf</span>
+if $programname == 'bgfi-whatsapp' then @@siem.bgfi.local:514
+        </div>
+    </div>
+
+    <!-- SECTION 10 : CHECKLIST -->
+    <div class="section" id="s10">
+        <h2><span class="num">10.</span> Checklist de mise en production</h2>
+
+        <h3>Avant la mise en service</h3>
+        <table>
+            <thead>
+                <tr><th>#</th><th>Action</th><th>Responsable</th><th>Statut</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>1</td><td>Ouvrir les flux sortants (OUT-1 a OUT-6) sur le pare-feu</td><td>Equipe Infra</td><td>☐</td></tr>
+                <tr><td>2</td><td>Ouvrir les flux entrants (IN-1 a IN-3) avec filtrage IP Meta</td><td>Equipe Infra</td><td>☐</td></tr>
+                <tr><td>3</td><td>Installer le certificat SSL valide sur le reverse proxy</td><td>Equipe Infra</td><td>☐</td></tr>
+                <tr><td>4</td><td>Configurer Nginx avec les regles de la section 5.2</td><td>Equipe Infra</td><td>☐</td></tr>
+                <tr><td>5</td><td>Deployer l'application Node.js (port 3000 local)</td><td>Equipe Dev</td><td>☐</td></tr>
+                <tr><td>6</td><td>Configurer les variables d'environnement (.env)</td><td>Equipe Dev / RSSI</td><td>☐</td></tr>
+                <tr><td>7</td><td>Tester la connexion Meta API (envoi d'un message test)</td><td>Equipe Dev</td><td>☐</td></tr>
+                <tr><td>8</td><td>Tester la reception de webhooks (envoyer un message au numero)</td><td>Equipe Dev</td><td>☐</td></tr>
+                <tr><td>9</td><td>Tester la connexion OpenAI (poser une question au chatbot)</td><td>Equipe Dev</td><td>☐</td></tr>
+                <tr><td>10</td><td>Activer la verification de signature webhook (section 6)</td><td>Equipe Dev</td><td>☐</td></tr>
+                <tr><td>11</td><td>Configurer les logs vers le SIEM</td><td>Equipe Securite</td><td>☐</td></tr>
+                <tr><td>12</td><td>Mettre a jour l'URL du webhook sur Meta Business Manager</td><td>Equipe Dev</td><td>☐</td></tr>
+                <tr><td>13</td><td>Planifier la rotation trimestrielle des tokens API</td><td>RSSI</td><td>☐</td></tr>
+                <tr><td>14</td><td>Documenter les regles de pare-feu dans le registre reseau</td><td>Equipe Infra</td><td>☐</td></tr>
+            </tbody>
+        </table>
+
+        <div class="rule-box">
+            <h4>Variables d'environnement requises</h4>
+            <div class="fw-rule" style="margin-top:15px">
+<span class="comment"># === Meta WhatsApp ===</span>
+WHATSAPP_ACCESS_TOKEN=<span class="value">&lt;token Meta Business&gt;</span>
+WHATSAPP_PHONE_NUMBER_ID=<span class="value">974528235744348</span>
+WHATSAPP_BUSINESS_ACCOUNT_ID=<span class="value">1664087661616394</span>
+WHATSAPP_APP_ID=<span class="value">&lt;App ID Facebook&gt;</span>
+WHATSAPP_VERIFY_TOKEN=<span class="value">&lt;token de verification webhook&gt;</span>
+WHATSAPP_WEBHOOK_SECRET=<span class="value">&lt;secret pour signature HMAC&gt;</span>
+
+<span class="comment"># === OpenAI ===</span>
+OPENAI_API_KEY=<span class="value">sk-...</span>
+
+<span class="comment"># === Base de donnees ===</span>
+DATABASE_URL=<span class="value">postgresql://user:pass@host:port/db?sslmode=require</span>
+
+<span class="comment"># === Application ===</span>
+JWT_SECRET=<span class="value">&lt;cle secrete JWT (32+ chars)&gt;</span>
+PORT=<span class="value">3000</span>
+NODE_ENV=<span class="value">production</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div style="text-align:center; padding: 40px 0 60px; color: #999; font-size: 13px;">
+        <p><strong>BGFI Bank</strong> — Document confidentiel — Securite Reseau Plateforme WhatsApp</p>
+        <p>Version 1.0 — Fevrier 2026</p>
+    </div>
+
+</div>
+
+</body>
+</html>

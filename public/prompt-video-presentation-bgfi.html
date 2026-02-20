@@ -1,0 +1,1306 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prompt Video - BGFI WhatsApp Business Intelligence Platform</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        :root {
+            --primary: #1e3a5f; --primary-dark: #0f1f33; --accent: #10b981; --accent-dark: #059669;
+            --gold: #d4a843; --gold-light: #f5ecd3;
+            --danger: #ef4444; --warning: #f59e0b; --info: #3b82f6;
+            --g50: #f9fafb; --g100: #f3f4f6; --g200: #e5e7eb; --g300: #d1d5db;
+            --g500: #6b7280; --g700: #374151; --g900: #111827;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; color: var(--g900); line-height: 1.7; background: #fff; }
+        @media print {
+            body { font-size: 10pt; }
+            .page-break { page-break-before: always; }
+            .no-print { display: none; }
+            .cover { min-height: auto; padding: 3rem 2rem; }
+            pre { font-size: 8pt; white-space: pre-wrap; }
+        }
+        @page { margin: 1.5cm; }
+
+        .cover {
+            min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center;
+            background: linear-gradient(160deg, #0f1f33 0%, #1e3a5f 50%, #2a5a8f 100%);
+            color: white; text-align: center; padding: 4rem; position: relative; overflow: hidden;
+        }
+        .cover::after {
+            content: ''; position: absolute; top: -50%; right: -30%; width: 80%; height: 200%;
+            background: radial-gradient(ellipse, rgba(212,168,67,0.08) 0%, transparent 70%);
+        }
+        .cover-badge-top { position: relative; z-index: 1; font-size: 0.7rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--gold); margin-bottom: 2rem; font-weight: 600; }
+        .cover h1 { position: relative; z-index: 1; font-size: 2.4rem; font-weight: 900; letter-spacing: -0.03em; margin-bottom: 0.5rem; }
+        .cover h1 span { color: var(--gold); }
+        .cover .sub { position: relative; z-index: 1; font-size: 1.1rem; font-weight: 300; opacity: 0.8; margin-bottom: 2.5rem; max-width: 650px; }
+        .cover-conf { position: relative; z-index: 1; margin-top: 2rem; border: 1px solid rgba(212,168,67,0.3); color: var(--gold); padding: 0.6rem 1.5rem; border-radius: 8px; font-size: 0.75rem; letter-spacing: 0.15em; text-transform: uppercase; }
+        .cover-footer { position: relative; z-index: 1; display: flex; gap: 2rem; font-size: 0.8rem; opacity: 0.5; margin-top: 2rem; }
+
+        .content { max-width: 960px; margin: 0 auto; padding: 3rem 2rem; }
+        h2 { font-size: 1.45rem; font-weight: 700; color: var(--primary); margin: 3rem 0 1.25rem; padding-bottom: 0.75rem; border-bottom: 3px solid var(--primary); }
+        h3 { font-size: 1.1rem; font-weight: 600; color: var(--g900); margin: 2rem 0 0.75rem; }
+        h4 { font-size: 0.95rem; font-weight: 600; color: var(--g700); margin: 1.5rem 0 0.5rem; }
+        p { margin-bottom: 1rem; color: var(--g700); font-size: 0.92rem; }
+        ul, ol { margin: 0.75rem 0 1.25rem 1.5rem; color: var(--g700); font-size: 0.92rem; }
+        li { margin-bottom: 0.4rem; }
+
+        table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; font-size: 0.85rem; }
+        th { background: var(--primary); color: white; padding: 0.65rem 0.75rem; text-align: left; font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; }
+        td { padding: 0.65rem 0.75rem; border-bottom: 1px solid var(--g200); vertical-align: top; }
+        tr:nth-child(even) td { background: var(--g50); }
+        .font-mono { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.85em; }
+        .font-bold { font-weight: 700; }
+
+        pre {
+            background: #1e293b; color: #e2e8f0; padding: 1.25rem 1.5rem; border-radius: 10px;
+            font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.8rem;
+            overflow-x: auto; margin: 1rem 0 1.5rem; line-height: 1.6; white-space: pre-wrap;
+        }
+        code { background: var(--g100); color: var(--primary); padding: 0.15em 0.4em; border-radius: 4px; font-family: 'SF Mono', monospace; font-size: 0.85em; }
+        pre code { background: none; color: inherit; padding: 0; }
+
+        .box { border-radius: 12px; padding: 1.25rem 1.5rem; margin: 1.5rem 0; font-size: 0.9rem; }
+        .box-info { background: #eff6ff; border-left: 4px solid var(--info); }
+        .box-success { background: #f0fdf4; border-left: 4px solid var(--accent); }
+        .box-warning { background: #fffbeb; border-left: 4px solid var(--warning); }
+        .box-danger { background: #fef2f2; border-left: 4px solid var(--danger); }
+        .box-gold { background: var(--gold-light); border-left: 4px solid var(--gold); }
+        .box strong { display: block; margin-bottom: 0.25rem; }
+        .box p { margin-bottom: 0.25rem; }
+
+        .scene-block {
+            border: 2px solid var(--g200); border-radius: 16px; margin: 2rem 0; overflow: hidden;
+        }
+        .scene-header {
+            background: linear-gradient(135deg, #1e3a5f, #2d5a87); color: white;
+            padding: 1rem 1.5rem; display: flex; align-items: center; gap: 1rem;
+        }
+        .scene-num {
+            background: var(--gold); color: var(--primary-dark); width: 36px; height: 36px;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-weight: 800; font-size: 0.9rem; flex-shrink: 0;
+        }
+        .scene-title { font-weight: 700; font-size: 1.05rem; }
+        .scene-time { margin-left: auto; font-size: 0.8rem; opacity: 0.7; font-family: monospace; }
+        .scene-body { padding: 1.5rem; }
+        .scene-body h4 { color: var(--primary); margin-top: 1rem; }
+        .scene-body h4:first-child { margin-top: 0; }
+
+        .voiceover {
+            background: linear-gradient(135deg, #faf5ff, #f3e8ff); border-left: 4px solid #7c3aed;
+            border-radius: 0 12px 12px 0; padding: 1.25rem 1.5rem; margin: 1rem 0;
+            font-style: italic; color: #4c1d95; font-size: 0.92rem; line-height: 1.8;
+        }
+        .voiceover::before {
+            content: '🎙 VOIX OFF'; display: block; font-style: normal; font-weight: 800;
+            font-size: 0.7rem; letter-spacing: 0.15em; color: #7c3aed; margin-bottom: 0.5rem;
+        }
+
+        .visual-desc {
+            background: linear-gradient(135deg, #eff6ff, #dbeafe); border-left: 4px solid #2563eb;
+            border-radius: 0 12px 12px 0; padding: 1.25rem 1.5rem; margin: 1rem 0;
+            font-size: 0.88rem; color: #1e40af; line-height: 1.7;
+        }
+        .visual-desc::before {
+            content: '🎬 VISUEL'; display: block; font-weight: 800;
+            font-size: 0.7rem; letter-spacing: 0.15em; color: #2563eb; margin-bottom: 0.5rem;
+        }
+
+        .transition-note {
+            text-align: center; padding: 0.5rem; color: var(--g500); font-size: 0.78rem;
+            font-style: italic; letter-spacing: 0.1em; text-transform: uppercase;
+        }
+
+        .timeline {
+            display: grid; grid-template-columns: 80px 1fr; gap: 0; margin: 1.5rem 0;
+            border: 1px solid var(--g200); border-radius: 12px; overflow: hidden;
+        }
+        .timeline-time {
+            background: var(--g50); padding: 0.5rem 0.75rem; font-family: monospace;
+            font-size: 0.8rem; color: var(--primary); font-weight: 600;
+            border-bottom: 1px solid var(--g200); display: flex; align-items: center;
+        }
+        .timeline-desc {
+            padding: 0.5rem 0.75rem; font-size: 0.85rem; color: var(--g700);
+            border-bottom: 1px solid var(--g200);
+        }
+
+        .badge { display: inline-block; padding: 0.2em 0.6em; border-radius: 6px; font-size: 0.72rem; font-weight: 600; }
+        .badge-green { background: #dcfce7; color: #166534; }
+        .badge-blue { background: #dbeafe; color: #1e40af; }
+        .badge-purple { background: #f3e8ff; color: #6b21a8; }
+        .badge-amber { background: #fef3c7; color: #92400e; }
+        .badge-red { background: #fee2e2; color: #991b1b; }
+
+        .toc { background: var(--g50); border-radius: 12px; padding: 1.5rem 2rem; margin: 2rem 0; }
+        .toc h3 { margin-top: 0; color: var(--primary); }
+        .toc ol { counter-reset: toc; list-style: none; margin-left: 0; padding-left: 0; columns: 2; column-gap: 2rem; }
+        .toc li { counter-increment: toc; padding: 0.3rem 0; break-inside: avoid; }
+        .toc li::before { content: counter(toc) "."; color: var(--primary); font-weight: 700; margin-right: 0.5rem; }
+    </style>
+</head>
+<body>
+
+<div class="cover">
+    <div class="cover-badge-top">Production Video &bull; Brief Creatif Complet</div>
+    <h1>Prompt Video de <span>Presentation</span></h1>
+    <p class="sub">BGFI WhatsApp Business Intelligence Platform<br>Script detaille scene par scene avec voix off synchronisee</p>
+    <div class="cover-conf">Confidentiel - Usage Interne</div>
+    <div class="cover-footer">
+        <span>Duree estimee : 4min 30s</span>
+        <span>18 scenes</span>
+        <span>Fevrier 2026</span>
+    </div>
+</div>
+
+<div class="content">
+
+    <!-- ===== INTRO ===== -->
+    <h2>Brief general</h2>
+
+    <div class="box box-gold">
+        <strong>Objectif de la video</strong>
+        <p>Presenter la plateforme BGFI WhatsApp Business Intelligence aux decideurs et equipes de BGFI Bank Group. Montrer chaque fonctionnalite en action, demontrer la valeur ajoutee (ROI, engagement client, automatisation IA) et convaincre de l'adoption a l'echelle du groupe.</p>
+    </div>
+
+    <h3>Specifications techniques</h3>
+    <table>
+        <tr><td class="font-bold">Duree totale</td><td>4 minutes 30 secondes (+/- 15s)</td></tr>
+        <tr><td class="font-bold">Format</td><td>16:9 (1920x1080) - Full HD</td></tr>
+        <tr><td class="font-bold">Style visuel</td><td>Screen recording anime + motion graphics. Ecran d'application reel avec zoom/pan fluide sur les elements cles. Transitions elegantes entre les scenes.</td></tr>
+        <tr><td class="font-bold">Palette couleurs</td><td>Navy #1e3a5f (primaire), Emeraude #00a86b (accent), Or #d4a843 (premium), Blanc/Gris clair (arriere-plans)</td></tr>
+        <tr><td class="font-bold">Typographie</td><td>Inter (meme police que l'app) pour les titres et annotations</td></tr>
+        <tr><td class="font-bold">Musique</td><td>Corporate inspirante, tempo modere (100-110 BPM), crescendo progressif. Style: piano + cordes legeres + percussions subtiles</td></tr>
+        <tr><td class="font-bold">Voix off</td><td>Masculine, posee et professionnelle. Ton: confiance, expertise, innovation. Debit: 150 mots/minute. Langue: francais courant avec terminologie bancaire.</td></tr>
+        <tr><td class="font-bold">Sous-titres</td><td>Oui, en francais, incrustes en bas de l'ecran (blanc sur fond semi-transparent)</td></tr>
+    </table>
+
+    <h3>Charte visuelle de l'application</h3>
+    <table>
+        <thead><tr><th>Element</th><th>Couleur / Style</th><th>Utilisation</th></tr></thead>
+        <tbody>
+            <tr><td>Fond primaire</td><td class="font-mono">#1e3a5f (Navy)</td><td>Sidebar, boutons principaux, en-tetes</td></tr>
+            <tr><td>Accent</td><td class="font-mono">#00a86b (Emeraude)</td><td>Boutons d'action, badges succes, avatars</td></tr>
+            <tr><td>Or premium</td><td class="font-mono">#d4a843</td><td>Elements premium, accents visuels</td></tr>
+            <tr><td>Fond page</td><td class="font-mono">#f8fafc (Gris tres clair)</td><td>Zone de contenu principale</td></tr>
+            <tr><td>Cards</td><td>Blanc, rounded-2xl, shadow subtile</td><td>Conteneurs de donnees</td></tr>
+            <tr><td>Badges statut</td><td>Emeraude (succes), Ambre (attente), Rouge (erreur), Bleu (info)</td><td>Indicateurs d'etat</td></tr>
+            <tr><td>Icones</td><td>SVG stroke, 20x20px</td><td>Navigation, actions, indicateurs</td></tr>
+        </tbody>
+    </table>
+
+    <div class="toc">
+        <h3>Decoupage des scenes</h3>
+        <ol>
+            <li>Ouverture cinematique (0:00-0:18)</li>
+            <li>Problematique bancaire (0:18-0:35)</li>
+            <li>Ecran de connexion (0:35-0:45)</li>
+            <li>Dashboard - Vue d'ensemble (0:45-1:10)</li>
+            <li>Dashboard - Graphiques (1:10-1:25)</li>
+            <li>Contacts - Liste (1:25-1:45)</li>
+            <li>Contacts - Import & Ajout (1:45-1:58)</li>
+            <li>Segments - Ciblage intelligent (1:58-2:18)</li>
+            <li>Templates - Creation (2:18-2:38)</li>
+            <li>Campagnes - Creation guidee (2:38-3:00)</li>
+            <li>Campagnes - Suivi en direct (3:00-3:15)</li>
+            <li>Campagnes - Tracking des clics (3:15-3:28)</li>
+            <li>Chatbot Stella - IA conversationnelle (3:28-3:48)</li>
+            <li>Chatbot - Base de connaissances (3:48-3:58)</li>
+            <li>Conversations - Insights IA (3:58-4:08)</li>
+            <li>Parametres - Couts & Facturation (4:08-4:18)</li>
+            <li>Valeur ajoutee BGFI (4:18-4:28)</li>
+            <li>Closing (4:28-4:35)</li>
+        </ol>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- SCENE 1 -->
+    <!-- ===================================================================== -->
+    <div class="scene-block">
+        <div class="scene-header">
+            <div class="scene-num">1</div>
+            <div class="scene-title">Ouverture cinematique</div>
+            <div class="scene-time">0:00 → 0:18</div>
+        </div>
+        <div class="scene-body">
+
+            <div class="visual-desc">
+                Fond noir. Le logo BGFI (image ronde, coins arrondis 2xl) apparait au centre en fondu avec un leger effet de lueur doree.
+                <br><br>
+                Titre anime lettre par lettre : <strong>"BGFI Marketing"</strong> en blanc (font Inter, 900, 2.5rem).
+                Sous-titre en fondu : <strong>"WhatsApp Business Intelligence Platform"</strong> en gris clair (font-weight 300, 1.1rem).
+                <br><br>
+                Transition : le fond navy (#0f1f33) se degrade progressivement vers le gradient de l'application (#1e3a5f → #2d5a87).
+                <br><br>
+                3 icones animees apparaissent en cercle autour du logo : une icone WhatsApp (verte), une icone IA/cerveau (violette), une icone graphique (bleue). Elles orbitent lentement.
+                <br><br>
+                Texte anime en bas : "Par BGFI Bank Group" en or (#d4a843), lettres espacees (0.3em), majuscules.
+            </div>
+
+            <div class="voiceover">
+                Dans un monde bancaire en pleine transformation digitale, la communication client est devenue un avantage concurrentiel decisif.
+            </div>
+
+            <p class="transition-note">→ Transition : fondu enchaine vers scene 2</p>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- SCENE 2 -->
+    <!-- ===================================================================== -->
+    <div class="scene-block">
+        <div class="scene-header">
+            <div class="scene-num">2</div>
+            <div class="scene-title">Problematique bancaire</div>
+            <div class="scene-time">0:18 → 0:35</div>
+        </div>
+        <div class="scene-body">
+
+            <div class="visual-desc">
+                Motion graphics sur fond sombre. 3 blocs de texte apparaissent successivement avec des icones :
+                <br><br>
+                <strong>Bloc 1</strong> (0:18) — Icone horloge rouge : "Taux d'ouverture des emails bancaires : <strong>12%</strong>" — le chiffre clignote en rouge.
+                <br>
+                <strong>Bloc 2</strong> (0:22) — Icone SMS grise : "Taux de lecture des SMS : <strong>28%</strong>" — chiffre en ambre.
+                <br>
+                <strong>Bloc 3</strong> (0:26) — Icone WhatsApp verte avec eclat lumineux : "Taux de lecture WhatsApp : <strong>98%</strong>" — le chiffre explose en grand format emeraude (#00a86b) avec particules.
+                <br><br>
+                (0:30) Les 3 chiffres restent a l'ecran sous forme de barres horizontales comparatives. La barre WhatsApp domine visuellement avec un gradient emeraude brillant.
+                <br><br>
+                Texte conclusion en or : "WhatsApp est le canal n°1 de l'engagement client en Afrique"
+            </div>
+
+            <div class="voiceover">
+                Douze pour cent pour les emails. Vingt-huit pour les SMS. Mais quatre-vingt-dix-huit pour cent des messages WhatsApp sont lus dans les trois minutes. BGFI Bank a choisi le canal le plus puissant du continent.
+            </div>
+
+            <p class="transition-note">→ Transition : wipe lateral vers la droite, revelant l'ecran de l'application</p>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- SCENE 3 -->
+    <!-- ===================================================================== -->
+    <div class="scene-block">
+        <div class="scene-header">
+            <div class="scene-num">3</div>
+            <div class="scene-title">Ecran de connexion</div>
+            <div class="scene-time">0:35 → 0:45</div>
+        </div>
+        <div class="scene-body">
+
+            <div class="visual-desc">
+                L'ecran de connexion de l'application est affiche en plein ecran (1920x1080).
+                <br><br>
+                <strong>Description exacte de l'ecran :</strong>
+                <ul>
+                    <li>Fond : gris tres clair (#f8fafc) uniforme</li>
+                    <li>Au centre : une card blanche (rounded-2xl, shadow-lg) de ~400px de large, padding 32px</li>
+                    <li>En haut de la card : le logo BGFI (image ronde 64x64, coins arrondis 2xl)</li>
+                    <li>Titre : "BGFI Marketing" en noir (text-2xl, font-bold)</li>
+                    <li>Sous-titre : "WhatsApp SaaS Platform" en gris (#6b7280, text-sm)</li>
+                    <li>Champ 1 : Input "Email" avec icone enveloppe a gauche (gris), placeholder "admin@bgfi.ga"</li>
+                    <li>Champ 2 : Input "Mot de passe" avec icone cadenas, type password, dots masquant le texte</li>
+                    <li>Bouton : pleine largeur, fond navy (#1e3a5f), texte blanc "Se connecter", rounded-lg, shadow-md</li>
+                    <li>Pied de card : "BGFI WhatsApp Marketing SaaS v1.0" en gris tres clair (text-xs)</li>
+                </ul>
+                <br>
+                <strong>Animation :</strong> Le curseur tape "admin@bgfi.ga" dans le champ email (animation dactylographique), puis des dots apparaissent dans le mot de passe. Le curseur clique sur "Se connecter". Le bouton passe en etat loading (spinner blanc tournant). Apres 1 seconde, transition fluide vers le dashboard.
+            </div>
+
+            <div class="voiceover">
+                Voici BGFI Marketing, votre plateforme de communication WhatsApp intelligente. L'acces est securise par authentification JWT avec gestion des roles.
+            </div>
+
+            <p class="transition-note">→ Transition : le contenu de la card s'expand pour reveler le dashboard complet</p>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- SCENE 4 -->
+    <!-- ===================================================================== -->
+    <div class="scene-block">
+        <div class="scene-header">
+            <div class="scene-num">4</div>
+            <div class="scene-title">Dashboard - Vue d'ensemble</div>
+            <div class="scene-time">0:45 → 1:10</div>
+        </div>
+        <div class="scene-body">
+
+            <div class="visual-desc">
+                Le dashboard complet est visible. L'ecran montre :
+                <br><br>
+                <strong>SIDEBAR GAUCHE (256px, fond blanc, bordure droite grise) :</strong>
+                <ul>
+                    <li>Header : logo BGFI (rond 40x40, rounded-xl) + "BGFI Marketing" en bold + "WhatsApp SaaS" en gris petit</li>
+                    <li>Menu vertical avec 9 items :
+                        <ol>
+                            <li><strong>"Tableau de bord"</strong> — icone grille (LayoutDashboard) — <strong>ACTIF</strong> : fond navy (#1e3a5f), texte blanc, shadow-md</li>
+                            <li>"Campagnes" — icone fleche d'envoi (Send) — inactif : texte gris</li>
+                            <li>"Segments" — icone couches superposees (Layers) — inactif</li>
+                            <li>"Chatbot RAG" — icone robot (Bot) — inactif</li>
+                            <li>"Conversations" — icone bulle de dialogue (MessageSquare) — inactif</li>
+                            <li>"Contacts" — icone personnes (Users) — inactif</li>
+                            <li>"Templates" — icone document (FileText) — inactif</li>
+                            <li>"Analytics" — icone barres (BarChart3) — inactif</li>
+                            <li>"Parametres" — icone engrenage (Settings) — inactif</li>
+                        </ol>
+                    </li>
+                    <li>Items inactifs : texte gris (#4b5563), hover en gris clair (#f3f4f6), tous avec rounded-xl, py-3 px-4, gap-3 entre icone et texte</li>
+                    <li>Bas de sidebar : section profil avec avatar rond (fond emeraude #00a86b, lettres "AB" blanches, rounded-full) + "Admin BGFI" + "admin@bgfi.ga" + bouton logout (icone fleche sortante)</li>
+                </ul>
+                <br>
+                <strong>HEADER (hauteur 64px, fond blanc, bordure basse grise) :</strong>
+                <ul>
+                    <li>Gauche : titre "Tableau de bord" (text-xl, font-bold)</li>
+                    <li>Droite : icone cloche (notifications) + icone engrenage (parametres)</li>
+                </ul>
+                <br>
+                <strong>ZONE PRINCIPALE (fond #f8fafc) :</strong>
+                <br><br>
+                <strong>Rangee 1 — 4 StatCards en grille horizontale :</strong>
+                <ul>
+                    <li><strong>Card 1 "Campagnes Actives"</strong> : fond blanc, rounded-2xl, border gris subtil. Icone dans carre bleu clair (bg-blue-50, icone bleue Send). Valeur : <strong>"12"</strong> en noir gras (text-2xl). Label "Campagnes Actives" en gris. Badge "+3" en vert en bas.</li>
+                    <li><strong>Card 2 "Messages Envoyes"</strong> : meme structure. Icone dans carre emeraude clair. Valeur : <strong>"8,547"</strong>. Label "Messages Envoyes". Badge "+12.5%" en vert.</li>
+                    <li><strong>Card 3 "Taux d'Ouverture"</strong> : icone dans carre violet clair. Valeur : <strong>"94.2%"</strong>. Label "Taux d'Ouverture".</li>
+                    <li><strong>Card 4 "Taux de Clic"</strong> : icone dans carre ambre clair. Valeur : <strong>"23.8%"</strong>. Label "Taux de Clic".</li>
+                </ul>
+                <br>
+                <strong>Animation :</strong> Vue d'ensemble d'abord (0:45-0:50), puis zoom progressif sur les 4 StatCards. Chaque chiffre s'anime de 0 a sa valeur finale (counter animation) avec un leger rebond. Curseur survole le card "Messages Envoyes" qui se souleve legerement (hover-lift). Puis zoom sur le taux d'ouverture 94.2% qui est entoure d'un cercle lumineux dore pour attirer l'attention.
+            </div>
+
+            <div class="voiceover">
+                Le tableau de bord offre une vision instantanee de vos performances. Douze campagnes actives, plus de huit mille cinq cents messages envoyes, et un taux d'ouverture exceptionnel de quatre-vingt-quatorze pour cent. Chaque indicateur est calcule en temps reel.
+            </div>
+
+            <p class="transition-note">→ Transition : scroll fluide vers le bas</p>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- SCENE 5 -->
+    <!-- ===================================================================== -->
+    <div class="scene-block">
+        <div class="scene-header">
+            <div class="scene-num">5</div>
+            <div class="scene-title">Dashboard - Graphiques analytiques</div>
+            <div class="scene-time">1:10 → 1:25</div>
+        </div>
+        <div class="scene-body">
+
+            <div class="visual-desc">
+                La camera scrolle vers la partie inferieure du dashboard.
+                <br><br>
+                <strong>Section graphiques — layout 3 colonnes :</strong>
+                <br><br>
+                <strong>Graphique principal (occupe 2 colonnes) — Card "Activite des Messages" :</strong>
+                <ul>
+                    <li>Header card : titre "Activite des Messages" (h3, font-semibold) + dropdown filtre "30 derniers jours" a droite</li>
+                    <li>Area Chart (hauteur ~280px) avec 3 courbes superposees :
+                        <ul>
+                            <li>Courbe "Envoyes" : couleur navy (#1e3a5f), remplissage gradient navy vers transparent</li>
+                            <li>Courbe "Delivres" : couleur emeraude (#00a86b), remplissage gradient emeraude</li>
+                            <li>Courbe "Lus" : couleur bleue (#3b82f6), remplissage gradient bleu</li>
+                        </ul>
+                    </li>
+                    <li>Axe X : dates (jours du mois)</li>
+                    <li>Axe Y : nombre de messages</li>
+                    <li>Grille horizontale en pointilles gris clair</li>
+                    <li>Legende en bas : 3 pastilles colorees + labels</li>
+                </ul>
+                <br>
+                <strong>Graphique secondaire (1 colonne) — Card "Contacts par Categorie" :</strong>
+                <ul>
+                    <li>Donut Chart (diagramme en anneau) avec 5 segments :</li>
+                    <li>ACTIVE : emeraude (#10b981) — portion dominante ~45%</li>
+                    <li>VIP : navy (#1e3a5f) — ~15%</li>
+                    <li>PREMIUM : bleu (#3b82f6) — ~20%</li>
+                    <li>NEW : ambre (#f59e0b) — ~12%</li>
+                    <li>INACTIVE : rouge (#ef4444) — ~8%</li>
+                    <li>Au centre du donut : nombre total "1,247" en gras + "contacts" en petit gris</li>
+                    <li>Legende en colonne sous le chart avec pastilles de couleur</li>
+                </ul>
+                <br>
+                <strong>Section "Actions Rapides" (sous les graphiques) — grille 3 colonnes :</strong>
+                <ul>
+                    <li>Card "Nouvelle Campagne" : fond degrade bleu clair (from-blue-50 to-blue-100), icone Send grande (48x48), titre bold, sous-titre gris</li>
+                    <li>Card "Importer des Contacts" : fond degrade ambre clair, icone Upload</li>
+                    <li>Card "Configurer le Chatbot" : fond degrade violet clair, icone Bot</li>
+                </ul>
+                <br>
+                <strong>Animation :</strong> Les courbes du graphique s'animent de gauche a droite (dessin progressif). Le donut chart s'anime en rotation avec les segments qui apparaissent un par un. Le curseur survole un segment du donut — un tooltip apparait avec le detail.
+            </div>
+
+            <div class="voiceover">
+                Les graphiques detaillent l'evolution de vos envois, livraisons et lectures sur trente jours. Le diagramme de repartition visualise vos contacts par categorie : actifs, VIP, premium, nouveaux. Chaque donnee alimente vos decisions strategiques.
+            </div>
+
+            <p class="transition-note">→ Transition : clic anime sur "Contacts" dans la sidebar</p>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- SCENE 6 -->
+    <!-- ===================================================================== -->
+    <div class="scene-block">
+        <div class="scene-header">
+            <div class="scene-num">6</div>
+            <div class="scene-title">Contacts - Base de donnees clients</div>
+            <div class="scene-time">1:25 → 1:45</div>
+        </div>
+        <div class="scene-body">
+
+            <div class="visual-desc">
+                Le curseur clique sur "Contacts" dans la sidebar. L'item passe en fond navy avec texte blanc. La zone principale affiche la page Contacts.
+                <br><br>
+                <strong>Header de la page :</strong>
+                <ul>
+                    <li>Titre : "Contacts" (text-xl, font-bold)</li>
+                    <li>Barre de recherche : input avec icone loupe, placeholder "Rechercher un contact..."</li>
+                    <li>Filtres dropdowns en ligne :
+                        <ul>
+                            <li>"Categorie" : select (Tous, ACTIVE, INACTIVE, NEW, VIP, PREMIUM)</li>
+                            <li>"Type de compte" : select (Tous, EPARGNE, COURANT, PROFESSIONNEL, JEUNE)</li>
+                        </ul>
+                    </li>
+                    <li>Boutons a droite : "Importer" (icone Upload, variant secondary) + "Ajouter" (icone Plus, variant primary navy)</li>
+                </ul>
+                <br>
+                <strong>Tableau des contacts (fond blanc, rounded-2xl, shadow subtile) :</strong>
+                <br>Colonnes visibles :
+                <table>
+                    <thead><tr><th>Colonne</th><th>Contenu affiche</th></tr></thead>
+                    <tbody>
+                        <tr><td>Checkbox</td><td>Case a cocher ronde</td></tr>
+                        <tr><td>Nom</td><td>Avatar rond (fond emeraude, initiales blanches "FS") + "Franck Sowax" en bold + email en gris petit</td></tr>
+                        <tr><td>Telephone</td><td>"+241 07 48 87 16" en font-mono</td></tr>
+                        <tr><td>Categorie</td><td>Badge rounded-full : "ACTIVE" (bg-emerald-100, text-emerald-700) ou "VIP" (bg-blue-100) ou "NEW" (bg-amber-100)</td></tr>
+                        <tr><td>Type compte</td><td>Badge : "COURANT" ou "EPARGNE" ou "PROFESSIONNEL"</td></tr>
+                        <tr><td>Opt-in</td><td>Badge vert "Oui" ou rouge "Non"</td></tr>
+                        <tr><td>Derniere activite</td><td>Date relative "il y a 2h" ou date</td></tr>
+                        <tr><td>Actions</td><td>Icones: crayon (editer) + poubelle (supprimer) en ghost button</td></tr>
+                    </tbody>
+                </table>
+                <br>
+                Environ 8 lignes visibles. Lignes paires en fond gris ultra-clair (#f9fafb). Hover sur une ligne : fond gris clair. Barre de pagination en bas.
+                <br><br>
+                <strong>Animation :</strong> La page charge avec un spinner (1s), puis le tableau apparait avec une animation de slide-up. Le curseur tape "Franck" dans la recherche — le tableau se filtre en temps reel. Puis le curseur survole la ligne de Franck Sowax (hover bleu tres subtil).
+            </div>
+
+            <div class="voiceover">
+                La base de contacts centralise l'ensemble de vos clients. Chaque fiche contient le telephone, la categorie bancaire, le type de compte, et le statut d'opt-in WhatsApp. La recherche instantanee et les filtres multi-criteres permettent de retrouver n'importe quel client en une seconde.
+            </div>
+
+            <p class="transition-note">→ Transition : zoom sur le bouton "Importer"</p>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- SCENE 7 -->
+    <!-- ===================================================================== -->
+    <div class="scene-block">
+        <div class="scene-header">
+            <div class="scene-num">7</div>
+            <div class="scene-title">Contacts - Import & Ajout</div>
+            <div class="scene-time">1:45 → 1:58</div>
+        </div>
+        <div class="scene-body">
+
+            <div class="visual-desc">
+                Le curseur clique sur "Importer". Un modal apparait en overlay (fond noir semi-transparent).
+                <br><br>
+                <strong>Modal "Importer des Contacts" :</strong>
+                <ul>
+                    <li>Card blanche centree (~500px large), rounded-2xl, shadow-lg</li>
+                    <li>Header : titre "Importer des Contacts" (font-semibold) + bouton X (fermer) a droite</li>
+                    <li>Zone de drop : bordure pointillee grise, icone Upload grande au centre, texte "Glissez un fichier CSV ou Excel ici"</li>
+                    <li>Bloc format attendu en code : <code>phone, name, email, category, city, accountType, ageRange, gender</code></li>
+                    <li>Preview : mini-tableau avec 3 lignes d'exemple des contacts a importer</li>
+                    <li>Boutons : "Annuler" (secondary) + "Importer 156 contacts" (primary emeraude)</li>
+                </ul>
+                <br>
+                <strong>Animation :</strong> Le modal apparait avec un fondu et un leger scale-up (0.95→1). Un fichier CSV glisse dans la zone de drop. Le compteur "156 contacts" s'anime. Clic sur "Importer" → barre de progression animate de 0% a 100% → message de succes en vert "156 contacts importes avec succes".
+                <br><br>
+                Enchainement rapide : le modal se ferme et on montre brievement le bouton "Ajouter" qui ouvre un formulaire avec les champs : Telephone, Nom, Email, Categorie, Ville, Type de compte, Tranche d'age, Genre. (Juste un flash de 2 secondes sur ce formulaire.)
+            </div>
+
+            <div class="voiceover">
+                L'import CSV permet d'integrer des centaines de contacts en quelques secondes. Chaque contact est automatiquement categorise selon les criteres bancaires de BGFI : type de compte, segment client, ville d'agence.
+            </div>
+
+            <p class="transition-note">→ Transition : clic anime sur "Segments" dans la sidebar</p>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- SCENE 8 -->
+    <!-- ===================================================================== -->
+    <div class="scene-block">
+        <div class="scene-header">
+            <div class="scene-num">8</div>
+            <div class="scene-title">Segments - Ciblage intelligent</div>
+            <div class="scene-time">1:58 → 2:18</div>
+        </div>
+        <div class="scene-body">
+
+            <div class="visual-desc">
+                La page Segments s'affiche.
+                <br><br>
+                <strong>Header :</strong>
+                <ul>
+                    <li>Titre : "Segments de ciblage" (text-xl, font-bold)</li>
+                    <li>Bouton "Nouveau segment" (primary navy, icone Plus)</li>
+                    <li>Onglets filtres : "Tous" (actif, souligne navy) | "Dynamique" | "Statique" | "Criteres bancaires"</li>
+                </ul>
+                <br>
+                <strong>Grille de cartes segments (3 colonnes) :</strong>
+                <ul>
+                    <li><strong>Card "Clients VIP Libreville"</strong> : icone etoile dans carre gradient bleu, badge "DYNAMIC" en bleu, description "Clients VIP avec compte courant a Libreville", badge compteur "234 contacts" en emeraude</li>
+                    <li><strong>Card "Jeunes Epargnants"</strong> : icone cible dans carre gradient ambre, badge "BANK_CRITERIA" en ambre, "Comptes epargne 18-35 ans", "512 contacts"</li>
+                    <li><strong>Card "Comptes Premium Inactifs"</strong> : icone alerte dans carre gradient rouge, badge "DYNAMIC", "Clients premium sans activite 90j", "87 contacts"</li>
+                    <li>Autres cards similaires...</li>
+                </ul>
+                <br>
+                Le curseur clique sur "Nouveau segment". Un modal/page d'edition s'ouvre :
+                <br><br>
+                <strong>Editeur de segment :</strong>
+                <ul>
+                    <li>Champ "Nom du segment" : Input text</li>
+                    <li>Champ "Description" : Textarea</li>
+                    <li>Section "Criteres de ciblage" avec constructeur de regles :</li>
+                    <li><strong>Regle 1 :</strong> [Categorie] [est] [VIP] — 3 dropdowns en ligne + bouton X (supprimer)</li>
+                    <li>Operateur logique : bouton toggle "ET" / "OU" entre les regles</li>
+                    <li><strong>Regle 2 :</strong> [Ville] [est] [Libreville]</li>
+                    <li><strong>Regle 3 :</strong> [Type de compte] [est] [COURANT]</li>
+                    <li>Bouton "+ Ajouter un critere" (ghost, icone Plus)</li>
+                    <li>Encadre resultat : "234 contacts correspondent a ces criteres" avec icone cible</li>
+                </ul>
+                <br>
+                <strong>Animation :</strong> Vue des cards (2s), puis clic sur "Nouveau segment". Le constructeur de regles s'anime : la regle 1 apparait, l'operateur "ET" pulse en bleu, la regle 2 s'ajoute avec slide-down, le compteur "234 contacts" s'anime de 0 a 234. Le curseur survole les differents champs disponibles dans le dropdown (Categorie, Ville, Tranche d'age, Type de compte...).
+            </div>
+
+            <div class="voiceover">
+                Le moteur de segmentation permet un ciblage ultra-precis. Combinez librement les criteres : categorie client, ville d'agence, type de compte, tranche d'age. Le compteur en temps reel affiche instantanement le nombre de contacts correspondants. Chaque campagne touche exactement la bonne audience.
+            </div>
+
+            <p class="transition-note">→ Transition : clic anime sur "Templates" dans la sidebar</p>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- SCENE 9 -->
+    <!-- ===================================================================== -->
+    <div class="scene-block">
+        <div class="scene-header">
+            <div class="scene-num">9</div>
+            <div class="scene-title">Templates - Creation de messages</div>
+            <div class="scene-time">2:18 → 2:38</div>
+        </div>
+        <div class="scene-body">
+
+            <div class="visual-desc">
+                La page Templates s'affiche.
+                <br><br>
+                <strong>Header :</strong>
+                <ul>
+                    <li>Titre : "Templates WhatsApp" + compteur "(18 templates)"</li>
+                    <li>Barre de recherche</li>
+                    <li>Onglets status : "Tous" | "Approuves" (badge vert) | "En attente" (badge ambre) | "Rejetes" (badge rouge)</li>
+                    <li>Bouton "Nouveau template" (primary)</li>
+                </ul>
+                <br>
+                <strong>Grille de templates (3 colonnes) :</strong>
+                Chaque card template :
+                <ul>
+                    <li>Zone image en haut (ratio 3:1) : photo d'en-tete du template (ex: image BGFI bleue avec logo) ou fond gradient si pas d'image</li>
+                    <li>Badge categorie en haut gauche (ex: "MARKETING" en bleu)</li>
+                    <li>Badge statut en haut droite : "APPROVED" (fond emeraude-100, texte emeraude-700) avec icone check</li>
+                    <li>Titre : "Bienvenue Onboarding" (font-semibold, line-clamp-1)</li>
+                    <li>Nom interne : "bgfi_onboarding_image_cta_v2" en gris tres petit</li>
+                    <li>Apercu contenu : "Bonjour {{1}}, bienvenue chez BGFI Bank..." (text-sm, line-clamp-3, gris)</li>
+                    <li>Tags en bas : "IMAGE" (badge bleu petit) + "2 boutons" (badge gris)</li>
+                    <li>Actions on hover : icones Voir, Dupliquer, Supprimer</li>
+                </ul>
+                <br>
+                On montre 6 templates variees avec differentes images et statuts.
+                <br><br>
+                Le curseur clique sur "Nouveau template". Le formulaire de creation s'ouvre :
+                <ul>
+                    <li>Nom interne (identifiant Meta)</li>
+                    <li>Nom d'affichage</li>
+                    <li>Categorie (dropdown : MARKETING, UTILITY)</li>
+                    <li>Langue (dropdown : Francais)</li>
+                    <li>Type d'en-tete : radio buttons (Aucun | IMAGE | VIDEO | TEXTE)</li>
+                    <li>"IMAGE" est selectionne → champ upload d'image apparait</li>
+                    <li>Corps du message : textarea avec variables {{1}}, {{2}}</li>
+                    <li>Boutons : liste editable avec type (URL ou QUICK_REPLY) + texte + URL</li>
+                    <li>Pied de page : input texte optionnel</li>
+                </ul>
+                <br>
+                <strong>Animation :</strong> Grille de templates (3s), zoom sur une card avec badge "APPROVED" qui brille. Puis ouverture du formulaire, le curseur selectionne "IMAGE" comme type d'en-tete, une image est uploadee, le contenu du message est tape. On voit 2 boutons d'action (URL) etres configures. Accent visuel sur la mention "Soumis a approbation Meta" avec un badge ambre.
+            </div>
+
+            <div class="voiceover">
+                Les templates sont vos modeles de messages, approuves par Meta. Creez des messages enrichis avec image, video, ou texte. Ajoutez des boutons d'action interactifs : lien vers votre site, reponse rapide, appel a l'action. Chaque template supporte les variables dynamiques pour personnaliser le message par destinataire.
+            </div>
+
+            <p class="transition-note">→ Transition : clic anime sur "Campagnes" dans la sidebar</p>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- SCENE 10 -->
+    <!-- ===================================================================== -->
+    <div class="scene-block">
+        <div class="scene-header">
+            <div class="scene-num">10</div>
+            <div class="scene-title">Campagnes - Creation guidee</div>
+            <div class="scene-time">2:38 → 3:00</div>
+        </div>
+        <div class="scene-body">
+
+            <div class="visual-desc">
+                La page Campagnes s'affiche avec la liste des campagnes existantes, puis on clique sur "Nouvelle campagne".
+                <br><br>
+                <strong>Wizard de creation (3 etapes) :</strong>
+                <br><br>
+                <strong>Indicateur d'etapes</strong> en haut : 3 cercles numerotes relies par des lignes. Etape 1 active (fond navy, texte blanc), etapes 2 et 3 inactives (fond gris, texte gris).
+                <br><br>
+                <strong>Etape 1 — "Informations" :</strong>
+                <ul>
+                    <li>Champ "Nom de la campagne" : Input text, le curseur tape "Onboarding Nouveaux Clients Q1"</li>
+                    <li>Champ "Type" : Select avec options : MARKETING (selectionne), REACTIVATION, NOTIFICATION, ALERT</li>
+                    <li>Boutons : "Annuler" (secondary) + "Suivant →" (primary)</li>
+                </ul>
+                <br>
+                Clic sur "Suivant". L'indicateur d'etapes anime : le cercle 2 passe en navy.
+                <br><br>
+                <strong>Etape 2 — "Ciblage" :</strong>
+                <ul>
+                    <li>3 options radio avec icones dans des cards cliquables :</li>
+                    <li>Card 1 : Icone Users + "Tous les contacts actifs" + description</li>
+                    <li>Card 2 : Icone Target + <strong>"Segment sauvegarde"</strong> (selectionnee → bordure navy, fond bleu ultra-clair) → dropdown apparait avec les segments existants : "Clients VIP Libreville (234)", "Jeunes Epargnants (512)"...</li>
+                    <li>Card 3 : Icone Layers + "Criteres avances"</li>
+                    <li>Le curseur selectionne "Segment sauvegarde" puis choisit "Clients VIP Libreville" dans le dropdown</li>
+                </ul>
+                <br>
+                Clic sur "Suivant". Etape 3 active.
+                <br><br>
+                <strong>Etape 3 — "Message" :</strong>
+                <ul>
+                    <li>Liste de templates approuves (cards cliquables)</li>
+                    <li>Le curseur selectionne "Bienvenue Onboarding" → une preview du template apparait a droite avec l'image, le texte et les boutons</li>
+                    <li>Variables a remplir si necessaire</li>
+                    <li>Bouton final : "Creer la campagne" (primary emeraude, icone CheckCircle)</li>
+                </ul>
+                <br>
+                <strong>Animation :</strong> Progression fluide etape par etape avec les cercles indicateurs qui s'activent. L'accent est mis sur la simplicite : 3 etapes, selections claires, preview du message. Le clic final sur "Creer" declenche un confetti/particule subtil de succes.
+            </div>
+
+            <div class="voiceover">
+                Creer une campagne ne prend que trois etapes. Nommez votre campagne, selectionnez votre segment cible, choisissez votre template. La plateforme s'occupe du reste : personnalisation des messages, envoi optimise via l'API WhatsApp officielle de Meta, respect des limites de debit.
+            </div>
+
+            <p class="transition-note">→ Transition : la campagne nouvellement creee s'ouvre automatiquement</p>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- SCENE 11 -->
+    <!-- ===================================================================== -->
+    <div class="scene-block">
+        <div class="scene-header">
+            <div class="scene-num">11</div>
+            <div class="scene-title">Campagnes - Suivi en temps reel</div>
+            <div class="scene-time">3:00 → 3:15</div>
+        </div>
+        <div class="scene-body">
+
+            <div class="visual-desc">
+                La vue detail d'une campagne en cours ("RUNNING") s'affiche.
+                <br><br>
+                <strong>Header campagne :</strong>
+                <ul>
+                    <li>Fleche retour + Titre "Onboarding Nouveaux Clients Q1" (h2, font-bold)</li>
+                    <li>Badge "EN COURS" (bg-blue-100, text-blue-700, avec icone Play animee)</li>
+                    <li>Infos : Type "MARKETING" + Segment "Clients VIP Libreville" + Template "Bienvenue Onboarding"</li>
+                </ul>
+                <br>
+                <strong>5 StatCards KPI en ligne :</strong>
+                <ul>
+                    <li><strong>"Envoyes"</strong> : icone Send bleue, valeur "234/234" — barre de progression 100% bleue en dessous</li>
+                    <li><strong>"Delivres"</strong> : icone CheckCircle emeraude, valeur "228" + "(97.4%)" — barre emeraude 97%</li>
+                    <li><strong>"Lus"</strong> : icone Eye ambre, valeur "215" + "(91.9%)" — barre ambre 92%</li>
+                    <li><strong>"Cliques"</strong> : icone MousePointer violette, valeur "54" + "(23.1%)" — barre violette 23%</li>
+                    <li><strong>"Echoues"</strong> : icone XCircle rouge, valeur "6" + "(2.6%)" — barre rouge 3%</li>
+                </ul>
+                <br>
+                <strong>Tableau des messages :</strong>
+                <ul>
+                    <li>Filtre dropdown : "Tous les statuts" / "DELIVERED" / "READ" / "FAILED"</li>
+                    <li>Colonnes : Destinataire (nom + tel), Statut (badge couleur), Heure d'envoi, Heure de lecture</li>
+                    <li>Exemple lignes :
+                        <ul>
+                            <li>"Franck Sowax +24107488716" — badge "READ" emeraude — 14:32 — Lu 14:33</li>
+                            <li>"Marie Ndong +24174123456" — badge "DELIVERED" bleu — 14:32 — -</li>
+                            <li>"Jean Obiang +24177654321" — badge "FAILED" rouge — 14:32 — Echec</li>
+                        </ul>
+                    </li>
+                </ul>
+                <br>
+                <strong>Animation :</strong> Les compteurs s'animent en temps reel (counter-up). La barre de progression "Delivres" s'allonge de 90% a 97% pendant la scene. Les badges de statut clignotent brievement quand ils changent. Le curseur selectionne le filtre "READ" et le tableau ne montre que les messages lus.
+            </div>
+
+            <div class="voiceover">
+                Suivez chaque campagne en temps reel. Les statuts remontent directement de l'API WhatsApp : envoye, delivre, lu, echoue. Quatre-vingt-dix-sept pour cent de taux de livraison, quatre-vingt-douze pour cent de taux de lecture. Des performances inaccessibles avec les canaux traditionnels.
+            </div>
+
+            <p class="transition-note">→ Transition : scroll vers la section tracking des clics</p>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- SCENE 12 -->
+    <!-- ===================================================================== -->
+    <div class="scene-block">
+        <div class="scene-header">
+            <div class="scene-num">12</div>
+            <div class="scene-title">Campagnes - Tracking des clics par bouton</div>
+            <div class="scene-time">3:15 → 3:28</div>
+        </div>
+        <div class="scene-body">
+
+            <div class="visual-desc">
+                Sous les KPIs de la campagne, une section supplementaire apparait.
+                <br><br>
+                <strong>Card "Clics par bouton" :</strong>
+                <ul>
+                    <li>Header : titre "Clics par bouton" (h3, font-semibold) + icone MousePointer</li>
+                    <li>Liste des boutons du template avec stats individuelles :</li>
+                    <li><strong>Bouton 1 :</strong> Icone MousePointer violette + texte "Decouvrir nos services" + URL "bgfixstudia.com" en gris petit + barre horizontale violette proportionnelle + <strong>"38 clics (16.2%)"</strong></li>
+                    <li><strong>Bouton 2 :</strong> Icone MousePointer violette + texte "Contacter un conseiller" + URL "bgfi.com/contact" + barre horizontale violette + <strong>"16 clics (6.8%)"</strong></li>
+                </ul>
+                <br>
+                A cote, un mini-schema anime explique le mecanisme :
+                <br>
+                <strong>Flow visuel :</strong> [Message WhatsApp] → [Bouton "Decouvrir"] → [Clic client] → [Serveur BGFI enregistre le clic] → [Redirection vers le site] — avec des fleches animees et des checkmarks qui s'activent sequentiellement.
+                <br><br>
+                <strong>Animation :</strong> Les barres de progression s'animent de 0 a leur valeur. Le flow de redirection s'anime pas a pas. Un "clic" anime fait vibrer legerement le compteur qui passe de 37 a 38.
+            </div>
+
+            <div class="voiceover">
+                Innovation exclusive : le tracking par bouton. Chaque clic sur un bouton WhatsApp est mesure individuellement grace a notre systeme de redirection intelligente. Vous savez exactement quel call-to-action performe le mieux, bouton par bouton, campagne par campagne.
+            </div>
+
+            <p class="transition-note">→ Transition : clic anime sur "Chatbot RAG" dans la sidebar</p>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- SCENE 13 -->
+    <!-- ===================================================================== -->
+    <div class="scene-block">
+        <div class="scene-header">
+            <div class="scene-num">13</div>
+            <div class="scene-title">Chatbot Stella - IA conversationnelle</div>
+            <div class="scene-time">3:28 → 3:48</div>
+        </div>
+        <div class="scene-body">
+
+            <div class="visual-desc">
+                La page "Chatbot RAG" s'affiche. Onglets en haut : "Chat" (actif) | "Base de connaissances" | "Configuration" | "Conversations".
+                <br><br>
+                <strong>Vue Chat (test du chatbot) :</strong>
+                <br><br>
+                <strong>Zone de conversation (partie gauche, ~60%) :</strong>
+                <ul>
+                    <li>Fond gris tres clair avec bulles de messages</li>
+                    <li>Bulle utilisateur (droite) : fond navy (#1e3a5f), texte blanc, rounded-2xl, "Quels sont les taux d'interet pour un compte epargne ?"</li>
+                    <li>Bulle Stella (gauche) : fond gris clair (#f3f4f6), texte noir, rounded-2xl. Reponse detaillee : "Bonjour ! Chez BGFI Bank, nos comptes epargne proposent un taux d'interet de 3.5% par an pour le compte Epargne Classique, et jusqu'a 5.2% pour le compte Epargne Premium. Les interets sont calcules quotidiennement et verses trimestriellement. Souhaitez-vous en savoir plus sur l'ouverture d'un compte ?"</li>
+                    <li>Timestamp sous chaque bulle : "14:32" en gris petit</li>
+                    <li>Indicateur de frappe anime (3 points qui rebondissent) pendant la generation de la reponse</li>
+                    <li>Champ de saisie en bas : Input + bouton Send (navy)</li>
+                </ul>
+                <br>
+                <strong>Panneau de configuration (partie droite, ~40%) :</strong>
+                <ul>
+                    <li>Section "Personnalisation" :</li>
+                    <li>Nom du bot : "Stella" (input editable)</li>
+                    <li>Message d'accueil : textarea</li>
+                    <li>Modele LLM : Select "GPT-4.1" (badge "Recommande" en vert)</li>
+                    <li>Nombre de chunks : Slider 1-10, curseur sur 5</li>
+                    <li>Seuil de similarite : Slider 0-100%, curseur sur 75%</li>
+                    <li>Toggle "Afficher les citations" : active (emeraude)</li>
+                </ul>
+                <br>
+                <strong>Animation :</strong> Une question est tapee dans le champ (animation dactylographique). L'indicateur de frappe (3 points) apparait. La reponse de Stella s'affiche progressivement mot par mot (effet streaming). On zoom sur la reponse pour montrer sa precision et sa pertinence. Le panneau de droite montre le slider "GPT-4.1" avec un eclat.
+            </div>
+
+            <div class="voiceover">
+                Voici Stella, votre assistante IA alimentee par GPT-4.1 et la technologie RAG. Stella repond automatiquement aux questions de vos clients sur WhatsApp, vingt-quatre heures sur vingt-quatre. Elle puise ses reponses dans votre base de connaissances interne pour garantir des informations fiables et a jour.
+            </div>
+
+            <p class="transition-note">→ Transition : clic sur l'onglet "Base de connaissances"</p>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- SCENE 14 -->
+    <!-- ===================================================================== -->
+    <div class="scene-block">
+        <div class="scene-header">
+            <div class="scene-num">14</div>
+            <div class="scene-title">Chatbot - Base de connaissances RAG</div>
+            <div class="scene-time">3:48 → 3:58</div>
+        </div>
+        <div class="scene-body">
+
+            <div class="visual-desc">
+                L'onglet "Base de connaissances" est maintenant actif.
+                <br><br>
+                <strong>Header :</strong>
+                <ul>
+                    <li>Titre "Documents de la base de connaissances"</li>
+                    <li>Bouton "Uploader un document" (primary, icone Upload)</li>
+                </ul>
+                <br>
+                <strong>Tableau des documents :</strong>
+                <table>
+                    <thead><tr><th>Colonne</th><th>Exemple</th></tr></thead>
+                    <tbody>
+                        <tr><td>Nom du fichier</td><td>"Guide-Produits-BGFI-2026.pdf" (icone document PDF rouge)</td></tr>
+                        <tr><td>Type</td><td>Badge "PDF" ou "DOCX" ou "TXT"</td></tr>
+                        <tr><td>Date d'upload</td><td>"15 fev 2026"</td></tr>
+                        <tr><td>Chunks</td><td>"47 chunks" (nombre de fragments indexes)</td></tr>
+                        <tr><td>Actions</td><td>Bouton supprimer (ghost)</td></tr>
+                    </tbody>
+                </table>
+                <br>
+                Environ 5 documents visibles :
+                <ul>
+                    <li>Guide-Produits-BGFI-2026.pdf — PDF — 47 chunks</li>
+                    <li>FAQ-Clients-Courants.docx — DOCX — 23 chunks</li>
+                    <li>Tarification-Services-2026.pdf — PDF — 31 chunks</li>
+                    <li>Procedures-Ouverture-Compte.pdf — PDF — 18 chunks</li>
+                    <li>Conditions-Generales.docx — DOCX — 56 chunks</li>
+                </ul>
+                <br>
+                <strong>Mini-schema explicatif</strong> (motion graphics en overlay) :
+                <br>
+                [Document PDF] → [Decoupage en chunks de 1000 caracteres] → [Embedding vectoriel via OpenAI] → [Stockage pgvector] → [Recherche par similarite a la question client] → [Reponse IA contextualisee]
+                <br><br>
+                <strong>Animation :</strong> Le tableau charge. Le curseur clique sur "Uploader" → le modal de selection de fichier apparait brievement. Un fichier PDF est "glisse" dans l'interface. Une barre de progression s'anime "Indexation en cours... 47 chunks crees". Le mini-schema RAG s'anime pas a pas en overlay.
+            </div>
+
+            <div class="voiceover">
+                Alimentez Stella avec vos documents internes : guides produits, FAQ, tarifications, procedures. Chaque document est automatiquement decoupe, indexe et rendu accessible par intelligence artificielle. Plus vous enrichissez la base, plus Stella est pertinente.
+            </div>
+
+            <p class="transition-note">→ Transition : clic sur l'onglet "Conversations"</p>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- SCENE 15 -->
+    <!-- ===================================================================== -->
+    <div class="scene-block">
+        <div class="scene-header">
+            <div class="scene-num">15</div>
+            <div class="scene-title">Conversations - Insights IA & Enrichissement</div>
+            <div class="scene-time">3:58 → 4:08</div>
+        </div>
+        <div class="scene-body">
+
+            <div class="visual-desc">
+                L'onglet "Conversations" est actif avec ses sous-onglets : "Historique" (actif) | "Rapports" | "Statistiques".
+                <br><br>
+                <strong>Sous-onglet "Historique" :</strong>
+                <ul>
+                    <li>Liste de sessions de conversation avec filtres par date</li>
+                    <li>Chaque session : nom du contact, date, nombre de messages, badge statut enrichissement ("Enrichi" en vert ou "En attente" en ambre)</li>
+                    <li>Clic sur une session → la conversation complete s'affiche avec bulles client/Stella</li>
+                </ul>
+                <br>
+                Transition vers sous-onglet "Statistiques" :
+                <br>
+                <strong>Graphiques d'analyse IA :</strong>
+                <ul>
+                    <li><strong>Sentiment over time</strong> : Area chart vert/rouge montrant l'evolution du sentiment client (positif/negatif) sur 30 jours</li>
+                    <li><strong>Distribution des intentions</strong> : Barres horizontales — "Information produit" (40%), "Ouverture compte" (25%), "Reclamation" (15%), "Tarification" (12%), "Autre" (8%)</li>
+                    <li><strong>Produits mentionnes</strong> : Barres horizontales — "Compte Epargne" (35%), "Carte Visa" (28%), "Credit Auto" (20%), "Assurance" (17%)</li>
+                </ul>
+                <br>
+                Brievement, l'onglet "Rapports" s'affiche :
+                <ul>
+                    <li>Liste de rapports IA generes automatiquement</li>
+                    <li>Chaque rapport : date, apercu, bouton "Voir" + icone Sparkles (etoile IA)</li>
+                    <li>Bouton "Generer un rapport" avec icone Sparkles</li>
+                </ul>
+                <br>
+                <strong>Animation :</strong> Historique avec scroll rapide (2s). Switch vers Statistiques — les graphiques s'animent : area chart se dessine, barres horizontales s'etendent progressivement. Zoom sur "Ouverture compte 25%" avec un cercle lumineux (insight cle). Flash sur Rapports avec icone IA brillante.
+            </div>
+
+            <div class="voiceover">
+                L'intelligence artificielle analyse automatiquement chaque conversation. Sentiments, intentions, produits mentionnes : des insights precieux emergent en temps reel. Les rapports generes par IA synthetisent les tendances et revelent les opportunites commerciales cachees dans vos echanges clients.
+            </div>
+
+            <p class="transition-note">→ Transition : clic anime sur "Parametres" dans la sidebar</p>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- SCENE 16 -->
+    <!-- ===================================================================== -->
+    <div class="scene-block">
+        <div class="scene-header">
+            <div class="scene-num">16</div>
+            <div class="scene-title">Parametres - Couts & Facturation transparente</div>
+            <div class="scene-time">4:08 → 4:18</div>
+        </div>
+        <div class="scene-body">
+
+            <div class="visual-desc">
+                La page Parametres s'affiche.
+                <br><br>
+                <strong>Section 1 — "Couts des messages WhatsApp" :</strong>
+                <ul>
+                    <li>4 StatCards avec fonds degrades :
+                        <ul>
+                            <li>"Cout Total" : fond gradient bleu, valeur "147,500 FCFA" en blanc gras</li>
+                            <li>"Messages Livres" : fond gradient emeraude, valeur "4,215"</li>
+                            <li>"Messages Lus" : fond gradient ambre, valeur "3,890"</li>
+                            <li>"Messages Echoues" : fond gradient rouge, valeur "42"</li>
+                        </ul>
+                    </li>
+                    <li>Graphique barres horizontales — repartition par type :
+                        <ul>
+                            <li>Marketing : barre bleue longue — "102,000 FCFA"</li>
+                            <li>Utility : barre verte moyenne — "35,200 FCFA"</li>
+                            <li>Authentication : barre ambre courte — "10,300 FCFA"</li>
+                        </ul>
+                    </li>
+                    <li>Grille tarifaire : Tableau — Marketing 35 FCFA, Utility 11 FCFA, Authentication 11 FCFA, Service Gratuit</li>
+                </ul>
+                <br>
+                <strong>Section 2 — "Consommation IA (Chatbot Stella)" :</strong>
+                <ul>
+                    <li>Badges modeles : "GPT-4.1" (violet) + "text-embedding-3-small" (bleu)</li>
+                    <li>4 StatCards : Cout Total IA (violet), Tokens Utilises (indigo), Tokens Entree (bleu ciel), Tokens Sortie (cyan)</li>
+                    <li>Graphique consommation par service : Chat, Embedding, Enrichissement, Rapports</li>
+                </ul>
+                <br>
+                <strong>Animation :</strong> Zoom rapide sur "Cout Total 147,500 FCFA" avec counter animation. Transition vers la grille tarifaire qui se surligne ligne par ligne. Puis section IA avec les badges modeles qui brillent.
+            </div>
+
+            <div class="voiceover">
+                La transparence totale sur les couts. Chaque message, chaque interaction IA est tracee et chiffree en francs CFA. Marketing a trente-cinq francs, utilitaire a onze francs. Maitrisez votre budget communication en temps reel.
+            </div>
+
+            <p class="transition-note">→ Transition : fondu vers scene de synthese</p>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- SCENE 17 -->
+    <!-- ===================================================================== -->
+    <div class="scene-block">
+        <div class="scene-header">
+            <div class="scene-num">17</div>
+            <div class="scene-title">Synthese - Valeur ajoutee pour BGFI Bank</div>
+            <div class="scene-time">4:18 → 4:28</div>
+        </div>
+        <div class="scene-body">
+
+            <div class="visual-desc">
+                Retour sur fond sombre (gradient navy). Motion graphics avec 5 blocs qui apparaissent en cascade :
+                <br><br>
+                <strong>Bloc 1</strong> — Icone Rocket (or) + "Engagement x10" + "Taux de lecture 98% vs 12% par email"
+                <br>
+                <strong>Bloc 2</strong> — Icone Bot (violet) + "IA 24/7" + "Chatbot Stella repond instantanement a vos clients"
+                <br>
+                <strong>Bloc 3</strong> — Icone Target (emeraude) + "Ciblage precis" + "Segments bancaires sur mesure pour chaque campagne"
+                <br>
+                <strong>Bloc 4</strong> — Icone BarChart (bleu) + "ROI mesurable" + "Tracking par bouton, cout par message, insights IA"
+                <br>
+                <strong>Bloc 5</strong> — Icone Shield (or) + "Securise & Souverain" + "Deploiement on-premise possible, donnees maitrisees"
+                <br><br>
+                Chaque bloc apparait avec un slide-in de la gauche et un fade-in (0.3s de decalage entre chaque). Musique crescendo subtil.
+                <br><br>
+                En bas : barre doree fine avec le texte "Pret pour les 17 filiales du Groupe BGFI" en lettres espacees.
+            </div>
+
+            <div class="voiceover">
+                BGFI Marketing, c'est un engagement client multiplie par dix, une intelligence artificielle disponible vingt-quatre heures sur vingt-quatre, un ciblage bancaire de precision, un retour sur investissement mesurable a chaque clic, et une solution souveraine deployable sur vos propres serveurs. Prete pour les dix-sept filiales du Groupe BGFI.
+            </div>
+
+            <p class="transition-note">→ Transition : fondu vers closing</p>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- SCENE 18 -->
+    <!-- ===================================================================== -->
+    <div class="scene-block">
+        <div class="scene-header">
+            <div class="scene-num">18</div>
+            <div class="scene-title">Closing</div>
+            <div class="scene-time">4:28 → 4:35</div>
+        </div>
+        <div class="scene-body">
+
+            <div class="visual-desc">
+                Fond noir. Le logo BGFI reapparait au centre (meme animation que l'intro mais en reverse : zoom-in avec glow dore).
+                <br><br>
+                Titre : <strong>"BGFI Marketing"</strong> (blanc, gras, 2.5rem)
+                <br>
+                Sous-titre : <strong>"WhatsApp Business Intelligence Platform"</strong> (gris clair)
+                <br><br>
+                Ligne doree horizontale animee (s'etend du centre vers les bords).
+                <br><br>
+                Texte final en or (#d4a843) : "Transformez chaque conversation en opportunite."
+                <br><br>
+                Pied : "BGFI Bank Group &bull; 2026" en gris tres clair, lettres espacees.
+                <br><br>
+                Musique : note finale resolue, silence progressif.
+            </div>
+
+            <div class="voiceover">
+                BGFI Marketing. Transformez chaque conversation en opportunite.
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- SCRIPT VOIX OFF COMPLET -->
+    <!-- ===================================================================== -->
+    <h2>Script complet de la voix off</h2>
+
+    <div class="box box-info">
+        <strong>Instructions pour le narrateur</strong>
+        <p>Voix masculine posee et confiante. Debit : 150 mots/minute. Ton : expertise, innovation, confiance. Pauses naturelles entre les scenes (0.5s). Legere emphase sur les chiffres cles et les noms de fonctionnalites.</p>
+    </div>
+
+    <div class="timeline">
+        <div class="timeline-time">0:00</div>
+        <div class="timeline-desc"><strong>[SCENE 1]</strong> Dans un monde bancaire en pleine transformation digitale, la communication client est devenue un avantage concurrentiel decisif.</div>
+
+        <div class="timeline-time">0:18</div>
+        <div class="timeline-desc"><strong>[SCENE 2]</strong> Douze pour cent pour les emails. Vingt-huit pour les SMS. Mais <em>quatre-vingt-dix-huit pour cent</em> des messages WhatsApp sont lus dans les trois minutes. BGFI Bank a choisi le canal le plus puissant du continent.</div>
+
+        <div class="timeline-time">0:35</div>
+        <div class="timeline-desc"><strong>[SCENE 3]</strong> Voici BGFI Marketing, votre plateforme de communication WhatsApp intelligente. L'acces est securise par authentification JWT avec gestion des roles.</div>
+
+        <div class="timeline-time">0:45</div>
+        <div class="timeline-desc"><strong>[SCENE 4]</strong> Le tableau de bord offre une vision instantanee de vos performances. Douze campagnes actives, plus de huit mille cinq cents messages envoyes, et un taux d'ouverture exceptionnel de <em>quatre-vingt-quatorze pour cent</em>. Chaque indicateur est calcule en temps reel.</div>
+
+        <div class="timeline-time">1:10</div>
+        <div class="timeline-desc"><strong>[SCENE 5]</strong> Les graphiques detaillent l'evolution de vos envois, livraisons et lectures sur trente jours. Le diagramme de repartition visualise vos contacts par categorie : actifs, VIP, premium, nouveaux. Chaque donnee alimente vos decisions strategiques.</div>
+
+        <div class="timeline-time">1:25</div>
+        <div class="timeline-desc"><strong>[SCENE 6]</strong> La base de contacts centralise l'ensemble de vos clients. Chaque fiche contient le telephone, la categorie bancaire, le type de compte, et le statut d'opt-in WhatsApp. La recherche instantanee et les filtres multi-criteres permettent de retrouver n'importe quel client en une seconde.</div>
+
+        <div class="timeline-time">1:45</div>
+        <div class="timeline-desc"><strong>[SCENE 7]</strong> L'import CSV permet d'integrer des centaines de contacts en quelques secondes. Chaque contact est automatiquement categorise selon les criteres bancaires de BGFI : type de compte, segment client, ville d'agence.</div>
+
+        <div class="timeline-time">1:58</div>
+        <div class="timeline-desc"><strong>[SCENE 8]</strong> Le moteur de segmentation permet un ciblage ultra-precis. Combinez librement les criteres : categorie client, ville d'agence, type de compte, tranche d'age. Le compteur en temps reel affiche instantanement le nombre de contacts correspondants. Chaque campagne touche exactement la bonne audience.</div>
+
+        <div class="timeline-time">2:18</div>
+        <div class="timeline-desc"><strong>[SCENE 9]</strong> Les templates sont vos modeles de messages, approuves par Meta. Creez des messages enrichis avec image, video, ou texte. Ajoutez des boutons d'action interactifs : lien vers votre site, reponse rapide, appel a l'action. Chaque template supporte les variables dynamiques pour personnaliser le message par destinataire.</div>
+
+        <div class="timeline-time">2:38</div>
+        <div class="timeline-desc"><strong>[SCENE 10]</strong> Creer une campagne ne prend que trois etapes. Nommez votre campagne, selectionnez votre segment cible, choisissez votre template. La plateforme s'occupe du reste : personnalisation des messages, envoi optimise via l'API WhatsApp officielle de Meta, respect des limites de debit.</div>
+
+        <div class="timeline-time">3:00</div>
+        <div class="timeline-desc"><strong>[SCENE 11]</strong> Suivez chaque campagne en temps reel. Les statuts remontent directement de l'API WhatsApp : envoye, delivre, lu, echoue. <em>Quatre-vingt-dix-sept pour cent</em> de taux de livraison, <em>quatre-vingt-douze pour cent</em> de taux de lecture. Des performances inaccessibles avec les canaux traditionnels.</div>
+
+        <div class="timeline-time">3:15</div>
+        <div class="timeline-desc"><strong>[SCENE 12]</strong> Innovation exclusive : le tracking par bouton. Chaque clic sur un bouton WhatsApp est mesure individuellement grace a notre systeme de redirection intelligente. Vous savez exactement quel call-to-action performe le mieux, bouton par bouton, campagne par campagne.</div>
+
+        <div class="timeline-time">3:28</div>
+        <div class="timeline-desc"><strong>[SCENE 13]</strong> Voici Stella, votre assistante IA alimentee par GPT-4.1 et la technologie RAG. Stella repond automatiquement aux questions de vos clients sur WhatsApp, vingt-quatre heures sur vingt-quatre. Elle puise ses reponses dans votre base de connaissances interne pour garantir des informations fiables et a jour.</div>
+
+        <div class="timeline-time">3:48</div>
+        <div class="timeline-desc"><strong>[SCENE 14]</strong> Alimentez Stella avec vos documents internes : guides produits, FAQ, tarifications, procedures. Chaque document est automatiquement decoupe, indexe et rendu accessible par intelligence artificielle. Plus vous enrichissez la base, plus Stella est pertinente.</div>
+
+        <div class="timeline-time">3:58</div>
+        <div class="timeline-desc"><strong>[SCENE 15]</strong> L'intelligence artificielle analyse automatiquement chaque conversation. Sentiments, intentions, produits mentionnes : des insights precieux emergent en temps reel. Les rapports generes par IA synthetisent les tendances et revelent les opportunites commerciales cachees dans vos echanges clients.</div>
+
+        <div class="timeline-time">4:08</div>
+        <div class="timeline-desc"><strong>[SCENE 16]</strong> La transparence totale sur les couts. Chaque message, chaque interaction IA est tracee et chiffree en francs CFA. Marketing a trente-cinq francs, utilitaire a onze francs. Maitrisez votre budget communication en temps reel.</div>
+
+        <div class="timeline-time">4:18</div>
+        <div class="timeline-desc"><strong>[SCENE 17]</strong> BGFI Marketing, c'est un engagement client multiplie par dix, une intelligence artificielle disponible vingt-quatre heures sur vingt-quatre, un ciblage bancaire de precision, un retour sur investissement mesurable a chaque clic, et une solution souveraine deployable sur vos propres serveurs. Prete pour les dix-sept filiales du Groupe BGFI.</div>
+
+        <div class="timeline-time">4:28</div>
+        <div class="timeline-desc"><strong>[SCENE 18]</strong> BGFI Marketing. Transformez chaque conversation en opportunite.</div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- PROMPT CLAUDE CODE -->
+    <!-- ===================================================================== -->
+    <h2>Prompt pour generation video IA</h2>
+
+    <div class="box box-warning">
+        <strong>Usage</strong>
+        <p>Ce prompt peut etre utilise avec des outils de generation video IA (Runway, Pika, Synthesia, HeyGen, etc.) ou fourni a un monteur video professionnel. Adaptez le format selon l'outil choisi.</p>
+    </div>
+
+    <pre><code>PROMPT POUR GENERATION VIDEO — BGFI WhatsApp Business Intelligence Platform
+
+=== SPECIFICATIONS GLOBALES ===
+- Duree : 4 minutes 30 secondes
+- Resolution : 1920x1080 (Full HD), 16:9
+- FPS : 30
+- Style : Screen recording anime avec motion graphics premium
+- Palette : Navy #1e3a5f, Emeraude #00a86b, Or #d4a843, Blanc, Gris #f8fafc
+- Police : Inter (300, 400, 600, 700, 900)
+- Musique : Corporate inspirante, piano + cordes, 100-110 BPM, crescendo final
+- Voix off : Masculine francaise, posee, 150 mots/min, sous-titree
+
+=== SCENE PAR SCENE ===
+
+[0:00-0:18] OUVERTURE
+Fond noir → Logo BGFI rond apparait en fondu avec glow dore.
+Titre "BGFI Marketing" s'ecrit lettre par lettre (blanc, Inter 900, 2.5rem).
+Sous-titre "WhatsApp Business Intelligence Platform" en fondu (gris, Inter 300).
+3 icones orbitent autour du logo : WhatsApp (vert), IA (violet), Graph (bleu).
+"Par BGFI Bank Group" en or (#d4a843), majuscules espacees.
+VO : "Dans un monde bancaire en pleine transformation digitale..."
+
+[0:18-0:35] PROBLEMATIQUE
+Motion graphics fond sombre.
+3 stats apparaissent en cascade :
+- Email 12% (rouge, petit) → SMS 28% (ambre, moyen) → WhatsApp 98% (emeraude, GRAND, particules)
+Barres comparatives horizontales. WhatsApp domine visuellement.
+"WhatsApp est le canal n°1 en Afrique" en or.
+VO : "Douze pour cent pour les emails..."
+
+[0:35-0:45] ECRAN CONNEXION
+Screenshot exact de l'app : fond #f8fafc, card blanche centree rounded-2xl.
+Logo BGFI 64x64 en haut. "BGFI Marketing" bold + "WhatsApp SaaS Platform" gris.
+Champs email (icone enveloppe) + password (icone cadenas).
+Bouton "Se connecter" navy pleine largeur.
+Animation : curseur tape "admin@bgfi.ga", dots dans password, clic → spinner → transition dashboard.
+VO : "Voici BGFI Marketing, votre plateforme..."
+
+[0:45-1:10] DASHBOARD KPI
+Vue complete : sidebar gauche (256px, blanc) avec 9 items de navigation.
+"Tableau de bord" actif (fond navy, texte blanc).
+4 StatCards en grille : Campagnes Actives "12" (bleu), Messages Envoyes "8,547" (vert),
+Taux Ouverture "94.2%" (violet), Taux Clic "23.8%" (ambre).
+Chaque chiffre s'anime de 0 a sa valeur (counter animation).
+Zoom sur 94.2% avec cercle lumineux dore.
+VO : "Le tableau de bord offre une vision instantanee..."
+
+[1:10-1:25] DASHBOARD GRAPHIQUES
+Scroll vers le bas. Area chart "Activite Messages" (3 courbes : navy, emeraude, bleu).
+Donut chart "Contacts par Categorie" (5 segments colores, total "1,247" au centre).
+3 cards Actions Rapides en degrades pastel.
+Courbes s'animent gauche→droite. Donut tourne et revele les segments.
+VO : "Les graphiques detaillent l'evolution..."
+
+[1:25-1:45] CONTACTS
+Clic sidebar "Contacts". Tableau : avatar + nom, telephone mono, badges categorie colores.
+Filtres : recherche, categorie, type compte. Boutons Import + Ajouter.
+Curseur tape "Franck" → filtre temps reel.
+VO : "La base de contacts centralise l'ensemble..."
+
+[1:45-1:58] IMPORT CONTACTS
+Modal blanc : "Importer des Contacts". Zone drop pointillee. Format CSV affiche.
+Fichier glisse → preview 3 lignes → "Importer 156 contacts" → progression → succes vert.
+Flash rapide sur formulaire d'ajout manuel (6 champs).
+VO : "L'import CSV permet d'integrer des centaines..."
+
+[1:58-2:18] SEGMENTS
+Clic sidebar "Segments". Grille de cards segments avec icones gradient.
+"Clients VIP Libreville" 234 contacts, "Jeunes Epargnants" 512 contacts.
+Clic "Nouveau segment" → constructeur de regles :
+[Categorie = VIP] ET [Ville = Libreville] ET [Type compte = COURANT]
+Compteur anime "234 contacts correspondent".
+VO : "Le moteur de segmentation permet un ciblage ultra-precis..."
+
+[2:18-2:38] TEMPLATES
+Clic sidebar "Templates". Grille 3 colonnes de cards template avec images.
+Badges "APPROVED" emeraude, "PENDING" ambre. Tags "IMAGE", "2 boutons".
+Clic "Nouveau template" → formulaire : nom, categorie, header IMAGE, corps avec {{1}}, boutons URL.
+VO : "Les templates sont vos modeles de messages..."
+
+[2:38-3:00] CREATION CAMPAGNE
+Wizard 3 etapes avec indicateur cercles.
+Etape 1 : nom "Onboarding Nouveaux Clients Q1" + type MARKETING.
+Etape 2 : selection segment "Clients VIP Libreville".
+Etape 3 : selection template + preview. Clic "Creer" → confetti subtil.
+VO : "Creer une campagne ne prend que trois etapes..."
+
+[3:00-3:15] SUIVI CAMPAGNE
+Detail campagne "EN COURS" (badge bleu anime).
+5 KPIs : Envoyes 234, Delivres 228 (97.4%), Lus 215 (91.9%), Cliques 54 (23.1%), Echoues 6.
+Barres de progression animees. Tableau messages avec badges statut colores.
+VO : "Suivez chaque campagne en temps reel..."
+
+[3:15-3:28] TRACKING CLICS
+Section "Clics par bouton" : 2 boutons avec barres violettes + compteurs.
+"Decouvrir nos services" 38 clics (16.2%), "Contacter un conseiller" 16 clics (6.8%).
+Flow anime : Message → Bouton → Clic → Serveur → Redirection.
+VO : "Innovation exclusive : le tracking par bouton..."
+
+[3:28-3:48] CHATBOT STELLA
+Page Chatbot, onglet Chat. Bulles de conversation :
+User (navy) : "Quels sont les taux d'interet compte epargne ?"
+Stella (gris) : reponse detaillee 3.5% classique, 5.2% premium.
+Panneau config : "Stella", GPT-4.1, slider chunks 5, similarite 75%.
+Reponse s'affiche mot par mot (streaming). Indicateur de frappe 3 points.
+VO : "Voici Stella, votre assistante IA..."
+
+[3:48-3:58] BASE DE CONNAISSANCES
+Onglet "Base de connaissances". 5 documents PDF/DOCX avec chunks.
+Upload anime d'un PDF. Schema RAG : Document → Chunks → Embedding → pgvector → Reponse.
+VO : "Alimentez Stella avec vos documents internes..."
+
+[3:58-4:08] INSIGHTS IA
+Onglet Conversations → Statistiques.
+Graphiques : Sentiment (area vert/rouge), Intentions (barres horizontales), Produits mentionnes.
+Onglet Rapports avec icones Sparkles IA.
+VO : "L'intelligence artificielle analyse automatiquement..."
+
+[4:08-4:18] COUTS & FACTURATION
+Page Parametres. KPIs gradient : "147,500 FCFA" total.
+Barres : Marketing 102k, Utility 35k, Auth 10k. Grille tarifaire.
+Section IA : badges GPT-4.1 + embedding. Tokens par service.
+VO : "La transparence totale sur les couts..."
+
+[4:18-4:28] VALEUR AJOUTEE
+Fond navy sombre. 5 blocs en cascade :
+Engagement x10 (or) → IA 24/7 (violet) → Ciblage precis (emeraude) →
+ROI mesurable (bleu) → Securise & Souverain (or).
+"Pret pour les 17 filiales du Groupe BGFI" barre doree.
+VO : "BGFI Marketing, c'est un engagement client multiplie par dix..."
+
+[4:28-4:35] CLOSING
+Fond noir. Logo BGFI zoom-in glow dore.
+"BGFI Marketing" blanc gras. Ligne doree horizontale animee.
+"Transformez chaque conversation en opportunite" en or.
+"BGFI Bank Group • 2026" gris.
+VO : "BGFI Marketing. Transformez chaque conversation en opportunite."
+
+=== FIN DU PROMPT ===</code></pre>
+
+    <div class="box box-gold" style="margin-top: 3rem;">
+        <strong>Documents complementaires</strong>
+        <p>Ce prompt s'appuie sur l'application reelle BGFI Marketing deployee sur <code>bgfi-wacbt-production.up.railway.app</code>. Les descriptions visuelles correspondent exactement a l'interface en production.</p>
+        <ul style="margin-bottom:0;">
+            <li>Guide de deploiement on-premise : <code>guide-deploiement-onpremise-bgfi.html</code></li>
+            <li>Securite reseau : <code>securite-reseau-bgfi-whatsapp.html</code></li>
+            <li>Devis plateforme : <code>devis-bgfi-whatsapp-platform.html</code></li>
+        </ul>
+    </div>
+
+</div>
+
+</body>
+</html>
