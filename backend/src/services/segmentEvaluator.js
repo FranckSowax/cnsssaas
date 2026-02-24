@@ -18,7 +18,7 @@
 
 const ALLOWED_FIELDS = [
   'category', 'city', 'country', 'ageRange', 'gender', 'language',
-  'accountType', 'engagementScore', 'status', 'tags', 'optedIn',
+  'memberType', 'engagementScore', 'status', 'tags', 'optedIn',
   'registrationDate', 'lastActivity', 'lastCampaignInteraction', 'createdAt'
 ];
 

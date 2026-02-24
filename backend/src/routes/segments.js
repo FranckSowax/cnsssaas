@@ -55,15 +55,15 @@ router.get('/', authenticate, async (req, res) => {
 // ============================================
 router.get('/fields', authenticate, (req, res) => {
   const fields = [
-    { name: 'category', label: 'Catégorie', type: 'select', group: 'PROFIL', options: ['ALL', 'ACTIVE', 'INACTIVE', 'NEW', 'PREMIUM', 'VIP'] },
+    { name: 'category', label: 'Catégorie', type: 'select', group: 'PROFIL', options: ['ALL', 'ACTIVE', 'INACTIVE', 'NEW', 'COTISANT', 'BENEFICIAIRE'] },
     { name: 'city', label: 'Ville', type: 'text', group: 'PROFIL' },
     { name: 'country', label: 'Pays', type: 'text', group: 'PROFIL' },
     { name: 'ageRange', label: "Tranche d'âge", type: 'select', group: 'PROFIL', options: ['18-25', '26-35', '36-45', '46-55', '56+'] },
     { name: 'gender', label: 'Genre', type: 'select', group: 'PROFIL', options: ['M', 'F', 'AUTRE'] },
     { name: 'language', label: 'Langue', type: 'select', group: 'PROFIL', options: ['fr', 'en', 'es'] },
     { name: 'status', label: 'Statut', type: 'select', group: 'PROFIL', options: ['ACTIVE', 'UNSUBSCRIBED', 'BLOCKED'] },
-    { name: 'accountType', label: 'Type de compte', type: 'select', group: 'BANQUE', options: ['EPARGNE', 'COURANT', 'PROFESSIONNEL', 'JEUNE'] },
-    { name: 'registrationDate', label: "Date d'inscription", type: 'date', group: 'BANQUE' },
+    { name: 'memberType', label: "Type d'affilié", type: 'select', group: 'SECURITE_SOCIALE', options: ['SALARIE', 'RETRAITE', 'INDEPENDANT', 'AYANT_DROIT', 'EMPLOYEUR'] },
+    { name: 'registrationDate', label: "Date d'inscription", type: 'date', group: 'SECURITE_SOCIALE' },
     { name: 'engagementScore', label: "Score d'engagement", type: 'number', group: 'COMPORTEMENT' },
     { name: 'lastActivity', label: 'Dernière activité', type: 'date', group: 'COMPORTEMENT' },
     { name: 'lastCampaignInteraction', label: 'Dernière interaction campagne', type: 'date', group: 'COMPORTEMENT' },
@@ -263,7 +263,7 @@ router.get('/:id/contacts', authenticate, async (req, res) => {
         take: parseInt(limit),
         select: {
           id: true, name: true, phone: true, email: true, city: true,
-          accountType: true, category: true, engagementScore: true,
+          memberType: true, category: true, engagementScore: true,
           ageRange: true, gender: true, lastActivity: true, tags: true
         }
       }),
@@ -297,7 +297,7 @@ router.get('/:id/insights', authenticate, async (req, res) => {
 
     const [byCity, byAccountType, byAgeRange, byGender, engagementAvg, total] = await Promise.all([
       prisma.contact.groupBy({ by: ['city'], where: { ...baseWhere, city: { not: null } }, _count: { city: true }, orderBy: { _count: { city: 'desc' } }, take: 8 }),
-      prisma.contact.groupBy({ by: ['accountType'], where: { ...baseWhere, accountType: { not: null } }, _count: { accountType: true } }),
+      prisma.contact.groupBy({ by: ['memberType'], where: { ...baseWhere, memberType: { not: null } }, _count: { memberType: true } }),
       prisma.contact.groupBy({ by: ['ageRange'], where: { ...baseWhere, ageRange: { not: null } }, _count: { ageRange: true } }),
       prisma.contact.groupBy({ by: ['gender'], where: { ...baseWhere, gender: { not: null } }, _count: { gender: true } }),
       prisma.contact.aggregate({ _avg: { engagementScore: true }, where: baseWhere }),
@@ -308,7 +308,7 @@ router.get('/:id/insights', authenticate, async (req, res) => {
       total,
       averageEngagement: Math.round(engagementAvg._avg.engagementScore || 0),
       byCity: byCity.map(i => ({ name: i.city, count: i._count.city })),
-      byAccountType: byAccountType.map(i => ({ name: i.accountType, count: i._count.accountType })),
+      byAccountType: byAccountType.map(i => ({ name: i.memberType, count: i._count.memberType })),
       byAgeRange: byAgeRange.map(i => ({ name: i.ageRange, count: i._count.ageRange })),
       byGender: byGender.map(i => ({ name: i.gender, count: i._count.gender }))
     });
@@ -335,9 +335,9 @@ router.post('/ai-suggest', authenticate, async (req, res) => {
 
 Champs disponibles: ${fieldDefs}
 Types de valeurs:
-- category: ALL, ACTIVE, INACTIVE, NEW, PREMIUM, VIP
+- category: ALL, ACTIVE, INACTIVE, NEW, COTISANT, BENEFICIAIRE
 - city: texte libre (ex: Libreville, Port-Gentil, Franceville, Oyem)
-- accountType: EPARGNE, COURANT, PROFESSIONNEL, JEUNE
+- memberType: SALARIE, RETRAITE, INDEPENDANT, AYANT_DROIT, EMPLOYEUR
 - ageRange: 18-25, 26-35, 36-45, 46-55, 56+
 - gender: M, F, AUTRE
 - engagementScore: nombre 0-100
@@ -429,7 +429,7 @@ router.post('/preview', authenticate, async (req, res) => {
         name: c.name,
         phone: c.phone,
         city: c.city,
-        accountType: c.accountType,
+        memberType: c.memberType,
         engagementScore: c.engagementScore
       }))
     });
@@ -612,7 +612,7 @@ router.get('/:id/search-contacts', authenticate, async (req, res) => {
       orderBy: { name: 'asc' },
       select: {
         id: true, name: true, phone: true, email: true,
-        city: true, category: true, accountType: true
+        city: true, category: true, memberType: true
       }
     });
 

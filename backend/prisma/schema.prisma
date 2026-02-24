@@ -137,13 +137,13 @@ model Contact {
   category      ContactCategory @default(ACTIVE)
   tags          String[]        @default([])
 
-  // Banking-specific fields
+  // CNSS-specific fields
   city          String?
   country       String?         @default("GA")
   ageRange      String?         // "18-25", "26-35", "36-45", "46-55", "56+"
   gender        String?         // "M", "F", "AUTRE"
   language      String?         @default("fr")
-  accountType   String?         // "EPARGNE", "COURANT", "PROFESSIONNEL", "JEUNE"
+  memberType    String?         // "SALARIE", "RETRAITE", "INDEPENDANT", "AYANT_DROIT", "EMPLOYEUR"
   registrationDate DateTime?
 
   // Enrichment & scoring
@@ -172,7 +172,7 @@ model Contact {
   @@index([status])
   @@index([phone])
   @@index([city])
-  @@index([accountType])
+  @@index([memberType])
   @@map("contacts")
 }
 
@@ -353,10 +353,10 @@ model ChatSession {
   userAgent   String?
   ipAddress   String?
 
-  // === Enrichissement IA bancaire ===
+  // === Enrichissement IA CNSS ===
   enriched          Boolean   @default(false)
-  intentCategory    String?   // ACCOUNT_INQUIRY, LOAN_REQUEST, CARD_ISSUE, TRANSFER_HELP, COMPLAINT, PRODUCT_INFO, ACCOUNT_OPENING, FEES_CHARGES, MOBILE_BANKING, GENERAL
-  productMentioned  String?   // SAVINGS_ACCOUNT, CURRENT_ACCOUNT, CREDIT_CARD, PERSONAL_LOAN, MORTGAGE, INSURANCE, MOBILE_BANKING, VISA_CARD, NONE
+  intentCategory    String?   // AFFILIATION_INQUIRY, BENEFIT_REQUEST, CLAIM_ISSUE, PAYMENT_HELP, COMPLAINT, PRODUCT_INFO, ENROLLMENT_REQUEST, CONTRIBUTION_QUERY, ONLINE_SERVICE, GENERAL
+  productMentioned  String?   // PENSION_VIEILLESSE, PENSION_INVALIDITE, PENSION_SURVIVANT, ALLOCATIONS_FAMILIALES, ASSURANCE_MALADIE, MATERNITE, ACCIDENT_TRAVAIL, DECES, AUCUNE
   sentiment         String?   // POSITIVE, NEUTRAL, NEGATIVE, FRUSTRATED
   urgencyLevel      String?   // LOW, MEDIUM, HIGH, CRITICAL
   resolutionStatus  String?   // RESOLVED, UNRESOLVED, ESCALATION_NEEDED, FOLLOW_UP_REQUIRED
@@ -470,14 +470,14 @@ enum ContactCategory {
   ACTIVE
   INACTIVE
   NEW
-  PREMIUM
-  VIP
+  COTISANT
+  BENEFICIAIRE
 }
 
 enum SegmentType {
   STATIC
   DYNAMIC
-  BANK_CRITERIA
+  SOCIAL_CRITERIA
 }
 
 enum ContactStatus {

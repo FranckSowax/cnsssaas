@@ -120,9 +120,9 @@
 
         const statusMap = { DRAFT: 'Brouillon', SCHEDULED: 'Planifiee', RUNNING: 'En cours', COMPLETED: 'Terminee', CANCELLED: 'Annulee', SENT: 'Envoye' };
         const statusVariant = { DRAFT: 'default', SCHEDULED: 'warning', RUNNING: 'info', COMPLETED: 'success', CANCELLED: 'danger' };
-        const categoryMap = { ALL: 'Tous', ACTIVE: 'Actif', INACTIVE: 'Inactif', VIP: 'VIP', NEW: 'Nouveau', PREMIUM: 'Premium' };
-        const categoryVariant = { ALL: 'default', ACTIVE: 'success', INACTIVE: 'warning', VIP: 'primary', NEW: 'info', PREMIUM: 'primary' };
-        const accountTypeMap = { EPARGNE: 'Epargne', COURANT: 'Courant', PROFESSIONNEL: 'Professionnel', JEUNE: 'Jeune' };
+        const categoryMap = { ALL: 'Tous', ACTIVE: 'Actif', INACTIVE: 'Inactif', BENEFICIAIRE: 'Bénéficiaire', NEW: 'Nouveau', COTISANT: 'Cotisant' };
+        const categoryVariant = { ALL: 'default', ACTIVE: 'success', INACTIVE: 'warning', BENEFICIAIRE: 'primary', NEW: 'info', COTISANT: 'primary' };
+        const memberTypeMap = { SALARIE: 'Salarié', RETRAITE: 'Retraité', INDEPENDANT: 'Indépendant', AYANT_DROIT: 'Ayant droit', EMPLOYEUR: 'Employeur' };
         const catMap = { MARKETING: 'Marketing', UTILITY: 'Utilitaire', AUTHENTICATION: 'Authentification', REACTIVATION: 'Reactivation', NOTIFICATION: 'Notification' };
         const tplStatusMap = { PENDING: 'En attente', APPROVED: 'Approuve', REJECTED: 'Rejete' };
         const tplStatusVariant = { PENDING: 'warning', APPROVED: 'success', REJECTED: 'danger' };
@@ -390,8 +390,8 @@
 
             const radialData = useMemo(() => {
                 if (!contactStats?.byCategory) return [];
-                const colors = { ACTIVE: '#00a86b', VIP: '#1e3a5f', PREMIUM: '#3b82f6', NEW: '#f59e0b', INACTIVE: '#ef4444' };
-                const labels = { ACTIVE: 'Actifs', VIP: 'VIP', PREMIUM: 'Premium', NEW: 'Nouveaux', INACTIVE: 'Inactifs' };
+                const colors = { ACTIVE: '#00a86b', BENEFICIAIRE: '#1e3a5f', COTISANT: '#3b82f6', NEW: '#f59e0b', INACTIVE: '#ef4444' };
+                const labels = { ACTIVE: 'Actifs', BENEFICIAIRE: 'Bénéficiaire', COTISANT: 'Cotisant', NEW: 'Nouveaux', INACTIVE: 'Inactifs' };
                 return Object.entries(contactStats.byCategory)
                     .filter(([k]) => k !== 'ALL')
                     .map(([key, count]) => ({ name: labels[key] || key, value: count, fill: colors[key] || '#9ca3af' }))
@@ -683,13 +683,13 @@
         // Segment Builder Component
         // =============================================
         const SEGMENT_FIELDS = [
-            { name: 'category', label: 'Categorie', type: 'select', group: 'PROFIL', options: ['ALL', 'ACTIVE', 'INACTIVE', 'NEW', 'PREMIUM', 'VIP'] },
+            { name: 'category', label: 'Categorie', type: 'select', group: 'PROFIL', options: ['ALL', 'ACTIVE', 'INACTIVE', 'NEW', 'COTISANT', 'BENEFICIAIRE'] },
             { name: 'city', label: 'Ville', type: 'text', group: 'PROFIL' },
             { name: 'country', label: 'Pays', type: 'text', group: 'PROFIL' },
             { name: 'ageRange', label: "Tranche d'age", type: 'select', group: 'PROFIL', options: ['18-25', '26-35', '36-45', '46-55', '56+'] },
             { name: 'gender', label: 'Genre', type: 'select', group: 'PROFIL', options: ['M', 'F', 'AUTRE'] },
             { name: 'language', label: 'Langue', type: 'select', group: 'PROFIL', options: ['fr', 'en', 'es'] },
-            { name: 'accountType', label: 'Type de compte', type: 'select', group: 'BANQUE', options: ['EPARGNE', 'COURANT', 'PROFESSIONNEL', 'JEUNE'] },
+            { name: 'memberType', label: "Type d'affilié", type: 'select', group: 'SECURITE_SOCIALE', options: ['SALARIE', 'RETRAITE', 'INDEPENDANT', 'AYANT_DROIT', 'EMPLOYEUR'] },
             { name: 'engagementScore', label: "Score engagement", type: 'number', group: 'COMPORTEMENT' },
             { name: 'status', label: 'Statut contact', type: 'select', group: 'PROFIL', options: ['ACTIVE', 'UNSUBSCRIBED', 'BLOCKED'] },
         ];
@@ -1097,7 +1097,7 @@
                                         <Select label="Template" value={editForm.templateId} onChange={v => setEditForm({...editForm, templateId: v})} options={[{ value: '', label: 'Selectionner...' }, ...templates.map(t => ({ value: t.id, label: t.displayName || t.name }))]} />
                                     </div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <Select label="Categorie" value={editForm.segment} onChange={v => setEditForm({...editForm, segment: v})} options={[{ value: 'ALL', label: 'Tous les contacts' }, { value: 'ACTIVE', label: 'Actifs' }, { value: 'INACTIVE', label: 'Inactifs' }, { value: 'NEW', label: 'Nouveaux' }, { value: 'VIP', label: 'VIP' }, { value: 'PREMIUM', label: 'Premium' }]} />
+                                        <Select label="Categorie" value={editForm.segment} onChange={v => setEditForm({...editForm, segment: v})} options={[{ value: 'ALL', label: 'Tous les contacts' }, { value: 'ACTIVE', label: 'Actifs' }, { value: 'INACTIVE', label: 'Inactifs' }, { value: 'NEW', label: 'Nouveaux' }, { value: 'BENEFICIAIRE', label: 'Bénéficiaire' }, { value: 'COTISANT', label: 'Cotisant' }]} />
                                         <Input label="Date d'envoi" type="datetime-local" value={editForm.scheduledAt} onChange={v => setEditForm({...editForm, scheduledAt: v})} />
                                     </div>
                                 </div>
@@ -2207,9 +2207,9 @@
             const [search, setSearch] = useState('');
             const [categoryFilter, setCategoryFilter] = useState('');
             const [cityFilter, setCityFilter] = useState('');
-            const [accountTypeFilter, setAccountTypeFilter] = useState('');
-            const { data, loading, error, refetch } = useApi('/contacts?limit=50' + (search ? '&search=' + encodeURIComponent(search) : '') + (categoryFilter ? '&category=' + categoryFilter : '') + (cityFilter ? '&city=' + encodeURIComponent(cityFilter) : '') + (accountTypeFilter ? '&accountType=' + accountTypeFilter : ''));
-            const [form, setForm] = useState({ name: '', phone: '', email: '', category: 'ACTIVE', city: '', accountType: '', ageRange: '', gender: '' });
+            const [memberTypeFilter, setMemberTypeFilter] = useState('');
+            const { data, loading, error, refetch } = useApi('/contacts?limit=50' + (search ? '&search=' + encodeURIComponent(search) : '') + (categoryFilter ? '&category=' + categoryFilter : '') + (cityFilter ? '&city=' + encodeURIComponent(cityFilter) : '') + (memberTypeFilter ? '&memberType=' + memberTypeFilter : ''));
+            const [form, setForm] = useState({ name: '', phone: '', email: '', category: 'ACTIVE', city: '', memberType: '', ageRange: '', gender: '' });
             const [creating, setCreating] = useState(false);
             const [editContact, setEditContact] = useState(null);
             const [editForm, setEditForm] = useState({});
@@ -2222,11 +2222,11 @@
                 try {
                     const body = { ...form };
                     if (!body.city) delete body.city;
-                    if (!body.accountType) delete body.accountType;
+                    if (!body.memberType) delete body.memberType;
                     if (!body.ageRange) delete body.ageRange;
                     if (!body.gender) delete body.gender;
                     await api('/contacts', { method: 'POST', body: JSON.stringify(body) });
-                    setShowAddModal(false); setForm({ name: '', phone: '', email: '', category: 'ACTIVE', city: '', accountType: '', ageRange: '', gender: '' }); refetch();
+                    setShowAddModal(false); setForm({ name: '', phone: '', email: '', category: 'ACTIVE', city: '', memberType: '', ageRange: '', gender: '' }); refetch();
                 } catch (err) { alert(err.message); }
                 finally { setCreating(false); }
             };
@@ -2254,7 +2254,7 @@
                     email: contact.email || '',
                     category: contact.category || 'ACTIVE',
                     city: contact.city || '',
-                    accountType: contact.accountType || '',
+                    memberType: contact.memberType || '',
                     ageRange: contact.ageRange || '',
                     gender: contact.gender || '',
                     engagementScore: contact.engagementScore || 0
@@ -2267,7 +2267,7 @@
                 try {
                     const body = { ...editForm };
                     if (!body.city) delete body.city;
-                    if (!body.accountType) delete body.accountType;
+                    if (!body.memberType) delete body.memberType;
                     if (!body.ageRange) delete body.ageRange;
                     if (!body.gender) delete body.gender;
                     body.engagementScore = parseInt(body.engagementScore) || 0;
@@ -2287,8 +2287,8 @@
                         <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
                             <div className="flex-1"><Input placeholder="Rechercher un contact..." icon={Icons.Search} value={search} onChange={setSearch} /></div>
                             <div className="flex gap-2 flex-wrap">
-                                <Select value={categoryFilter} onChange={setCategoryFilter} options={[{ value: '', label: 'Categorie' }, { value: 'ACTIVE', label: 'Actifs' }, { value: 'INACTIVE', label: 'Inactifs' }, { value: 'NEW', label: 'Nouveaux' }, { value: 'VIP', label: 'VIP' }, { value: 'PREMIUM', label: 'Premium' }]} />
-                                <Select value={accountTypeFilter} onChange={setAccountTypeFilter} options={[{ value: '', label: 'Type compte' }, { value: 'EPARGNE', label: 'Epargne' }, { value: 'COURANT', label: 'Courant' }, { value: 'PROFESSIONNEL', label: 'Pro' }, { value: 'JEUNE', label: 'Jeune' }]} />
+                                <Select value={categoryFilter} onChange={setCategoryFilter} options={[{ value: '', label: 'Categorie' }, { value: 'ACTIVE', label: 'Actifs' }, { value: 'INACTIVE', label: 'Inactifs' }, { value: 'NEW', label: 'Nouveaux' }, { value: 'BENEFICIAIRE', label: 'Bénéficiaire' }, { value: 'COTISANT', label: 'Cotisant' }]} />
+                                <Select value={memberTypeFilter} onChange={setMemberTypeFilter} options={[{ value: '', label: 'Type affilié' }, { value: 'SALARIE', label: 'Salarié' }, { value: 'RETRAITE', label: 'Retraité' }, { value: 'INDEPENDANT', label: 'Indépendant' }, { value: 'AYANT_DROIT', label: 'Ayant droit' }, { value: 'EMPLOYEUR', label: 'Employeur' }]} />
                                 <Input placeholder="Ville..." value={cityFilter} onChange={setCityFilter} />
                             </div>
                         </div>
@@ -2302,7 +2302,7 @@
                         {/* Desktop table */}
                         <div className="overflow-x-auto hidden md:block">
                             <table className="w-full">
-                                <thead><tr className="border-b border-gray-200"><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Contact</th><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Telephone</th><th className="text-left py-3 px-4 text-sm font-medium text-gray-500 hidden lg:table-cell">Ville</th><th className="text-left py-3 px-4 text-sm font-medium text-gray-500 hidden xl:table-cell">Age</th><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Categorie</th><th className="text-left py-3 px-4 text-sm font-medium text-gray-500 hidden lg:table-cell">Compte</th><th className="text-left py-3 px-4 text-sm font-medium text-gray-500 hidden xl:table-cell">Engagement</th><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Opt-in</th><th className="text-right py-3 px-4 text-sm font-medium text-gray-500">Actions</th></tr></thead>
+                                <thead><tr className="border-b border-gray-200"><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Contact</th><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Telephone</th><th className="text-left py-3 px-4 text-sm font-medium text-gray-500 hidden lg:table-cell">Ville</th><th className="text-left py-3 px-4 text-sm font-medium text-gray-500 hidden xl:table-cell">Age</th><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Categorie</th><th className="text-left py-3 px-4 text-sm font-medium text-gray-500 hidden lg:table-cell">Affilié</th><th className="text-left py-3 px-4 text-sm font-medium text-gray-500 hidden xl:table-cell">Engagement</th><th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Opt-in</th><th className="text-right py-3 px-4 text-sm font-medium text-gray-500">Actions</th></tr></thead>
                                 <tbody className="divide-y divide-gray-100">
                                     {contacts.length === 0 && <tr><td colSpan="9" className="py-8 text-center text-gray-500">Aucun contact</td></tr>}
                                     {contacts.map(contact => (
@@ -2312,7 +2312,7 @@
                                             <td className="py-4 px-4 text-sm text-gray-600 hidden lg:table-cell">{contact.city || '-'}</td>
                                             <td className="py-4 px-4 text-sm text-gray-600 hidden xl:table-cell">{contact.ageRange || '-'}</td>
                                             <td className="py-4 px-4"><Badge variant={categoryVariant[contact.category] || 'default'}>{categoryMap[contact.category] || contact.category}</Badge></td>
-                                            <td className="py-4 px-4 text-sm text-gray-600 hidden lg:table-cell">{accountTypeMap[contact.accountType] || contact.accountType || '-'}</td>
+                                            <td className="py-4 px-4 text-sm text-gray-600 hidden lg:table-cell">{memberTypeMap[contact.memberType] || contact.memberType || '-'}</td>
                                             <td className="py-4 px-4 hidden xl:table-cell"><div className="flex items-center gap-2"><div className="w-16 bg-gray-200 rounded-full h-2"><div className="h-2 rounded-full" style={{width: (contact.engagementScore || 0) + '%', backgroundColor: (contact.engagementScore || 0) >= 70 ? '#16a34a' : (contact.engagementScore || 0) >= 40 ? '#f59e0b' : '#ef4444'}} /></div><span className="text-xs text-gray-500">{contact.engagementScore || 0}</span></div></td>
                                             <td className="py-4 px-4"><Badge variant={contact.optedIn ? 'success' : 'danger'}>{contact.optedIn ? 'Oui' : 'Non'}</Badge></td>
                                             <td className="py-4 px-4 text-right"><div className="flex items-center justify-end gap-1"><Button variant="ghost" size="sm" icon={Icons.Edit} onClick={() => openEditContact(contact)} /><Button variant="ghost" size="sm" icon={Icons.Trash2} onClick={() => handleDelete(contact.id)} /></div></td>
@@ -2364,11 +2364,11 @@
                                     </div>
                                     <Input label="Email" placeholder="jean@email.com" value={form.email} onChange={v => setForm({...form, email: v})} icon={Icons.Mail} />
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <Select label="Categorie" value={form.category} onChange={v => setForm({...form, category: v})} options={[{ value: 'ACTIVE', label: 'Actif' }, { value: 'INACTIVE', label: 'Inactif' }, { value: 'NEW', label: 'Nouveau' }, { value: 'VIP', label: 'VIP' }, { value: 'PREMIUM', label: 'Premium' }]} />
+                                        <Select label="Categorie" value={form.category} onChange={v => setForm({...form, category: v})} options={[{ value: 'ACTIVE', label: 'Actif' }, { value: 'INACTIVE', label: 'Inactif' }, { value: 'NEW', label: 'Nouveau' }, { value: 'BENEFICIAIRE', label: 'Bénéficiaire' }, { value: 'COTISANT', label: 'Cotisant' }]} />
                                         <Input label="Ville" placeholder="Libreville" value={form.city} onChange={v => setForm({...form, city: v})} />
                                     </div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <Select label="Type de compte" value={form.accountType} onChange={v => setForm({...form, accountType: v})} options={[{ value: '', label: 'Selectionner...' }, { value: 'EPARGNE', label: 'Epargne' }, { value: 'COURANT', label: 'Courant' }, { value: 'PROFESSIONNEL', label: 'Professionnel' }, { value: 'JEUNE', label: 'Jeune' }]} />
+                                        <Select label="Type d'affilié" value={form.memberType} onChange={v => setForm({...form, memberType: v})} options={[{ value: '', label: 'Selectionner...' }, { value: 'SALARIE', label: 'Salarié' }, { value: 'RETRAITE', label: 'Retraité' }, { value: 'INDEPENDANT', label: 'Indépendant' }, { value: 'AYANT_DROIT', label: 'Ayant droit' }, { value: 'EMPLOYEUR', label: 'Employeur' }]} />
                                         <Select label="Tranche d'age" value={form.ageRange} onChange={v => setForm({...form, ageRange: v})} options={[{ value: '', label: 'Selectionner...' }, { value: '18-25', label: '18-25 ans' }, { value: '26-35', label: '26-35 ans' }, { value: '36-45', label: '36-45 ans' }, { value: '46-55', label: '46-55 ans' }, { value: '56+', label: '56+ ans' }]} />
                                     </div>
                                     <Select label="Genre" value={form.gender} onChange={v => setForm({...form, gender: v})} options={[{ value: '', label: 'Selectionner...' }, { value: 'M', label: 'Masculin' }, { value: 'F', label: 'Feminin' }, { value: 'AUTRE', label: 'Autre' }]} />
@@ -2395,7 +2395,7 @@
                                         <p className="font-medium text-gray-900">Deposez votre fichier ici</p>
                                         <p className="text-sm text-gray-500 mt-1">CSV ou Excel (max 10MB)</p>
                                     </div>
-                                    <div className="bg-gray-50 p-3 sm:p-4 rounded-xl"><p className="text-sm font-medium text-gray-700 mb-2">Format attendu :</p><code className="text-xs text-gray-600 block break-all">phone, name, email, category, city, accountType, ageRange, gender</code></div>
+                                    <div className="bg-gray-50 p-3 sm:p-4 rounded-xl"><p className="text-sm font-medium text-gray-700 mb-2">Format attendu :</p><code className="text-xs text-gray-600 block break-all">phone, name, email, category, city, memberType, ageRange, gender</code></div>
                                 </div>
                                 <div className="p-4 sm:p-6 border-t border-gray-200 flex justify-end gap-3">
                                     <Button variant="secondary" onClick={() => setShowImportModal(false)}>Fermer</Button>
@@ -2421,11 +2421,11 @@
                                         <Input label="Email" value={editForm.email} onChange={v => setEditForm({...editForm, email: v})} icon={Icons.Mail} />
                                     </div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <Select label="Categorie" value={editForm.category} onChange={v => setEditForm({...editForm, category: v})} options={[{ value: 'ACTIVE', label: 'Actif' }, { value: 'INACTIVE', label: 'Inactif' }, { value: 'NEW', label: 'Nouveau' }, { value: 'VIP', label: 'VIP' }, { value: 'PREMIUM', label: 'Premium' }]} />
+                                        <Select label="Categorie" value={editForm.category} onChange={v => setEditForm({...editForm, category: v})} options={[{ value: 'ACTIVE', label: 'Actif' }, { value: 'INACTIVE', label: 'Inactif' }, { value: 'NEW', label: 'Nouveau' }, { value: 'BENEFICIAIRE', label: 'Bénéficiaire' }, { value: 'COTISANT', label: 'Cotisant' }]} />
                                         <Input label="Ville" value={editForm.city} onChange={v => setEditForm({...editForm, city: v})} />
                                     </div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <Select label="Type de compte" value={editForm.accountType} onChange={v => setEditForm({...editForm, accountType: v})} options={[{ value: '', label: 'Selectionner...' }, { value: 'EPARGNE', label: 'Epargne' }, { value: 'COURANT', label: 'Courant' }, { value: 'PROFESSIONNEL', label: 'Professionnel' }, { value: 'JEUNE', label: 'Jeune' }]} />
+                                        <Select label="Type d'affilié" value={editForm.memberType} onChange={v => setEditForm({...editForm, memberType: v})} options={[{ value: '', label: 'Selectionner...' }, { value: 'SALARIE', label: 'Salarié' }, { value: 'RETRAITE', label: 'Retraité' }, { value: 'INDEPENDANT', label: 'Indépendant' }, { value: 'AYANT_DROIT', label: 'Ayant droit' }, { value: 'EMPLOYEUR', label: 'Employeur' }]} />
                                         <Select label="Tranche d'age" value={editForm.ageRange} onChange={v => setEditForm({...editForm, ageRange: v})} options={[{ value: '', label: 'Selectionner...' }, { value: '18-25', label: '18-25 ans' }, { value: '26-35', label: '26-35 ans' }, { value: '36-45', label: '36-45 ans' }, { value: '46-55', label: '46-55 ans' }, { value: '56+', label: '56+ ans' }]} />
                                     </div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -2449,7 +2449,7 @@
         // =============================================
         const criteriaToText = (criteria) => {
             if (!criteria?.rules?.length) return 'Aucun critere';
-            const fieldLabels = { category: 'Categorie', city: 'Ville', country: 'Pays', ageRange: "Tranche d'age", gender: 'Genre', language: 'Langue', accountType: 'Type de compte', engagementScore: 'Score engagement', status: 'Statut', tags: 'Tags', optedIn: 'Opt-in', registrationDate: "Date inscription", lastActivity: 'Derniere activite' };
+            const fieldLabels = { category: 'Categorie', city: 'Ville', country: 'Pays', ageRange: "Tranche d'age", gender: 'Genre', language: 'Langue', memberType: "Type d'affilié", engagementScore: 'Score engagement', status: 'Statut', tags: 'Tags', optedIn: 'Opt-in', registrationDate: "Date inscription", lastActivity: 'Derniere activite' };
             const opLabels = { eq: '=', neq: '!=', gt: '>', gte: '>=', lt: '<', lte: '<=', in: 'dans', nin: 'pas dans', contains: 'contient', isNull: 'est vide', isNotNull: 'existe' };
             const parts = criteria.rules.map(r => {
                 const fl = fieldLabels[r.field] || r.field;
@@ -2618,7 +2618,7 @@
                             <p className="text-xs font-medium text-gray-500 mb-1">Criteres de ciblage</p>
                             <div className="flex flex-wrap gap-1.5">
                                 {(segment.criteria?.rules || []).map((r, i) => {
-                                    const fl = { category: 'Categorie', city: 'Ville', ageRange: 'Age', gender: 'Genre', accountType: 'Compte', engagementScore: 'Score', status: 'Statut', language: 'Langue', country: 'Pays', tags: 'Tags', optedIn: 'Opt-in' };
+                                    const fl = { category: 'Categorie', city: 'Ville', ageRange: 'Age', gender: 'Genre', memberType: 'Affilié', engagementScore: 'Score', status: 'Statut', language: 'Langue', country: 'Pays', tags: 'Tags', optedIn: 'Opt-in' };
                                     const ol = { eq: '=', neq: '!=', gt: '>', gte: '>=', lt: '<', lte: '<=', in: 'dans', contains: '~' };
                                     const val = Array.isArray(r.value) ? r.value.join(', ') : r.value;
                                     return (
@@ -2658,7 +2658,7 @@
                                                 <thead><tr className="border-b border-gray-200">
                                                     <th className="text-left py-3 px-3 font-medium text-gray-500">Contact</th>
                                                     <th className="text-left py-3 px-3 font-medium text-gray-500">Ville</th>
-                                                    <th className="text-left py-3 px-3 font-medium text-gray-500">Compte</th>
+                                                    <th className="text-left py-3 px-3 font-medium text-gray-500">Affilié</th>
                                                     <th className="text-left py-3 px-3 font-medium text-gray-500">Engagement</th>
                                                     <th className="text-left py-3 px-3 font-medium text-gray-500">Tags</th>
                                                     <th className="text-right py-3 px-3 font-medium text-gray-500"></th>
@@ -2671,7 +2671,7 @@
                                                                 <p className="text-xs text-gray-400">{c.phone}</p>
                                                             </td>
                                                             <td className="py-3 px-3 text-gray-600">{c.city || '-'}</td>
-                                                            <td className="py-3 px-3"><Badge variant="default">{c.accountType || '-'}</Badge></td>
+                                                            <td className="py-3 px-3"><Badge variant="default">{c.memberType || '-'}</Badge></td>
                                                             <td className="py-3 px-3">
                                                                 <div className="flex items-center gap-2">
                                                                     <div className="w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
@@ -2723,8 +2723,8 @@
                                                     <p className="text-xs text-gray-500 mt-1">Villes couvertes</p>
                                                 </div>
                                                 <div className="bg-gradient-to-br from-amber-50 to-amber-100/50 rounded-xl p-3 sm:p-4 text-center">
-                                                    <p className="text-lg sm:text-2xl font-bold text-amber-600">{insights.byAccountType?.length || 0}</p>
-                                                    <p className="text-xs text-gray-500 mt-1">Types de compte</p>
+                                                    <p className="text-lg sm:text-2xl font-bold text-amber-600">{insights.byMemberType?.length || 0}</p>
+                                                    <p className="text-xs text-gray-500 mt-1">Types d'affiliés</p>
                                                 </div>
                                             </div>
 
@@ -2748,13 +2748,13 @@
                                                 )}
 
                                                 {/* Account type PieChart */}
-                                                {insights.byAccountType?.length > 0 && (
-                                                    <Card title="Types de compte">
+                                                {insights.byMemberType?.length > 0 && (
+                                                    <Card title="Types d'affiliés">
                                                         <div style={{ height: 200 }}>
                                                             <ResponsiveContainer>
                                                                 <PieChart>
-                                                                    <Pie data={insights.byAccountType.map((a, i) => ({ ...a, fill: INSIGHT_COLORS[i % INSIGHT_COLORS.length] }))} dataKey="count" nameKey="name" cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={3}>
-                                                                        {insights.byAccountType.map((_, i) => <Cell key={i} fill={INSIGHT_COLORS[i % INSIGHT_COLORS.length]} />)}
+                                                                    <Pie data={insights.byMemberType.map((a, i) => ({ ...a, fill: INSIGHT_COLORS[i % INSIGHT_COLORS.length] }))} dataKey="count" nameKey="name" cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={3}>
+                                                                        {insights.byMemberType.map((_, i) => <Cell key={i} fill={INSIGHT_COLORS[i % INSIGHT_COLORS.length]} />)}
                                                                     </Pie>
                                                                     <Tooltip formatter={(v, n) => [v + ' contacts', n]} />
                                                                     <Legend iconType="circle" wrapperStyle={{ fontSize: 12 }} />
@@ -2889,7 +2889,7 @@
                                                                     </div>
                                                                     <div className="flex items-center gap-2 shrink-0">
                                                                         {c.city && <span className="text-xs text-gray-400">{c.city}</span>}
-                                                                        {c.category && <Badge variant={c.category === 'VIP' ? 'success' : c.category === 'PREMIUM' ? 'warning' : 'default'}>{c.category}</Badge>}
+                                                                        {c.category && <Badge variant={c.category === 'BENEFICIAIRE' ? 'success' : c.category === 'COTISANT' ? 'warning' : 'default'}>{c.category}</Badge>}
                                                                     </div>
                                                                 </div>
                                                             );
@@ -3025,7 +3025,7 @@
                                     {/* Criteria pills */}
                                     <div className="flex flex-wrap gap-1 mb-3">
                                         {(seg.criteria?.rules || []).slice(0, 3).map((r, i) => {
-                                            const fl = { category: 'Cat.', city: 'Ville', ageRange: 'Age', accountType: 'Compte', engagementScore: 'Score', gender: 'Genre', status: 'Statut' };
+                                            const fl = { category: 'Cat.', city: 'Ville', ageRange: 'Age', memberType: 'Affilié', engagementScore: 'Score', gender: 'Genre', status: 'Statut' };
                                             const val = Array.isArray(r.value) ? r.value.join(',') : r.value;
                                             return <span key={i} className="text-[11px] px-2 py-0.5 bg-gray-100 rounded-full text-gray-600">{fl[r.field] || r.field}: {String(val).substring(0, 15)}</span>;
                                         })}
@@ -3073,13 +3073,13 @@
                                             </div>
                                         </div>
                                         <div className="flex gap-2">
-                                            <input type="text" className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cnss-primary/30 focus:border-cnss-primary" placeholder='Ex: "Clients VIP a Libreville avec un score > 80"' value={aiPrompt} onChange={e => setAiPrompt(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleAiSuggest()} disabled={aiLoading} />
+                                            <input type="text" className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cnss-primary/30 focus:border-cnss-primary" placeholder='Ex: "Affiliés bénéficiaires a Libreville avec un score > 80"' value={aiPrompt} onChange={e => setAiPrompt(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleAiSuggest()} disabled={aiLoading} />
                                             <Button onClick={handleAiSuggest} disabled={aiLoading || !aiPrompt.trim()} size="sm">{aiLoading ? 'Analyse...' : 'Generer'}</Button>
                                         </div>
                                         {aiError && <p className="text-xs text-red-500 mt-2">{aiError}</p>}
                                         {/* Quick suggestions */}
                                         <div className="flex flex-wrap gap-1.5 mt-3">
-                                            {['Clients actifs a Libreville', 'Jeunes 18-25 ans avec compte epargne', 'VIP et Premium fort engagement', 'Clients inactifs a reactiver'].map(s => (
+                                            {['Affiliés actifs a Libreville', 'Salariés 18-25 ans indépendants', 'Bénéficiaires et Cotisants fort engagement', 'Affiliés inactifs a reactiver'].map(s => (
                                                 <button key={s} className="text-xs px-2.5 py-1 bg-white rounded-full border border-gray-200 text-gray-600 hover:border-cnss-primary hover:text-cnss-primary transition-colors" onClick={() => { setAiPrompt(s); }}>{s}</button>
                                             ))}
                                         </div>
@@ -3772,7 +3772,7 @@
             const { data: billing } = useApi('/billing/overview');
             const { data: engagement } = useApi('/analytics/engagement');
             const [activeCityIndex, setActiveCityIndex] = useState(null);
-            const [activeAccountPie, setActiveAccountPie] = useState(0);
+            const [activeMemberPie, setActiveMemberPie] = useState(0);
 
             // Performance BarChart data (active bar style - each month has its own color)
             const perfData = useMemo(() => {
@@ -3796,12 +3796,12 @@
                     .slice(0, 6);
             }, [contactStats]);
 
-            // Contacts par type de compte (donut)
-            const accountTypeData = useMemo(() => {
-                if (!contactStats?.byAccountType) return [];
-                const colors = { EPARGNE: '#00a86b', COURANT: '#1e3a5f', PROFESSIONNEL: '#8b5cf6', JEUNE: '#f59e0b' };
-                const labels = { EPARGNE: 'Epargne', COURANT: 'Courant', PROFESSIONNEL: 'Professionnel', JEUNE: 'Jeune' };
-                return Object.entries(contactStats.byAccountType)
+            // Contacts par type d'affilié (donut)
+            const memberTypeData = useMemo(() => {
+                if (!contactStats?.byMemberType) return [];
+                const colors = { SALARIE: '#43A047', RETRAITE: '#1565C0', INDEPENDANT: '#8b5cf6', AYANT_DROIT: '#f59e0b', EMPLOYEUR: '#EF6C00' };
+                const labels = { SALARIE: 'Salarié', RETRAITE: 'Retraité', INDEPENDANT: 'Indépendant', AYANT_DROIT: 'Ayant droit', EMPLOYEUR: 'Employeur' };
+                return Object.entries(contactStats.byMemberType)
                     .map(([key, count]) => ({ name: labels[key] || key, value: count, fill: colors[key] || '#9ca3af' }));
             }, [contactStats]);
 
@@ -3970,7 +3970,7 @@
                         </div>
                     </div>
 
-                    {/* Row 3: Ville + Type Compte + Categorie */}
+                    {/* Row 3: Ville + Type Affilié + Categorie */}
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
                         {/* Distribution par ville */}
                         <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
@@ -3993,22 +3993,22 @@
                             </div>
                         </div>
 
-                        {/* Type de compte bancaire */}
+                        {/* Type d'affilié */}
                         <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
                             <div className="p-4 sm:p-6 pb-2 text-center">
-                                <h3 className="text-base sm:text-lg font-semibold text-gray-900">Types de Compte</h3>
-                                <p className="text-xs sm:text-sm text-gray-500 mt-0.5">Repartition bancaire</p>
+                                <h3 className="text-base sm:text-lg font-semibold text-gray-900">Types d'Affiliés</h3>
+                                <p className="text-xs sm:text-sm text-gray-500 mt-0.5">Répartition par type</p>
                             </div>
                             <div className="px-2" style={{ height: 200 }}>
-                                {accountTypeData.length > 0 ? (
+                                {memberTypeData.length > 0 ? (
                                     <ResponsiveContainer width="100%" height="100%">
                                         <PieChart>
                                             <Pie
-                                                data={accountTypeData}
+                                                data={memberTypeData}
                                                 cx="50%" cy="50%"
                                                 innerRadius={45} outerRadius={72}
                                                 dataKey="value"
-                                                activeIndex={activeAccountPie}
+                                                activeIndex={activeMemberPie}
                                                 activeShape={(props) => {
                                                     const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill, payload, value } = props;
                                                     return (
@@ -4020,17 +4020,17 @@
                                                         </g>
                                                     );
                                                 }}
-                                                onMouseEnter={(_, i) => setActiveAccountPie(i)}
+                                                onMouseEnter={(_, i) => setActiveMemberPie(i)}
                                             >
-                                                {accountTypeData.map((entry, i) => <Cell key={i} fill={entry.fill} stroke="none" />)}
+                                                {memberTypeData.map((entry, i) => <Cell key={i} fill={entry.fill} stroke="none" />)}
                                             </Pie>
                                         </PieChart>
                                     </ResponsiveContainer>
                                 ) : <div className="flex items-center justify-center h-full text-gray-400 text-sm">Aucune donnee</div>}
                             </div>
                             <div className="px-4 sm:px-6 pb-5 pt-1 space-y-1">
-                                {accountTypeData.map((d, i) => (
-                                    <div key={d.name} className={`flex items-center justify-between text-sm px-2 py-1 rounded-lg cursor-pointer transition-colors ${i === activeAccountPie ? 'bg-gray-50' : ''}`} onMouseEnter={() => setActiveAccountPie(i)}>
+                                {memberTypeData.map((d, i) => (
+                                    <div key={d.name} className={`flex items-center justify-between text-sm px-2 py-1 rounded-lg cursor-pointer transition-colors ${i === activeMemberPie ? 'bg-gray-50' : ''}`} onMouseEnter={() => setActiveMemberPie(i)}>
                                         <div className="flex items-center gap-2">
                                             <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: d.fill }} />
                                             <span className="text-gray-600">{d.name}</span>

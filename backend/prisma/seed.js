@@ -91,19 +91,19 @@ async function main() {
   console.log(`${templates.length} templates créés`);
 
   // ============================================
-  // 3. Contacts de test (enrichis bancaire)
+  // 3. Contacts de test (enrichis CNSS)
   // ============================================
   const contacts = [
-    { phone: '+24174000001', name: 'Jean Dupont', email: 'jean.dupont@email.com', category: 'ACTIVE', tags: ['app-mobile', 'premium'], optedIn: true, city: 'Libreville', country: 'GA', ageRange: '36-45', gender: 'M', accountType: 'COURANT', engagementScore: 85 },
-    { phone: '+24174000002', name: 'Marie Ndong', email: 'marie.ndong@email.com', category: 'ACTIVE', tags: ['app-mobile'], optedIn: true, city: 'Libreville', country: 'GA', ageRange: '26-35', gender: 'F', accountType: 'EPARGNE', engagementScore: 72 },
-    { phone: '+24174000003', name: 'Paul Mba', email: 'paul.mba@email.com', category: 'INACTIVE', tags: ['ancien-client'], optedIn: true, city: 'Port-Gentil', country: 'GA', ageRange: '46-55', gender: 'M', accountType: 'COURANT', engagementScore: 15 },
-    { phone: '+24174000004', name: 'Aline Obame', email: 'aline.obame@email.com', category: 'PREMIUM', tags: ['vip', 'app-mobile'], optedIn: true, city: 'Libreville', country: 'GA', ageRange: '36-45', gender: 'F', accountType: 'PROFESSIONNEL', engagementScore: 95 },
-    { phone: '+24174000005', name: 'Marc Essono', email: 'marc.essono@email.com', category: 'NEW', tags: ['nouveau'], optedIn: true, city: 'Franceville', country: 'GA', ageRange: '18-25', gender: 'M', accountType: 'JEUNE', engagementScore: 40 },
-    { phone: '+24174000006', name: 'Sophie Nguema', email: 'sophie.nguema@email.com', category: 'ACTIVE', tags: ['app-mobile'], optedIn: false, city: 'Libreville', country: 'GA', ageRange: '26-35', gender: 'F', accountType: 'EPARGNE', engagementScore: 60 },
-    { phone: '+24174000007', name: 'David Ondo', email: 'david.ondo@email.com', category: 'INACTIVE', tags: [], optedIn: true, city: 'Oyem', country: 'GA', ageRange: '56+', gender: 'M', accountType: 'COURANT', engagementScore: 5 },
-    { phone: '+24174000008', name: 'Claire Bongo', email: 'claire.bongo@email.com', category: 'VIP', tags: ['vip', 'premium'], optedIn: true, city: 'Libreville', country: 'GA', ageRange: '46-55', gender: 'F', accountType: 'PROFESSIONNEL', engagementScore: 98 },
-    { phone: '+24174000009', name: 'Pierre Ella', email: 'pierre.ella@email.com', category: 'ACTIVE', tags: ['app-mobile'], optedIn: true, city: 'Lambaréné', country: 'GA', ageRange: '26-35', gender: 'M', accountType: 'COURANT', engagementScore: 55 },
-    { phone: '+24174000010', name: 'Fatou Diallo', email: 'fatou.diallo@email.com', category: 'ACTIVE', tags: ['app-mobile', 'premium'], optedIn: true, city: 'Libreville', country: 'GA', ageRange: '36-45', gender: 'F', accountType: 'EPARGNE', engagementScore: 78 }
+    { phone: '+24174000001', name: 'Jean Dupont', email: 'jean.dupont@email.com', category: 'ACTIVE', tags: ['app-mobile', 'cotisant'], optedIn: true, city: 'Libreville', country: 'GA', ageRange: '36-45', gender: 'M', memberType: 'SALARIE', engagementScore: 85 },
+    { phone: '+24174000002', name: 'Marie Ndong', email: 'marie.ndong@email.com', category: 'ACTIVE', tags: ['app-mobile'], optedIn: true, city: 'Libreville', country: 'GA', ageRange: '26-35', gender: 'F', memberType: 'RETRAITE', engagementScore: 72 },
+    { phone: '+24174000003', name: 'Paul Mba', email: 'paul.mba@email.com', category: 'INACTIVE', tags: ['ancien-assure'], optedIn: true, city: 'Port-Gentil', country: 'GA', ageRange: '46-55', gender: 'M', memberType: 'SALARIE', engagementScore: 15 },
+    { phone: '+24174000004', name: 'Aline Obame', email: 'aline.obame@email.com', category: 'COTISANT', tags: ['cotisant', 'app-mobile'], optedIn: true, city: 'Libreville', country: 'GA', ageRange: '36-45', gender: 'F', memberType: 'INDEPENDANT', engagementScore: 95 },
+    { phone: '+24174000005', name: 'Marc Essono', email: 'marc.essono@email.com', category: 'NEW', tags: ['nouveau'], optedIn: true, city: 'Franceville', country: 'GA', ageRange: '18-25', gender: 'M', memberType: 'AYANT_DROIT', engagementScore: 40 },
+    { phone: '+24174000006', name: 'Sophie Nguema', email: 'sophie.nguema@email.com', category: 'ACTIVE', tags: ['app-mobile'], optedIn: false, city: 'Libreville', country: 'GA', ageRange: '26-35', gender: 'F', memberType: 'RETRAITE', engagementScore: 60 },
+    { phone: '+24174000007', name: 'David Ondo', email: 'david.ondo@email.com', category: 'INACTIVE', tags: [], optedIn: true, city: 'Oyem', country: 'GA', ageRange: '56+', gender: 'M', memberType: 'SALARIE', engagementScore: 5 },
+    { phone: '+24174000008', name: 'Claire Bongo', email: 'claire.bongo@email.com', category: 'BENEFICIAIRE', tags: ['beneficiaire', 'cotisant'], optedIn: true, city: 'Libreville', country: 'GA', ageRange: '46-55', gender: 'F', memberType: 'INDEPENDANT', engagementScore: 98 },
+    { phone: '+24174000009', name: 'Pierre Ella', email: 'pierre.ella@email.com', category: 'ACTIVE', tags: ['app-mobile'], optedIn: true, city: 'Lambaréné', country: 'GA', ageRange: '26-35', gender: 'M', memberType: 'SALARIE', engagementScore: 55 },
+    { phone: '+24174000010', name: 'Fatou Diallo', email: 'fatou.diallo@email.com', category: 'ACTIVE', tags: ['app-mobile', 'cotisant'], optedIn: true, city: 'Libreville', country: 'GA', ageRange: '36-45', gender: 'F', memberType: 'RETRAITE', engagementScore: 78 }
   ];
 
   for (const contact of contacts) {
@@ -115,7 +115,7 @@ async function main() {
         country: contact.country,
         ageRange: contact.ageRange,
         gender: contact.gender,
-        accountType: contact.accountType,
+        memberType: contact.memberType,
         engagementScore: contact.engagementScore
       },
       create: {
@@ -135,8 +135,8 @@ async function main() {
   const segments = [
     {
       id: '00000000-0000-0000-0000-000000000020',
-      name: 'clients_actifs_libreville',
-      description: 'Clients actifs basés à Libreville',
+      name: 'assures_actifs_libreville',
+      description: 'Assurés actifs basés à Libreville',
       type: 'DYNAMIC',
       criteria: {
         operator: 'AND',
@@ -150,13 +150,13 @@ async function main() {
     },
     {
       id: '00000000-0000-0000-0000-000000000021',
-      name: 'clients_vip_premium',
-      description: 'Clients VIP et Premium à fort engagement',
-      type: 'BANK_CRITERIA',
+      name: 'assures_cotisants',
+      description: 'Assurés cotisants actifs à fort engagement',
+      type: 'SOCIAL_CRITERIA',
       criteria: {
         operator: 'AND',
         rules: [
-          { field: 'category', op: 'in', value: ['VIP', 'PREMIUM'] },
+          { field: 'category', op: 'in', value: ['COTISANT', 'BENEFICIAIRE'] },
           { field: 'engagementScore', op: 'gte', value: 80 }
         ]
       },

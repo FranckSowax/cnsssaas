@@ -13,8 +13,8 @@ const { logTokenUsage } = ragService;
 const prisma = new PrismaClient();
 
 // Valeurs valides pour validation
-const VALID_INTENTS = ['ACCOUNT_INQUIRY', 'LOAN_REQUEST', 'CARD_ISSUE', 'TRANSFER_HELP', 'COMPLAINT', 'PRODUCT_INFO', 'ACCOUNT_OPENING', 'FEES_CHARGES', 'MOBILE_BANKING', 'GENERAL'];
-const VALID_PRODUCTS = ['SAVINGS_ACCOUNT', 'CURRENT_ACCOUNT', 'CREDIT_CARD', 'PERSONAL_LOAN', 'MORTGAGE', 'INSURANCE', 'MOBILE_BANKING', 'VISA_CARD', 'NONE'];
+const VALID_INTENTS = ['AFFILIATION_INQUIRY', 'BENEFIT_REQUEST', 'CLAIM_ISSUE', 'PAYMENT_HELP', 'COMPLAINT', 'PRODUCT_INFO', 'ENROLLMENT_REQUEST', 'CONTRIBUTION_QUERY', 'ONLINE_SERVICE', 'GENERAL'];
+const VALID_PRODUCTS = ['PENSION_VIEILLESSE', 'PENSION_INVALIDITE', 'PENSION_SURVIVANT', 'ALLOCATIONS_FAMILIALES', 'ASSURANCE_MALADIE', 'MATERNITE', 'ACCIDENT_TRAVAIL', 'DECES', 'AUCUNE'];
 const VALID_SENTIMENTS = ['POSITIVE', 'NEUTRAL', 'NEGATIVE', 'FRUSTRATED'];
 const VALID_URGENCY = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'];
 const VALID_RESOLUTION = ['RESOLVED', 'UNRESOLVED', 'ESCALATION_NEEDED', 'FOLLOW_UP_REQUIRED'];
@@ -23,8 +23,8 @@ const ENRICHMENT_PROMPT = `Tu es un analyste spécialisé dans les prestations s
 Analyse la conversation suivante entre un assuré WhatsApp et Aimé (le chatbot IA de la CNSS).
 
 Retourne UNIQUEMENT un objet JSON valide avec les champs suivants:
-- "intentCategory": une valeur parmi [ACCOUNT_INQUIRY, LOAN_REQUEST, CARD_ISSUE, TRANSFER_HELP, COMPLAINT, PRODUCT_INFO, ACCOUNT_OPENING, FEES_CHARGES, MOBILE_BANKING, GENERAL]
-- "productMentioned": une valeur parmi [SAVINGS_ACCOUNT, CURRENT_ACCOUNT, CREDIT_CARD, PERSONAL_LOAN, MORTGAGE, INSURANCE, MOBILE_BANKING, VISA_CARD, NONE]
+- "intentCategory": une valeur parmi [AFFILIATION_INQUIRY, BENEFIT_REQUEST, CLAIM_ISSUE, PAYMENT_HELP, COMPLAINT, PRODUCT_INFO, ENROLLMENT_REQUEST, CONTRIBUTION_QUERY, ONLINE_SERVICE, GENERAL]
+- "productMentioned": une valeur parmi [PENSION_VIEILLESSE, PENSION_INVALIDITE, PENSION_SURVIVANT, ALLOCATIONS_FAMILIALES, ASSURANCE_MALADIE, MATERNITE, ACCIDENT_TRAVAIL, DECES, AUCUNE]
 - "sentiment": une valeur parmi [POSITIVE, NEUTRAL, NEGATIVE, FRUSTRATED]
 - "urgencyLevel": une valeur parmi [LOW, MEDIUM, HIGH, CRITICAL]
 - "resolutionStatus": une valeur parmi [RESOLVED, UNRESOLVED, ESCALATION_NEEDED, FOLLOW_UP_REQUIRED]
@@ -32,7 +32,7 @@ Retourne UNIQUEMENT un objet JSON valide avec les champs suivants:
 - "customerNeedSummary": resume en 1-2 phrases le besoin reel du client (en francais)
 - "actionRequired": true si le client a besoin d'un suivi humain, false sinon
 - "actionDescription": si actionRequired est true, decris l'action necessaire (en francais)
-- "topicTags": tableau de 1-5 tags pertinents en francais (ex: ["solde", "virement", "carte"])
+- "topicTags": tableau de 1-5 tags pertinents en francais (ex: ["pension", "cotisation", "affiliation"])
 - "language": "FR" ou "EN" selon la langue detectee
 
 Conversation:
@@ -118,7 +118,7 @@ async function enrichConversation(sessionId) {
     const enrichment = {
       enriched: true,
       intentCategory: VALID_INTENTS.includes(result.intentCategory) ? result.intentCategory : 'GENERAL',
-      productMentioned: VALID_PRODUCTS.includes(result.productMentioned) ? result.productMentioned : 'NONE',
+      productMentioned: VALID_PRODUCTS.includes(result.productMentioned) ? result.productMentioned : 'AUCUNE',
       sentiment: VALID_SENTIMENTS.includes(result.sentiment) ? result.sentiment : 'NEUTRAL',
       urgencyLevel: VALID_URGENCY.includes(result.urgencyLevel) ? result.urgencyLevel : 'LOW',
       resolutionStatus: VALID_RESOLUTION.includes(result.resolutionStatus) ? result.resolutionStatus : 'UNRESOLVED',
@@ -246,7 +246,7 @@ async function generateDailyReport(dateStr) {
   // Product breakdown
   const productBreakdown = {};
   sessions.forEach(s => {
-    if (s.productMentioned && s.productMentioned !== 'NONE') {
+    if (s.productMentioned && s.productMentioned !== 'AUCUNE') {
       productBreakdown[s.productMentioned] = (productBreakdown[s.productMentioned] || 0) + 1;
     }
   });
@@ -274,7 +274,7 @@ async function generateDailyReport(dateStr) {
 - Total conversations: ${stats.totalConversations} (${stats.whatsappConversations} WhatsApp, ${stats.webConversations} web)
 - Sentiments: ${stats.sentimentPositive} positif, ${stats.sentimentNeutral} neutre, ${stats.sentimentNegative} negatif, ${stats.sentimentFrustrated} frustre
 - Intentions: ${JSON.stringify(intentBreakdown)}
-- Produits: ${JSON.stringify(productBreakdown)}
+- Prestations: ${JSON.stringify(productBreakdown)}
 - Resolution: ${stats.resolvedCount} resolues, ${stats.unresolvedCount} non resolues, ${stats.escalationCount} escaladees, ${stats.followUpCount} suivi requis
 - Satisfaction moyenne: ${avgSatisfactionScore || 'N/A'}/5
 - Besoins exprimes: ${needs.slice(0, 15).join(' | ')}

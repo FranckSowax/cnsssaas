@@ -293,9 +293,9 @@ router.get('/contacts', authenticate, async (req, res) => {
 
     // Contacts par type de compte
     const byAccountType = await prisma.contact.groupBy({
-      by: ['accountType'],
-      where: { accountType: { not: null } },
-      _count: { accountType: true }
+      by: ['memberType'],
+      where: { memberType: { not: null } },
+      _count: { memberType: true }
     });
 
     // Nouveaux contacts par jour (30 derniers jours)
@@ -337,7 +337,7 @@ router.get('/contacts', authenticate, async (req, res) => {
         return acc;
       }, {}),
       byAccountType: byAccountType.reduce((acc, item) => {
-        if (item.accountType) acc[item.accountType] = item._count.accountType;
+        if (item.memberType) acc[item.memberType] = item._count.memberType;
         return acc;
       }, {}),
       newContactsDaily: dailyNewContacts,

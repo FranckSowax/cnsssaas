@@ -39,7 +39,7 @@ router.get('/', authenticate, async (req, res) => {
       status,
       search,
       city,
-      accountType,
+      memberType,
       ageRange,
       sortBy = 'createdAt',
       sortOrder = 'desc'
@@ -53,7 +53,7 @@ router.get('/', authenticate, async (req, res) => {
     if (category) where.category = category.toUpperCase();
     if (status) where.status = status.toUpperCase();
     if (city) where.city = { contains: city, mode: 'insensitive' };
-    if (accountType) where.accountType = accountType.toUpperCase();
+    if (memberType) where.memberType = memberType.toUpperCase();
     if (ageRange) where.ageRange = ageRange;
 
     if (search) {
@@ -127,7 +127,7 @@ router.post('/', authenticate, authorize(['contact:create']), async (req, res) =
   try {
     const {
       phone, email, name, category = 'ACTIVE', tags = [],
-      city, country, ageRange, gender, language, accountType, registrationDate
+      city, country, ageRange, gender, language, memberType, registrationDate
     } = req.body;
 
     // Validation
@@ -163,7 +163,7 @@ router.post('/', authenticate, authorize(['contact:create']), async (req, res) =
         ageRange,
         gender,
         language,
-        accountType,
+        memberType,
         registrationDate: registrationDate ? new Date(registrationDate) : null
       }
     });
@@ -188,7 +188,7 @@ router.put('/:id', authenticate, authorize(['contact:update']), async (req, res)
     const { id } = req.params;
     const {
       email, name, category, tags, status,
-      city, country, ageRange, gender, language, accountType, registrationDate
+      city, country, ageRange, gender, language, memberType, registrationDate
     } = req.body;
 
     const updateData = {};
@@ -202,7 +202,7 @@ router.put('/:id', authenticate, authorize(['contact:update']), async (req, res)
     if (ageRange !== undefined) updateData.ageRange = ageRange;
     if (gender !== undefined) updateData.gender = gender;
     if (language !== undefined) updateData.language = language;
-    if (accountType !== undefined) updateData.accountType = accountType;
+    if (memberType !== undefined) updateData.memberType = memberType;
     if (registrationDate !== undefined) updateData.registrationDate = registrationDate ? new Date(registrationDate) : null;
 
     const contact = await prisma.contact.update({
@@ -289,7 +289,7 @@ router.post('/import', authenticate, authorize(['contact:import']), uploadLimite
             category: record.category?.toUpperCase() || record.segment?.toUpperCase() || 'ACTIVE',
             tags: record.tags ? record.tags.split(',').map(t => t.trim()) : [],
             city: record.city || undefined,
-            accountType: record.accountType || undefined,
+            memberType: record.memberType || undefined,
             ageRange: record.ageRange || undefined,
             gender: record.gender || undefined
           },
@@ -300,7 +300,7 @@ router.post('/import', authenticate, authorize(['contact:import']), uploadLimite
             category: record.category?.toUpperCase() || record.segment?.toUpperCase() || 'ACTIVE',
             tags: record.tags ? record.tags.split(',').map(t => t.trim()) : [],
             city: record.city || undefined,
-            accountType: record.accountType || undefined,
+            memberType: record.memberType || undefined,
             ageRange: record.ageRange || undefined,
             gender: record.gender || undefined
           }
@@ -352,7 +352,7 @@ router.get('/export', authenticate, authorize(['contact:export']), async (req, r
         email: true,
         category: true,
         city: true,
-        accountType: true,
+        memberType: true,
         tags: true,
         status: true,
         engagementScore: true,
@@ -370,7 +370,7 @@ router.get('/export', authenticate, authorize(['contact:export']), async (req, r
         email: 'Email',
         category: 'Catégorie',
         city: 'Ville',
-        accountType: 'Type Compte',
+        memberType: 'Type Affilié',
         tags: 'Tags',
         status: 'Statut',
         engagementScore: 'Score Engagement',
@@ -410,9 +410,9 @@ router.get('/stats/overview', authenticate, async (req, res) => {
         take: 10
       }),
       prisma.contact.groupBy({
-        by: ['accountType'],
-        where: { accountType: { not: null } },
-        _count: { accountType: true }
+        by: ['memberType'],
+        where: { memberType: { not: null } },
+        _count: { memberType: true }
       }),
       prisma.contact.count({
         where: {
@@ -438,7 +438,7 @@ router.get('/stats/overview', authenticate, async (req, res) => {
         return acc;
       }, {}),
       byAccountType: byAccountType.reduce((acc, item) => {
-        if (item.accountType) acc[item.accountType] = item._count.accountType;
+        if (item.memberType) acc[item.memberType] = item._count.memberType;
         return acc;
       }, {}),
       recent
