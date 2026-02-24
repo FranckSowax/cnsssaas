@@ -1,12 +1,12 @@
 #!/bin/bash
 
 # ============================================
-# BGFI WhatsApp Marketing SaaS - Script de démarrage
+# CNSS WhatsApp Marketing SaaS - Script de démarrage
 # ============================================
 
 set -e
 
-echo "🚀 Démarrage de BGFI WhatsApp Marketing SaaS..."
+echo "🚀 Démarrage de CNSS WhatsApp Marketing SaaS..."
 echo ""
 
 # Couleurs
@@ -76,7 +76,7 @@ echo ""
 echo -e "${BLUE}🔍 Vérification des services...${NC}"
 echo ""
 
-services=("bgfi-api" "bgfi-rag" "bgfi-db" "bgfi-redis" "bgfi-nginx")
+services=("cnss-api" "cnss-rag" "cnss-db" "cnss-redis" "cnss-nginx")
 
 for service in "${services[@]}"; do
     if docker ps | grep -q "$service"; then
@@ -87,7 +87,7 @@ for service in "${services[@]}"; do
 done
 
 echo ""
-echo -e "${GREEN}🎉 BGFI WhatsApp Marketing SaaS est prêt !${NC}"
+echo -e "${GREEN}🎉 CNSS WhatsApp Marketing SaaS est prêt !${NC}"
 echo ""
 echo "📱 Application: http://localhost"
 echo "🔌 API: http://localhost/api"
@@ -100,4 +100,4 @@ echo ""
 echo -e "${YELLOW}📖 Pour voir les logs:${NC}"
 echo "  docker-compose logs -f"
 echo ""
-echo -e "${BLUE}Merci d'utiliser BGFI WhatsApp Marketing SaaS !${NC}"
+echo -e "${BLUE}Merci d'utiliser CNSS WhatsApp Marketing SaaS !${NC}"

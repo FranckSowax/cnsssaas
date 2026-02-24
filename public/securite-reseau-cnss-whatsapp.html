@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BGFI WhatsApp Platform - Configuration Securite Reseau</title>
+    <title>CNSS WhatsApp Platform - Configuration Securite Reseau</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -97,8 +97,8 @@
 <!-- COUVERTURE -->
 <div class="cover">
     <div class="cover-badge">Document Technique Confidentiel</div>
-    <h1>Configuration <span>Securite Reseau</span> pour la Plateforme WhatsApp BGFI</h1>
-    <p class="subtitle">Guide de configuration des pare-feu, regles de filtrage et securisation des flux API pour un deploiement sur infrastructure BGFI Bank.</p>
+    <h1>Configuration <span>Securite Reseau</span> pour la Plateforme WhatsApp CNSS</h1>
+    <p class="subtitle">Guide de configuration des pare-feu, regles de filtrage et securisation des flux API pour un deploiement sur infrastructure CNSS Bank.</p>
     <div class="cover-meta">
         <div><strong>Version</strong> 1.0</div>
         <div><strong>Date</strong> Fevrier 2026</div>
@@ -130,11 +130,11 @@
     <div class="section" id="s1">
         <h2><span class="num">1.</span> Architecture des flux reseau</h2>
 
-        <p>La plateforme WhatsApp BGFI communique avec <strong>3 services externes</strong> via HTTPS (TLS 1.2+). Aucune connexion en clair n'est utilisee. Voici le schema des flux :</p>
+        <p>La plateforme WhatsApp CNSS communique avec <strong>3 services externes</strong> via HTTPS (TLS 1.2+). Aucune connexion en clair n'est utilisee. Voici le schema des flux :</p>
 
         <div class="arch-diagram">
 ┌─────────────────────────────────────────────────────────────────────┐
-│                    RESEAU BGFI BANK (DMZ)                          │
+│                    RESEAU CNSS BANK (DMZ)                          │
 │                                                                     │
 │   ┌─────────────────────────┐                                       │
 │   │   SERVEUR APPLICATION   │                                       │
@@ -154,12 +154,12 @@
 │  API)  │ │         │ │          │
 └────────┘ └─────────┘ └──────────┘
 
-FLUX SORTANTS (du serveur BGFI vers Internet) :
+FLUX SORTANTS (du serveur CNSS vers Internet) :
   ➜ graph.facebook.com        (443/TCP)  Envoi messages WhatsApp
   ➜ api.openai.com            (443/TCP)  Chatbot IA / Embeddings
   ➜ *.pooler.supabase.com     (6543/TCP) Base de donnees PostgreSQL
 
-FLUX ENTRANT (d'Internet vers le serveur BGFI) :
+FLUX ENTRANT (d'Internet vers le serveur CNSS) :
   ➜ Webhooks Meta → Serveur   (443/TCP)  Reception messages WhatsApp
         </div>
 
@@ -221,7 +221,7 @@ FLUX ENTRANT (d'Internet vers le serveur BGFI) :
 
         <div class="rule-box">
             <h4>Politique de donnees OpenAI (API)</h4>
-            <p>Via l'API (et non ChatGPT), OpenAI <strong>ne conserve pas les donnees</strong> pour entrainer ses modeles. Les donnees sont conservees 30 jours maximum pour detection d'abus, puis supprimees. OpenAI est certifie <strong>SOC 2 Type II</strong>. Pour une securite maximale, BGFI peut opter pour l'offre <strong>OpenAI Enterprise</strong> avec retention zero.</p>
+            <p>Via l'API (et non ChatGPT), OpenAI <strong>ne conserve pas les donnees</strong> pour entrainer ses modeles. Les donnees sont conservees 30 jours maximum pour detection d'abus, puis supprimees. OpenAI est certifie <strong>SOC 2 Type II</strong>. Pour une securite maximale, CNSS peut opter pour l'offre <strong>OpenAI Enterprise</strong> avec retention zero.</p>
         </div>
 
         <h3>2.3 Supabase (Base de donnees PostgreSQL)</h3>
@@ -243,7 +243,7 @@ FLUX ENTRANT (d'Internet vers le serveur BGFI) :
 
         <div class="rule-box info">
             <h4>Alternative : base de donnees on-premise</h4>
-            <p>Pour une souverainete totale des donnees, BGFI peut heberger la base PostgreSQL <strong>sur ses propres serveurs</strong>. Il suffit de changer la variable <code>DATABASE_URL</code> pour pointer vers le PostgreSQL interne. Dans ce cas, <strong>aucune connexion sortante vers Supabase n'est necessaire</strong> et toutes les donnees restent dans le reseau BGFI.</p>
+            <p>Pour une souverainete totale des donnees, CNSS peut heberger la base PostgreSQL <strong>sur ses propres serveurs</strong>. Il suffit de changer la variable <code>DATABASE_URL</code> pour pointer vers le PostgreSQL interne. Dans ce cas, <strong>aucune connexion sortante vers Supabase n'est necessaire</strong> et toutes les donnees restent dans le reseau CNSS.</p>
         </div>
     </div>
 
@@ -298,11 +298,11 @@ FLUX ENTRANT (d'Internet vers le serveur BGFI) :
 
         <div class="rule-box critical">
             <h4>Important : Certificat SSL obligatoire</h4>
-            <p>Meta exige un <strong>certificat SSL valide</strong> (pas auto-signe) sur votre endpoint webhook. Le serveur BGFI doit avoir un certificat emis par une autorite de certification reconnue (Let's Encrypt, DigiCert, etc.). Meta refuse les connexions vers des endpoints HTTP non chiffres ou avec des certificats invalides.</p>
+            <p>Meta exige un <strong>certificat SSL valide</strong> (pas auto-signe) sur votre endpoint webhook. Le serveur CNSS doit avoir un certificat emis par une autorite de certification reconnue (Let's Encrypt, DigiCert, etc.). Meta refuse les connexions vers des endpoints HTTP non chiffres ou avec des certificats invalides.</p>
         </div>
 
         <h3>3.2 Acces utilisateurs (Interface d'administration)</h3>
-        <p>L'interface web d'administration est accessible uniquement par les operateurs BGFI.</p>
+        <p>L'interface web d'administration est accessible uniquement par les operateurs CNSS.</p>
 
         <table>
             <thead>
@@ -310,7 +310,7 @@ FLUX ENTRANT (d'Internet vers le serveur BGFI) :
             </thead>
             <tbody>
                 <tr><td><strong>Port</strong></td><td>443 (HTTPS)</td></tr>
-                <tr><td><strong>Source</strong></td><td>Reseau interne BGFI uniquement (ou VPN)</td></tr>
+                <tr><td><strong>Source</strong></td><td>Reseau interne CNSS uniquement (ou VPN)</td></tr>
                 <tr><td><strong>Authentification</strong></td><td>JWT + identifiants (email/mot de passe)</td></tr>
                 <tr><td><strong>Recommandation</strong></td><td>Restreindre aux plages IP du siege et des agences via le pare-feu ou un reverse proxy</td></tr>
             </tbody>
@@ -322,7 +322,7 @@ FLUX ENTRANT (d'Internet vers le serveur BGFI) :
             <ul style="margin-top:10px;padding-left:20px;color:#444">
                 <li><code>/api/webhooks/whatsapp</code> → ouvert aux IP Meta uniquement</li>
                 <li><code>/t/*</code> → ouvert a tous (tracking des clics depuis les telephones)</li>
-                <li>Toutes les autres routes → restreintes au reseau interne BGFI / VPN</li>
+                <li>Toutes les autres routes → restreintes au reseau interne CNSS / VPN</li>
             </ul>
         </div>
     </div>
@@ -356,7 +356,7 @@ FLUX ENTRANT (d'Internet vers le serveur BGFI) :
             <tbody>
                 <tr><td>IN-1</td><td>Plages IP Meta *</td><td>Serveur App</td><td>443</td><td>TCP</td><td><span class="badge badge-green">ALLOW</span></td><td>Webhooks WhatsApp</td></tr>
                 <tr><td>IN-2</td><td>0.0.0.0/0</td><td>Serveur App</td><td>443</td><td>TCP</td><td><span class="badge badge-green">ALLOW</span></td><td>Tracking clics (/t/*) **</td></tr>
-                <tr><td>IN-3</td><td>Reseau BGFI interne</td><td>Serveur App</td><td>443</td><td>TCP</td><td><span class="badge badge-green">ALLOW</span></td><td>Interface admin</td></tr>
+                <tr><td>IN-3</td><td>Reseau CNSS interne</td><td>Serveur App</td><td>443</td><td>TCP</td><td><span class="badge badge-green">ALLOW</span></td><td>Interface admin</td></tr>
                 <tr><td>IN-4</td><td>*</td><td>Serveur App</td><td>*</td><td>*</td><td><span class="badge badge-red">DENY</span></td><td>Tout le reste bloque</td></tr>
             </tbody>
         </table>
@@ -412,7 +412,7 @@ FLUX ENTRANT (d'Internet vers le serveur BGFI) :
         <h2><span class="num">5.</span> Chiffrement et certificats TLS</h2>
 
         <h3>5.1 Chiffrement en transit</h3>
-        <p><strong>Toutes les communications</strong> entre le serveur BGFI et les services externes sont chiffrees via TLS :</p>
+        <p><strong>Toutes les communications</strong> entre le serveur CNSS et les services externes sont chiffrees via TLS :</p>
 
         <table>
             <thead>
@@ -429,15 +429,15 @@ FLUX ENTRANT (d'Internet vers le serveur BGFI) :
 
         <h3>5.2 Configuration Nginx recommandee</h3>
         <div class="fw-rule">
-<span class="comment"># /etc/nginx/conf.d/bgfi-whatsapp.conf</span>
+<span class="comment"># /etc/nginx/conf.d/cnss-whatsapp.conf</span>
 
 server {
     listen 443 ssl http2;
-    server_name whatsapp.bgfi.local;
+    server_name whatsapp.cnss.local;
 
     <span class="comment"># Certificat SSL</span>
-    ssl_certificate     /etc/ssl/certs/bgfi-whatsapp.crt;
-    ssl_certificate_key /etc/ssl/private/bgfi-whatsapp.key;
+    ssl_certificate     /etc/ssl/certs/cnss-whatsapp.crt;
+    ssl_certificate_key /etc/ssl/private/cnss-whatsapp.key;
 
     <span class="comment"># Protocoles et ciphers securises</span>
     ssl_protocols TLSv1.2 TLSv1.3;
@@ -601,7 +601,7 @@ function verifyWebhookSignature(req, res, next) {
             <div class="col-card">
                 <h4>Option B : Securite renforcee (Recommandee)</h4>
                 <ul class="checklist">
-                    <li>PostgreSQL <strong>on-premise</strong> BGFI (zero donnees en cloud)</li>
+                    <li>PostgreSQL <strong>on-premise</strong> CNSS (zero donnees en cloud)</li>
                     <li>OpenAI <strong>Enterprise</strong> (zero data retention)</li>
                     <li>Signature webhook Meta verifiee</li>
                     <li>Reverse proxy Nginx avec IP whitelisting</li>
@@ -640,22 +640,22 @@ function verifyWebhookSignature(req, res, next) {
         <p style="font-size:13px;color:#888;">* Uniquement si base de donnees cloud. Pas necessaire en mode on-premise.</p>
 
         <h3>8.2 Proxy HTTPS sortant</h3>
-        <p>Si le reseau BGFI utilise un proxy sortant, configurer les variables d'environnement :</p>
+        <p>Si le reseau CNSS utilise un proxy sortant, configurer les variables d'environnement :</p>
 
         <div class="fw-rule">
 <span class="comment"># Variables d'environnement pour proxy sortant</span>
-HTTPS_PROXY=<span class="value">http://proxy.bgfi.local:8080</span>
-HTTP_PROXY=<span class="value">http://proxy.bgfi.local:8080</span>
+HTTPS_PROXY=<span class="value">http://proxy.cnss.local:8080</span>
+HTTP_PROXY=<span class="value">http://proxy.cnss.local:8080</span>
 NO_PROXY=<span class="value">localhost,127.0.0.1,10.0.0.0/8</span>
 
 <span class="comment"># Si le proxy necessite une authentification</span>
-HTTPS_PROXY=<span class="value">http://user:password@proxy.bgfi.local:8080</span>
+HTTPS_PROXY=<span class="value">http://user:password@proxy.cnss.local:8080</span>
         </div>
 
         <div class="rule-box warning">
             <h4>Proxy et inspection SSL (DPI)</h4>
-            <p>Si le proxy BGFI effectue une <strong>inspection SSL (DPI / Man-in-the-Middle)</strong>, il faut ajouter le certificat CA du proxy dans le trust store de Node.js :</p>
-            <p style="margin-top:10px"><code>NODE_EXTRA_CA_CERTS=/etc/ssl/certs/bgfi-proxy-ca.pem</code></p>
+            <p>Si le proxy CNSS effectue une <strong>inspection SSL (DPI / Man-in-the-Middle)</strong>, il faut ajouter le certificat CA du proxy dans le trust store de Node.js :</p>
+            <p style="margin-top:10px"><code>NODE_EXTRA_CA_CERTS=/etc/ssl/certs/cnss-proxy-ca.pem</code></p>
             <p style="margin-top:10px">Sans cette configuration, les connexions HTTPS vers Meta et OpenAI echoueront avec une erreur <code>UNABLE_TO_VERIFY_LEAF_SIGNATURE</code>.</p>
         </div>
     </div>
@@ -699,14 +699,14 @@ HTTPS_PROXY=<span class="value">http://user:password@proxy.bgfi.local:8080</span
 <span class="comment"># Exemple : rediriger les logs vers syslog</span>
 <span class="comment"># Dans le fichier systemd du service</span>
 [Service]
-ExecStart=/usr/bin/node /opt/bgfi-whatsapp/backend/src/server.js
+ExecStart=/usr/bin/node /opt/cnss-whatsapp/backend/src/server.js
 StandardOutput=syslog
 StandardError=syslog
-SyslogIdentifier=bgfi-whatsapp
+SyslogIdentifier=cnss-whatsapp
 
 <span class="comment"># Ou via rsyslog vers le SIEM</span>
-<span class="comment"># /etc/rsyslog.d/bgfi-whatsapp.conf</span>
-if $programname == 'bgfi-whatsapp' then @@siem.bgfi.local:514
+<span class="comment"># /etc/rsyslog.d/cnss-whatsapp.conf</span>
+if $programname == 'cnss-whatsapp' then @@siem.cnss.local:514
         </div>
     </div>
 
@@ -764,7 +764,7 @@ NODE_ENV=<span class="value">production</span>
 
     <!-- FOOTER -->
     <div style="text-align:center; padding: 40px 0 60px; color: #999; font-size: 13px;">
-        <p><strong>BGFI Bank</strong> — Document confidentiel — Securite Reseau Plateforme WhatsApp</p>
+        <p><strong>CNSS Bank</strong> — Document confidentiel — Securite Reseau Plateforme WhatsApp</p>
         <p>Version 1.0 — Fevrier 2026</p>
     </div>
 

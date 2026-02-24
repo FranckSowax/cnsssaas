@@ -1,7 +1,7 @@
 {
-  "name": "bgfi-whatsapp-backend",
+  "name": "cnss-whatsapp-backend",
   "version": "1.0.0",
-  "description": "BGFI WhatsApp Marketing SaaS Backend",
+  "description": "CNSS WhatsApp Marketing SaaS Backend",
   "main": "src/server.js",
   "scripts": {
     "start": "npx prisma generate && node src/server.js",

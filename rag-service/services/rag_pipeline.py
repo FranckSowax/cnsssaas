@@ -16,7 +16,7 @@ class RAGPipeline:
         self.openai_api_key = os.getenv("OPENAI_API_KEY")
         self.pinecone_api_key = os.getenv("PINECONE_API_KEY")
         self.pinecone_environment = os.getenv("PINECONE_ENVIRONMENT", "gcp-starter")
-        self.pinecone_index_name = os.getenv("PINECONE_INDEX", "bgfi-knowledge")
+        self.pinecone_index_name = os.getenv("PINECONE_INDEX", "cnss-knowledge")
         
         # Configuration par défaut
         self.config = {
@@ -68,7 +68,7 @@ class RAGPipeline:
             self.vectorstore = PineconeVectorStore(
                 index=self.index,
                 embedding=self.embeddings,
-                namespace="bgfi"
+                namespace="cnss"
             )
             
             logger.info("Pinecone vectorstore initialized")
@@ -89,10 +89,10 @@ class RAGPipeline:
     
     def _init_prompt(self):
         """Initialiser le prompt système"""
-        self.system_prompt = """Tu es Cassiopée, l'assistant virtuel intelligent de BGFI Bank.
+        self.system_prompt = """Tu es Aimé, l'assistant virtuel intelligent de la CNSS.
 
 CONTEXTE:
-Tu assistes les clients de BGFI Bank pour leurs questions sur les services bancaires, l'application mobile, les virements, les cartes, et autres produits bancaires.
+Tu assistes les assurés de la CNSS pour leurs questions sur les prestations sociales, l'application mobile, les virements, les cartes, et autres produits.
 
 RÈGLES STRICTES:
 1. Réponds UNIQUEMENT en français

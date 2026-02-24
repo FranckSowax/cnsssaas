@@ -1,7 +1,7 @@
-# 📁 Structure du Projet - BGFI WhatsApp Marketing SaaS
+# 📁 Structure du Projet - CNSS WhatsApp Marketing SaaS
 
 ```
-bgfi-whatsapp-saas/
+cnss-whatsapp-saas/
 │
 ├── 📄 index.html                    # Application Frontend (React + Tailwind)
 │
@@ -196,7 +196,7 @@ docker-compose down -v
 docker-compose exec api npx prisma migrate dev
 
 # Accéder à la base de données
-docker-compose exec db psql -U postgres -d bgfi_whatsapp
+docker-compose exec db psql -U postgres -d cnss_whatsapp
 ```
 
 ---
@@ -204,5 +204,5 @@ docker-compose exec db psql -U postgres -d bgfi_whatsapp
 ## 📞 Support
 
 Pour toute question sur la structure du projet:
-- 📧 Email: support@bgfi.ga
-- 📖 Documentation: https://docs.bgfi-whatsapp.ga
+- 📧 Email: support@cnsssaas.ga
+- 📖 Documentation: https://docs.cnsssaas.ga

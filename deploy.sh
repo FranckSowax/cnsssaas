@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================
-# BGFI WhatsApp Platform - Script d'installation
+# CNSS WhatsApp Platform - Script d'installation
 # Usage: chmod +x deploy.sh && ./deploy.sh
 # ============================================
 
@@ -15,7 +15,7 @@ NC='\033[0m'
 
 echo -e "${BLUE}"
 echo "============================================"
-echo "  BGFI WhatsApp Platform - Installation"
+echo "  CNSS WhatsApp Platform - Installation"
 echo "  Version: 1.0.0"
 echo "============================================"
 echo -e "${NC}"
@@ -105,7 +105,7 @@ if [ ! -f deploy/ssl/fullchain.pem ] || [ ! -f deploy/ssl/privkey.pem ]; then
         openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
             -keyout deploy/ssl/privkey.pem \
             -out deploy/ssl/fullchain.pem \
-            -subj "/C=GA/ST=Estuaire/L=Libreville/O=BGFI Bank/CN=whatsapp.bgfi.com" \
+            -subj "/C=GA/ST=Estuaire/L=Libreville/O=CNSS/CN=whatsapp.cnsssaas.ga" \
             2>/dev/null
         echo -e "  ${GREEN}Certificat auto-signe genere (valide 365 jours)${NC}"
         echo -e "  ${RED}ATTENTION: Remplacez par un vrai certificat en production !${NC}"
@@ -133,7 +133,7 @@ sleep 10
 
 # Verifier que PostgreSQL est pret
 RETRIES=30
-until docker compose exec db pg_isready -U bgfi_user -d bgfi_whatsapp >/dev/null 2>&1 || [ $RETRIES -eq 0 ]; do
+until docker compose exec db pg_isready -U cnss_user -d cnss_whatsapp >/dev/null 2>&1 || [ $RETRIES -eq 0 ]; do
     echo "  Attente de PostgreSQL... ($RETRIES tentatives restantes)"
     RETRIES=$((RETRIES - 1))
     sleep 2
@@ -158,7 +158,7 @@ echo -e "${GREEN}  Migrations appliquees.${NC}"
 # ============================================
 echo -e "\n${YELLOW}[7/8] Verification du compte administrateur...${NC}"
 
-ADMIN_EXISTS=$(docker compose exec db psql -U bgfi_user -d bgfi_whatsapp -t -c \
+ADMIN_EXISTS=$(docker compose exec db psql -U cnss_user -d cnss_whatsapp -t -c \
     "SELECT COUNT(*) FROM users WHERE role='ADMIN';" 2>/dev/null | tr -d ' ')
 
 if [ "$ADMIN_EXISTS" = "0" ] || [ -z "$ADMIN_EXISTS" ]; then
@@ -171,12 +171,12 @@ if [ "$ADMIN_EXISTS" = "0" ] || [ -z "$ADMIN_EXISTS" ]; then
         process.stdout.write(hash);
     ")
 
-    docker compose exec db psql -U bgfi_user -d bgfi_whatsapp -c \
+    docker compose exec db psql -U cnss_user -d cnss_whatsapp -c \
         "INSERT INTO users (id, email, password, name, role, \"isActive\", \"createdAt\", \"updatedAt\")
-         VALUES (gen_random_uuid(), 'admin@bgfi.ga', '${ADMIN_HASH}', 'Administrateur BGFI', 'ADMIN', true, NOW(), NOW())
+         VALUES (gen_random_uuid(), 'admin@cnsssaas.ga', '${ADMIN_HASH}', 'Administrateur CNSS', 'ADMIN', true, NOW(), NOW())
          ON CONFLICT (email) DO NOTHING;"
 
-    echo -e "${GREEN}  Compte admin cree: admin@bgfi.ga / admin123${NC}"
+    echo -e "${GREEN}  Compte admin cree: admin@cnsssaas.ga / admin123${NC}"
     echo -e "${RED}  IMPORTANT: Changez ce mot de passe immediatement apres la premiere connexion !${NC}"
 else
     echo -e "${GREEN}  Compte administrateur existant detecte.${NC}"
@@ -195,7 +195,7 @@ echo -e "${BLUE}  Verification des services${NC}"
 echo -e "${BLUE}============================================${NC}"
 
 echo ""
-SERVICES=("bgfi-whatsapp-db" "bgfi-whatsapp-app" "bgfi-whatsapp-nginx")
+SERVICES=("cnss-whatsapp-db" "cnss-whatsapp-app" "cnss-whatsapp-nginx")
 ALL_OK=true
 
 for SERVICE in "${SERVICES[@]}"; do
@@ -216,7 +216,7 @@ if [ "$ALL_OK" = true ]; then
     echo ""
     echo -e "  Interface web:  ${BLUE}https://localhost${NC}"
     echo -e "  API Health:     ${BLUE}https://localhost/api/health${NC}"
-    echo -e "  Connexion:      ${BLUE}admin@bgfi.ga / admin123${NC}"
+    echo -e "  Connexion:      ${BLUE}admin@cnsssaas.ga / admin123${NC}"
     echo ""
     echo -e "  ${YELLOW}Prochaines etapes:${NC}"
     echo "  1. Configurer le DNS pour pointer vers ce serveur"

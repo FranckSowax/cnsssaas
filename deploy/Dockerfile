@@ -1,5 +1,5 @@
 # ============================================
-# BGFI WhatsApp Platform - Production Dockerfile
+# CNSS WhatsApp Platform - Production Dockerfile
 # Architecture: Node.js Express + Prisma ORM
 # Sert le frontend (index.html) + API backend
 # ============================================

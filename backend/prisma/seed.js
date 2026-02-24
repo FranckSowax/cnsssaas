@@ -11,12 +11,12 @@ async function main() {
   // ============================================
   const adminPassword = await bcrypt.hash('admin123', 10);
   const admin = await prisma.user.upsert({
-    where: { email: 'admin@bgfi.ga' },
+    where: { email: 'admin@cnsssaas.ga' },
     update: {},
     create: {
-      email: 'admin@bgfi.ga',
+      email: 'admin@cnsssaas.ga',
       password: adminPassword,
-      name: 'Admin BGFI',
+      name: 'Admin CNSS',
       role: 'ADMIN',
       isActive: true
     }
@@ -26,10 +26,10 @@ async function main() {
   // Utilisateur opérateur
   const operatorPassword = await bcrypt.hash('operator123', 10);
   const operator = await prisma.user.upsert({
-    where: { email: 'operator@bgfi.ga' },
+    where: { email: 'operator@cnsssaas.ga' },
     update: {},
     create: {
-      email: 'operator@bgfi.ga',
+      email: 'operator@cnsssaas.ga',
       password: operatorPassword,
       name: 'Opérateur Test',
       role: 'OPERATOR',
@@ -50,7 +50,7 @@ async function main() {
         name: 'welcome_message',
         displayName: 'Message de Bienvenue',
         category: 'UTILITY',
-        content: 'Bonjour {{1}} ! Bienvenue chez BGFI Bank. Votre compte est actif.',
+        content: 'Bonjour {{1}} ! Bienvenue à la CNSS. Votre compte est actif.',
         variables: ['nom'],
         language: 'fr',
         status: 'APPROVED',
@@ -65,7 +65,7 @@ async function main() {
         name: 'reactivation_app',
         displayName: 'Relance Application Mobile',
         category: 'MARKETING',
-        content: 'Bonjour {{1}}, votre application BGFI vous attend ! Reconnectez-vous : {{2}}',
+        content: 'Bonjour {{1}}, votre application CNSS vous attend ! Reconnectez-vous : {{2}}',
         variables: ['nom', 'lien'],
         language: 'fr',
         status: 'APPROVED',
@@ -80,7 +80,7 @@ async function main() {
         name: 'otp_verification',
         displayName: 'Code OTP',
         category: 'AUTHENTICATION',
-        content: 'Votre code de vérification BGFI est : {{1}}. Valable 5 minutes.',
+        content: 'Votre code de vérification CNSS est : {{1}}. Valable 5 minutes.',
         variables: ['code'],
         language: 'fr',
         status: 'APPROVED',
@@ -201,7 +201,7 @@ async function main() {
       status: 'DRAFT',
       templateId: '00000000-0000-0000-0000-000000000002',
       legacySegment: 'ACTIVE',
-      variables: { var1: 'nom', var2: 'https://bgfi.ga/app' },
+      variables: { var1: 'nom', var2: 'https://cnsssaas.ga/app' },
       createdBy: admin.id
     }
   });
@@ -211,11 +211,11 @@ async function main() {
   // 6. API Key de test
   // ============================================
   const apiKey = await prisma.apiKey.upsert({
-    where: { key: 'bgfi-test-api-key-2026' },
+    where: { key: 'cnss-test-api-key-2026' },
     update: {},
     create: {
       name: 'Test API Key',
-      key: 'bgfi-test-api-key-2026',
+      key: 'cnss-test-api-key-2026',
       permissions: ['campaign:create', 'campaign:read', 'campaign:send', 'contact:create', 'contact:read', 'template:read'],
       isActive: true,
       createdBy: admin.id
@@ -226,8 +226,8 @@ async function main() {
   console.log('\nSeed terminé !');
   console.log('=====================================');
   console.log('Comptes de test:');
-  console.log('  Admin:    admin@bgfi.ga / admin123');
-  console.log('  Operator: operator@bgfi.ga / operator123');
+  console.log('  Admin:    admin@cnsssaas.ga / admin123');
+  console.log('  Operator: operator@cnsssaas.ga / operator123');
   console.log('=====================================');
 }
 

@@ -1,5 +1,5 @@
 -- ============================================
--- BGFI WhatsApp SaaS - Configuration Supabase
+-- CNSS WhatsApp SaaS - Configuration Supabase
 -- Exécuter ce script dans le SQL Editor de Supabase
 -- ============================================
 
@@ -237,9 +237,9 @@ CREATE TRIGGER trigger_update_chunks_count
 
 INSERT INTO "users" (email, password, name, role)
 VALUES (
-    'admin@bgfi.ga',
+    'admin@cnsssaas.ga',
     '$2a$10$8KzQ7IKgJXqZKP/QZxHJqe6y7VxRiJXH0vSuJj3HiN5nLQPO5sXyK',
-    'Admin BGFI',
+    'Admin CNSS',
     'ADMIN'
 ) ON CONFLICT (email) DO NOTHING;
 
@@ -250,13 +250,13 @@ VALUES (
 INSERT INTO "templates" (name, display_name, category, content, variables, status)
 VALUES
     ('welcome_message', 'Message de Bienvenue', 'UTILITY',
-     'Bonjour {{1}} ! Bienvenue chez BGFI Bank. Votre compte est maintenant actif.',
+     'Bonjour {{1}} ! Bienvenue à la CNSS. Votre compte est maintenant actif.',
      ARRAY['nom'], 'APPROVED'),
     ('reactivation', 'Relance Connexion', 'MARKETING',
      'Bonjour {{1}}, nous avons remarqué que vous ne vous êtes pas connecté depuis un moment. Reconnectez-vous ici : {{2}}',
      ARRAY['nom', 'lien'], 'APPROVED'),
     ('otp_code', 'Code OTP', 'AUTHENTICATION',
-     'Votre code de vérification BGFI est : {{1}}. Valable 5 minutes.',
+     'Votre code de vérification CNSS est : {{1}}. Valable 5 minutes.',
      ARRAY['code'], 'APPROVED')
 ON CONFLICT DO NOTHING;
 

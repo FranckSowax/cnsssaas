@@ -17,15 +17,15 @@ scrape_configs:
     static_configs:
       - targets: ['localhost:9090']
 
-  # BGFI API
-  - job_name: 'bgfi-api'
+  # CNSS API
+  - job_name: 'cnss-api'
     static_configs:
       - targets: ['api:3000']
     metrics_path: '/metrics'
     scrape_interval: 30s
 
   # RAG Service
-  - job_name: 'bgfi-rag'
+  - job_name: 'cnss-rag'
     static_configs:
       - targets: ['rag-service:8000']
     metrics_path: '/metrics'

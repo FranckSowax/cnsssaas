@@ -331,7 +331,7 @@ router.post('/ai-suggest', authenticate, async (req, res) => {
     // Get available field definitions for context
     const fieldDefs = ALLOWED_FIELDS.join(', ');
 
-    const systemPrompt = `Tu es un assistant IA pour BGFI Bank. Tu convertis des descriptions en langage naturel en critères de segmentation JSON.
+    const systemPrompt = `Tu es un assistant IA pour la CNSS. Tu convertis des descriptions en langage naturel en critères de segmentation JSON.
 
 Champs disponibles: ${fieldDefs}
 Types de valeurs:

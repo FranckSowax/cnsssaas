@@ -27,7 +27,7 @@ const upload = multer({
 // Stocke l'URL originale dans redirectUrl et remplace par l'URL de tracking
 const TRACKING_BASE = process.env.TRACKING_BASE_URL || (process.env.RAILWAY_PUBLIC_DOMAIN
   ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}/t/{{1}}`
-  : 'https://bgfi-wacbt-production.up.railway.app/t/{{1}}');
+  : 'https://cnss-wacbt-production.up.railway.app/t/{{1}}');
 
 function applyTrackingToButtons(buttons) {
   if (!buttons || !Array.isArray(buttons)) return buttons;
@@ -178,7 +178,7 @@ router.post('/meta/test-upload', authenticate, async (req, res) => {
   try {
     const { imagePath } = req.body;
     const fs = require('fs');
-    const testPath = imagePath || 'templates/bgfi-welcome.jpeg';
+    const testPath = imagePath || 'templates/cnss-welcome.jpeg';
     const localPath = path.resolve(__dirname, '../../../public', testPath.replace(/^\//, ''));
 
     const diagnostics = {
@@ -272,7 +272,7 @@ router.post('/', authenticate, authorize(['template:create']), async (req, res) 
         try {
           const response = await axios.get(headerContent, { responseType: 'arraybuffer', timeout: 60000 });
           const ext = headerType === 'VIDEO' ? '.mp4' : '.jpg';
-          filePath = path.join(os.tmpdir(), `bgfi_upload_${Date.now()}${ext}`);
+          filePath = path.join(os.tmpdir(), `cnss_upload_${Date.now()}${ext}`);
           fs.writeFileSync(filePath, response.data);
           tempFile = true;
           logger.info('Media downloaded from URL for Meta upload', { url: headerContent.substring(0, 80), size: response.data.length });
@@ -451,7 +451,7 @@ router.post('/:id/duplicate', authenticate, authorize(['template:create']), asyn
         try {
           const response = await axios.get(newHeaderContent, { responseType: 'arraybuffer', timeout: 60000 });
           const ext = newHeaderType === 'VIDEO' ? '.mp4' : '.jpg';
-          filePath = path.join(os.tmpdir(), `bgfi_dup_${Date.now()}${ext}`);
+          filePath = path.join(os.tmpdir(), `cnss_dup_${Date.now()}${ext}`);
           fs.writeFileSync(filePath, response.data);
           tempFile = true;
         } catch (dlErr) {

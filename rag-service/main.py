@@ -31,8 +31,8 @@ async def lifespan(app: FastAPI):
     logger.info("🛑 Arrêt du service RAG...")
 
 app = FastAPI(
-    title="BGFI RAG Service - Supabase",
-    description="Service RAG pour le chatbot BGFI WhatsApp utilisant Supabase pgvector",
+    title="CNSS RAG Service - Supabase",
+    description="Service RAG pour le chatbot CNSS WhatsApp utilisant Supabase pgvector",
     version="2.0.0",
     lifespan=lifespan
 )

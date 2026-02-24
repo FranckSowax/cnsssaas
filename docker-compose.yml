@@ -1,5 +1,5 @@
 # ============================================
-# BGFI WhatsApp Platform - Deploiement On-Premise
+# CNSS WhatsApp Platform - Deploiement On-Premise
 # Usage: docker compose up -d
 # ============================================
 
@@ -11,19 +11,19 @@ services:
     build:
       context: .
       dockerfile: deploy/Dockerfile
-    container_name: bgfi-whatsapp-app
+    container_name: cnss-whatsapp-app
     env_file: .env
     environment:
       - NODE_ENV=production
       - PORT=3000
-      - DATABASE_URL=postgresql://bgfi_user:${DB_PASSWORD}@db:5432/bgfi_whatsapp?schema=public
+      - DATABASE_URL=postgresql://cnss_user:${DB_PASSWORD}@db:5432/cnss_whatsapp?schema=public
     depends_on:
       db:
         condition: service_healthy
     volumes:
       - app_logs:/app/logs
     networks:
-      - bgfi-internal
+      - cnss-internal
     restart: unless-stopped
 
   # ============================================
@@ -31,18 +31,18 @@ services:
   # ============================================
   db:
     image: pgvector/pgvector:pg16
-    container_name: bgfi-whatsapp-db
+    container_name: cnss-whatsapp-db
     environment:
-      POSTGRES_USER: bgfi_user
+      POSTGRES_USER: cnss_user
       POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: bgfi_whatsapp
+      POSTGRES_DB: cnss_whatsapp
     volumes:
       - pgdata:/var/lib/postgresql/data
     networks:
-      - bgfi-internal
+      - cnss-internal
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U bgfi_user -d bgfi_whatsapp"]
+      test: ["CMD-SHELL", "pg_isready -U cnss_user -d cnss_whatsapp"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -52,7 +52,7 @@ services:
   # ============================================
   nginx:
     image: nginx:alpine
-    container_name: bgfi-whatsapp-nginx
+    container_name: cnss-whatsapp-nginx
     ports:
       - "443:443"
       - "80:80"
@@ -62,8 +62,8 @@ services:
     depends_on:
       - app
     networks:
-      - bgfi-internal
-      - bgfi-external
+      - cnss-internal
+      - cnss-external
     restart: unless-stopped
 
 volumes:
@@ -73,8 +73,8 @@ volumes:
     driver: local
 
 networks:
-  bgfi-internal:
+  cnss-internal:
     driver: bridge
     internal: true    # Pas d'acces Internet direct
-  bgfi-external:
+  cnss-external:
     driver: bridge    # Acces Internet (webhooks + API)

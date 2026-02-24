@@ -1,8 +1,8 @@
-# 📡 API Documentation - BGFI WhatsApp Marketing SaaS
+# 📡 API Documentation - CNSS WhatsApp Marketing SaaS
 
 ## Base URL
 ```
-Production: https://api.bgfi-whatsapp.ga
+Production: https://api.cnsssaas.ga
 Local: http://localhost:3000
 ```
 
@@ -22,7 +22,7 @@ Connexion utilisateur.
 **Request:**
 ```json
 {
-  "email": "admin@bgfi.ga",
+  "email": "admin@cnsssaas.ga",
   "password": "votre_mot_de_passe"
 }
 ```
@@ -33,8 +33,8 @@ Connexion utilisateur.
   "token": "eyJhbGciOiJIUzI1NiIs...",
   "user": {
     "id": "uuid",
-    "email": "admin@bgfi.ga",
-    "name": "Admin BGFI",
+    "email": "admin@cnsssaas.ga",
+    "name": "Admin CNSS",
     "role": "ADMIN"
   }
 }
@@ -261,7 +261,7 @@ Lister les templates WhatsApp.
       "name": "relance_connexion",
       "displayName": "Relance Connexion",
       "category": "MARKETING",
-      "content": "Bonjour {{1}} ! Votre application BGFI vous attend...",
+      "content": "Bonjour {{1}} ! Votre application CNSS vous attend...",
       "variables": ["var1", "var2"],
       "status": "APPROVED",
       "approvedAt": "2026-01-10T10:00:00Z"
@@ -314,10 +314,10 @@ Envoyer un message au chatbot.
 **Response:**
 ```json
 {
-  "response": "Pour récupérer vos identifiants BGFI, vous pouvez...",
+  "response": "Pour récupérer vos identifiants CNSS, vous pouvez...",
   "sources": [
     {
-      "document": "FAQ_BGFI_2026.pdf",
+      "document": "FAQ_CNSS_2026.pdf",
       "page": 12,
       "score": 0.94
     }
@@ -337,7 +337,7 @@ Lister les documents de la base de connaissances.
   "documents": [
     {
       "id": "uuid",
-      "name": "FAQ_BGFI_2026.pdf",
+      "name": "FAQ_CNSS_2026.pdf",
       "type": "pdf",
       "size": "2.4 MB",
       "status": "INDEXED",
@@ -501,7 +501,7 @@ Webhook pour les événements Respond.io.
 # Login
 TOKEN=$(curl -s -X POST http://localhost:3000/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"admin@bgfi.ga","password":"password"}' | jq -r '.token')
+  -d '{"email":"admin@cnsssaas.ga","password":"password"}' | jq -r '.token')
 
 # Liste des campagnes
 curl -H "Authorization: Bearer $TOKEN" \

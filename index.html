@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BGFI WhatsApp Marketing SaaS</title>
+    <title>CNSS WhatsApp Marketing SaaS</title>
     <link rel="icon" type="image/png" href="/favicon.png">
     <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
@@ -19,7 +19,7 @@
                 extend: {
                     fontFamily: { sans: ['Inter', 'sans-serif'] },
                     colors: {
-                        bgfi: { primary: '#1e3a5f', secondary: '#2d5a87', accent: '#00a86b', light: '#f8fafc', dark: '#0f172a' }
+                        cnss: { primary: '#43A047', secondary: '#FDD835', accent: '#66BB6A', light: '#FFFFFF', dark: '#1B5E20' }
                     }
                 }
             }
@@ -28,7 +28,7 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Inter', sans-serif; background: #f1f5f9; -webkit-text-size-adjust: 100%; }
-        .gradient-bg { background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%); }
+        .gradient-bg { background: linear-gradient(135deg, #43A047 0%, #1B5E20 100%); }
         .card-shadow { box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); }
         .hover-lift { transition: transform 0.2s, box-shadow 0.2s; }
         .hover-lift:hover { transform: translateY(-2px); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); }
@@ -76,11 +76,11 @@
         const API_BASE = '/api';
 
         const authStore = {
-            getToken: () => localStorage.getItem('bgfi_token'),
-            setToken: (t) => localStorage.setItem('bgfi_token', t),
-            getUser: () => { try { return JSON.parse(localStorage.getItem('bgfi_user')); } catch(e) { return null; } },
-            setUser: (u) => localStorage.setItem('bgfi_user', JSON.stringify(u)),
-            clear: () => { localStorage.removeItem('bgfi_token'); localStorage.removeItem('bgfi_user'); },
+            getToken: () => localStorage.getItem('cnss_token'),
+            setToken: (t) => localStorage.setItem('cnss_token', t),
+            getUser: () => { try { return JSON.parse(localStorage.getItem('cnss_user')); } catch(e) { return null; } },
+            setUser: (u) => localStorage.setItem('cnss_user', JSON.stringify(u)),
+            clear: () => { localStorage.removeItem('cnss_token'); localStorage.removeItem('cnss_user'); },
         };
 
         const api = async (endpoint, options = {}) => {
@@ -181,7 +181,7 @@
         // =============================================
         const Button = ({ children, onClick, variant = 'primary', size = 'md', className = '', disabled = false, icon: Icon, type = 'button' }) => {
             const baseClasses = 'inline-flex items-center justify-center gap-2 font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed';
-            const variants = { primary: 'bg-bgfi-primary text-white hover:bg-bgfi-secondary shadow-md hover:shadow-lg', secondary: 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 shadow-sm', accent: 'bg-bgfi-accent text-white hover:bg-emerald-600 shadow-md hover:shadow-lg', danger: 'bg-red-500 text-white hover:bg-red-600 shadow-md', ghost: 'text-gray-600 hover:bg-gray-100 hover:text-gray-900' };
+            const variants = { primary: 'bg-cnss-primary text-white hover:bg-cnss-secondary shadow-md hover:shadow-lg', secondary: 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 shadow-sm', accent: 'bg-cnss-accent text-white hover:bg-emerald-600 shadow-md hover:shadow-lg', danger: 'bg-red-500 text-white hover:bg-red-600 shadow-md', ghost: 'text-gray-600 hover:bg-gray-100 hover:text-gray-900' };
             const sizes = { sm: 'px-3 py-1.5 text-sm', md: 'px-4 py-2 text-sm', lg: 'px-6 py-3 text-base' };
             return <button type={type} onClick={onClick} disabled={disabled} className={`${baseClasses} ${variants[variant]} ${sizes[size]} ${className}`}>{Icon && <Icon />}{children}</button>;
         };
@@ -194,25 +194,25 @@
         );
 
         const Badge = ({ children, variant = 'default' }) => {
-            const variants = { default: 'bg-gray-100 text-gray-700', success: 'bg-emerald-100 text-emerald-700', warning: 'bg-amber-100 text-amber-700', danger: 'bg-red-100 text-red-700', info: 'bg-blue-100 text-blue-700', primary: 'bg-bgfi-primary text-white' };
+            const variants = { default: 'bg-gray-100 text-gray-700', success: 'bg-emerald-100 text-emerald-700', warning: 'bg-amber-100 text-amber-700', danger: 'bg-red-100 text-red-700', info: 'bg-blue-100 text-blue-700', primary: 'bg-cnss-primary text-white' };
             return <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${variants[variant]}`}>{children}</span>;
         };
 
         const Input = ({ label, type = 'text', placeholder, value, onChange, className = '', icon: Icon }) => (
             <div className={`space-y-1 ${className}`}>
                 {label && <label className="block text-sm font-medium text-gray-700">{label}</label>}
-                <div className="relative">{Icon && <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400"><Icon /></div>}<input type={type} value={value} onChange={(e) => onChange && onChange(e.target.value)} placeholder={placeholder} className={`block w-full rounded-lg border-gray-300 shadow-sm focus:border-bgfi-primary focus:ring-bgfi-primary sm:text-sm ${Icon ? 'pl-10' : 'px-4'} py-2.5 border`} /></div>
+                <div className="relative">{Icon && <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400"><Icon /></div>}<input type={type} value={value} onChange={(e) => onChange && onChange(e.target.value)} placeholder={placeholder} className={`block w-full rounded-lg border-gray-300 shadow-sm focus:border-cnss-primary focus:ring-cnss-primary sm:text-sm ${Icon ? 'pl-10' : 'px-4'} py-2.5 border`} /></div>
             </div>
         );
 
         const Select = ({ label, value, onChange, options, className = '' }) => (
             <div className={`space-y-1 ${className}`}>
                 {label && <label className="block text-sm font-medium text-gray-700">{label}</label>}
-                <select value={value} onChange={(e) => onChange && onChange(e.target.value)} className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-bgfi-primary focus:ring-bgfi-primary sm:text-sm px-4 py-2.5 border">{options.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}</select>
+                <select value={value} onChange={(e) => onChange && onChange(e.target.value)} className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-cnss-primary focus:ring-cnss-primary sm:text-sm px-4 py-2.5 border">{options.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}</select>
             </div>
         );
 
-        const ProgressBar = ({ value, max = 100, color = 'bg-bgfi-primary', size = 'md' }) => {
+        const ProgressBar = ({ value, max = 100, color = 'bg-cnss-primary', size = 'md' }) => {
             const percentage = Math.min((value / max) * 100, 100);
             const sizes = { sm: 'h-1.5', md: 'h-2', lg: 'h-3' };
             return <div className={`w-full bg-gray-200 rounded-full ${sizes[size]}`}><div className={`${color} rounded-full transition-all duration-500 ${sizes[size]}`} style={{ width: `${percentage}%` }} /></div>;
@@ -223,7 +223,7 @@
             return <Card className="h-full"><div className="flex items-start justify-between"><div><p className="text-xs sm:text-sm font-medium text-gray-600">{title}</p><p className="text-lg sm:text-2xl font-bold text-gray-900 mt-1">{value}</p>{change !== undefined && <div className="flex items-center mt-2"><span className={`text-xs sm:text-sm font-medium ${changeType === 'positive' ? 'text-emerald-600' : 'text-red-600'}`}>{changeType === 'positive' ? '+' : ''}{change}%</span><span className="text-xs sm:text-sm text-gray-500 ml-1">vs mois dernier</span></div>}</div>{Icon && <div className={`p-2 sm:p-3 rounded-xl ${colors[color]}`}><Icon /></div>}</div></Card>;
         };
 
-        const Spinner = () => <div className="flex items-center justify-center p-12"><div className="w-10 h-10 border-4 border-bgfi-primary border-t-transparent rounded-full animate-spin" /></div>;
+        const Spinner = () => <div className="flex items-center justify-center p-12"><div className="w-10 h-10 border-4 border-cnss-primary border-t-transparent rounded-full animate-spin" /></div>;
 
         const ErrorBox = ({ message, onRetry }) => (
             <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
@@ -255,17 +255,17 @@
                 <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
                     <div className="max-w-md w-full">
                         <div className="text-center mb-8">
-                            <div className="w-16 h-16 rounded-2xl overflow-hidden mx-auto mb-4"><img src="/favicon.png" alt="BGFI" className="w-full h-full object-cover" /></div>
-                            <h1 className="text-lg sm:text-2xl font-bold text-gray-900">BGFI Marketing</h1>
+                            <div className="w-16 h-16 rounded-2xl overflow-hidden mx-auto mb-4"><img src="/favicon.png" alt="CNSS" className="w-full h-full object-cover" /></div>
+                            <h1 className="text-lg sm:text-2xl font-bold text-gray-900">CNSS Marketing</h1>
                             <p className="text-gray-500 mt-1">WhatsApp SaaS Platform</p>
                         </div>
                         <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-lg p-8 space-y-6">
                             {error && <div className="bg-red-50 text-red-700 px-4 py-3 rounded-xl text-sm">{error}</div>}
-                            <Input label="Email" type="email" placeholder="admin@bgfi.ga" value={email} onChange={setEmail} icon={Icons.Mail} />
+                            <Input label="Email" type="email" placeholder="admin@cnsssaas.ga" value={email} onChange={setEmail} icon={Icons.Mail} />
                             <Input label="Mot de passe" type="password" placeholder="********" value={password} onChange={setPassword} />
                             <Button type="submit" className="w-full" size="lg" disabled={loading}>{loading ? 'Connexion...' : 'Se connecter'}</Button>
                         </form>
-                        <p className="text-center text-xs text-gray-400 mt-6">BGFI WhatsApp Marketing SaaS v1.0</p>
+                        <p className="text-center text-xs text-gray-400 mt-6">CNSS WhatsApp Marketing SaaS v1.0</p>
                     </div>
                 </div>
             );
@@ -274,7 +274,7 @@
         // =============================================
         // Main App
         // =============================================
-        const BGFIWhatsAppSaaS = () => {
+        const CNSSWhatsAppSaaS = () => {
             const [user, setUser] = useState(authStore.getUser());
             const [activeTab, setActiveTab] = useState('dashboard');
             const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth >= 1024);
@@ -318,21 +318,21 @@
                     <aside className={`fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200 transform transition-transform duration-300 lg:translate-x-0 lg:static lg:inset-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
                         <div className="flex items-center justify-between h-16 px-4 sm:px-6 border-b border-gray-200">
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-xl overflow-hidden flex-shrink-0"><img src="/favicon.png" alt="BGFI" className="w-full h-full object-cover" /></div>
-                                <div><h1 className="font-bold text-gray-900 text-sm">BGFI Marketing</h1><p className="text-xs text-gray-500">WhatsApp SaaS</p></div>
+                                <div className="w-10 h-10 rounded-xl overflow-hidden flex-shrink-0"><img src="/favicon.png" alt="CNSS" className="w-full h-full object-cover" /></div>
+                                <div><h1 className="font-bold text-gray-900 text-sm">CNSS Marketing</h1><p className="text-xs text-gray-500">WhatsApp SaaS</p></div>
                             </div>
                             <button onClick={() => setSidebarOpen(false)} className="lg:hidden p-2 text-gray-500 hover:text-gray-700 rounded-lg"><Icons.X /></button>
                         </div>
                         <nav className="p-3 sm:p-4 space-y-1 overflow-y-auto" style={{maxHeight: 'calc(100vh - 140px)'}}>
                             {menuItems.map(item => (
-                                <button key={item.id} onClick={() => { setActiveTab(item.id); if (window.innerWidth < 1024) setSidebarOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${activeTab === item.id ? 'bg-bgfi-primary text-white shadow-md' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'}`}>
+                                <button key={item.id} onClick={() => { setActiveTab(item.id); if (window.innerWidth < 1024) setSidebarOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${activeTab === item.id ? 'bg-cnss-primary text-white shadow-md' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'}`}>
                                     <item.icon />{item.label}
                                 </button>
                             ))}
                         </nav>
                         <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4 border-t border-gray-200 bg-white">
                             <div className="flex items-center gap-3 px-3 sm:px-4 py-3 bg-gray-50 rounded-xl">
-                                <div className="w-10 h-10 bg-bgfi-accent rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">{(user.name || 'U').substring(0, 2).toUpperCase()}</div>
+                                <div className="w-10 h-10 bg-cnss-accent rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">{(user.name || 'U').substring(0, 2).toUpperCase()}</div>
                                 <div className="flex-1 min-w-0"><p className="text-sm font-medium text-gray-900 truncate">{user.name}</p><p className="text-xs text-gray-500 truncate">{user.email}</p></div>
                                 <button onClick={handleLogout} className="p-1.5 text-gray-400 hover:text-red-500 rounded-lg hover:bg-red-50 flex-shrink-0" title="Deconnexion"><Icons.LogOut /></button>
                             </div>
@@ -421,7 +421,7 @@
                                     <h3 className="text-base sm:text-lg font-semibold text-gray-900">Activite des Messages</h3>
                                     <p className="text-xs sm:text-sm text-gray-500 mt-0.5">Messages envoyes, delivres et lus</p>
                                 </div>
-                                <select value={timeRange} onChange={e => setTimeRange(e.target.value)} className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-bgfi-primary/20 self-start sm:self-auto">
+                                <select value={timeRange} onChange={e => setTimeRange(e.target.value)} className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-cnss-primary/20 self-start sm:self-auto">
                                     <option value="7j">7 derniers jours</option>
                                     <option value="30j">30 derniers jours</option>
                                     <option value="90j">3 derniers mois</option>
@@ -527,11 +527,11 @@
                         <Card title="Actions Rapides">
                             <div className="grid grid-cols-2 gap-3 sm:gap-4">
                                 <button onClick={() => onNavigate('campaigns')} className="p-4 sm:p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl text-left hover:shadow-md transition-all group">
-                                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-bgfi-primary rounded-xl flex items-center justify-center text-white mb-3 sm:mb-4 group-hover:scale-110 transition-transform"><Icons.Plus /></div>
+                                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-cnss-primary rounded-xl flex items-center justify-center text-white mb-3 sm:mb-4 group-hover:scale-110 transition-transform"><Icons.Plus /></div>
                                     <p className="font-semibold text-gray-900 text-sm sm:text-base">Nouvelle Campagne</p><p className="text-xs sm:text-sm text-gray-600 mt-1 hidden sm:block">Creer une campagne WhatsApp</p>
                                 </button>
                                 <button onClick={() => onNavigate('contacts')} className="p-4 sm:p-6 bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl text-left hover:shadow-md transition-all group">
-                                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-bgfi-accent rounded-xl flex items-center justify-center text-white mb-3 sm:mb-4 group-hover:scale-110 transition-transform"><Icons.Upload /></div>
+                                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-cnss-accent rounded-xl flex items-center justify-center text-white mb-3 sm:mb-4 group-hover:scale-110 transition-transform"><Icons.Upload /></div>
                                     <p className="font-semibold text-gray-900 text-sm sm:text-base">Importer Contacts</p><p className="text-xs sm:text-sm text-gray-600 mt-1 hidden sm:block">CSV ou Excel</p>
                                 </button>
                                 <button onClick={() => onNavigate('chatbot')} className="p-4 sm:p-6 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl text-left hover:shadow-md transition-all group">
@@ -578,7 +578,7 @@
 
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
                         <div className="flex items-center gap-3 min-w-0">
-                            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-bgfi-primary/10 rounded-xl flex items-center justify-center text-bgfi-primary flex-shrink-0"><Icons.Send /></div>
+                            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-cnss-primary/10 rounded-xl flex items-center justify-center text-cnss-primary flex-shrink-0"><Icons.Send /></div>
                             <div className="min-w-0">
                                 <h2 className="text-lg sm:text-2xl font-bold text-gray-900 truncate">{c.name}</h2>
                                 <p className="text-xs sm:text-sm text-gray-500 truncate">{catMap[c.type] || c.type} - {c.segmentRef?.name || categoryMap[c.legacySegment] || 'Tous'} - Template: {c.template?.displayName || c.template?.name || '-'}</p>
@@ -742,10 +742,10 @@
                 <div className="space-y-4">
                     <div className="flex items-center gap-2 mb-2">
                         <span className="text-sm font-medium text-gray-700">Operateur logique :</span>
-                        <button className={'px-3 py-1 rounded-lg text-sm font-medium ' + (criteria.operator === 'AND' ? 'bg-bgfi-primary text-white' : 'bg-gray-100 text-gray-600')} onClick={() => onChange({ ...criteria, operator: 'AND' })}>ET (AND)</button>
-                        <button className={'px-3 py-1 rounded-lg text-sm font-medium ' + (criteria.operator === 'OR' ? 'bg-bgfi-primary text-white' : 'bg-gray-100 text-gray-600')} onClick={() => onChange({ ...criteria, operator: 'OR' })}>OU (OR)</button>
+                        <button className={'px-3 py-1 rounded-lg text-sm font-medium ' + (criteria.operator === 'AND' ? 'bg-cnss-primary text-white' : 'bg-gray-100 text-gray-600')} onClick={() => onChange({ ...criteria, operator: 'AND' })}>ET (AND)</button>
+                        <button className={'px-3 py-1 rounded-lg text-sm font-medium ' + (criteria.operator === 'OR' ? 'bg-cnss-primary text-white' : 'bg-gray-100 text-gray-600')} onClick={() => onChange({ ...criteria, operator: 'OR' })}>OU (OR)</button>
                     </div>
-                    <div className="space-y-2 pl-4 border-l-2 border-bgfi-primary/30">
+                    <div className="space-y-2 pl-4 border-l-2 border-cnss-primary/30">
                         {(criteria.rules || []).map((rule, idx) => (
                             <RuleRow key={idx} rule={rule} onChange={r => updateRule(idx, r)} onRemove={() => removeRule(idx)} />
                         ))}
@@ -769,7 +769,7 @@
                 {steps.map((step, i) => (
                     <React.Fragment key={i}>
                         <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-                            <div className={'w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold ' + (i < current ? 'bg-green-500 text-white' : i === current ? 'bg-bgfi-primary text-white' : 'bg-gray-200 text-gray-500')}>
+                            <div className={'w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold ' + (i < current ? 'bg-green-500 text-white' : i === current ? 'bg-cnss-primary text-white' : 'bg-gray-200 text-gray-500')}>
                                 {i < current ? '\u2713' : i + 1}
                             </div>
                             <span className={'text-xs sm:text-sm font-medium hidden md:inline ' + (i <= current ? 'text-gray-900' : 'text-gray-400')}>{step}</span>
@@ -870,8 +870,8 @@
                                             { id: 'segment', label: 'Segment sauvegarde', desc: 'Utiliser un segment existant', icon: Icons.Layers },
                                             { id: 'builder', label: 'Criteres avances', desc: 'Construire un ciblage sur mesure', icon: Icons.Target }
                                         ].map(m => (
-                                            <div key={m.id} className={'border-2 rounded-xl p-4 cursor-pointer transition-all ' + (form.targetMode === m.id ? 'border-bgfi-primary bg-bgfi-primary/5' : 'border-gray-200 hover:border-gray-300')} onClick={() => setForm({...form, targetMode: m.id})}>
-                                                <div className="text-bgfi-primary mb-2"><m.icon /></div>
+                                            <div key={m.id} className={'border-2 rounded-xl p-4 cursor-pointer transition-all ' + (form.targetMode === m.id ? 'border-cnss-primary bg-cnss-primary/5' : 'border-gray-200 hover:border-gray-300')} onClick={() => setForm({...form, targetMode: m.id})}>
+                                                <div className="text-cnss-primary mb-2"><m.icon /></div>
                                                 <p className="font-medium text-sm text-gray-900">{m.label}</p>
                                                 <p className="text-xs text-gray-500 mt-1">{m.desc}</p>
                                             </div>
@@ -930,12 +930,12 @@
                             {step === 3 && (
                                 <div className="space-y-4">
                                     <div className="grid grid-cols-2 gap-4">
-                                        <div className={'border-2 rounded-xl p-4 cursor-pointer transition-all ' + (!form.scheduledAt ? 'border-bgfi-primary bg-bgfi-primary/5' : 'border-gray-200')} onClick={() => setForm({...form, scheduledAt: ''})}>
+                                        <div className={'border-2 rounded-xl p-4 cursor-pointer transition-all ' + (!form.scheduledAt ? 'border-cnss-primary bg-cnss-primary/5' : 'border-gray-200')} onClick={() => setForm({...form, scheduledAt: ''})}>
                                             <Icons.Send />
                                             <p className="font-medium text-sm mt-2">Envoi immediat</p>
                                             <p className="text-xs text-gray-500">La campagne sera en brouillon, prete a etre lancee</p>
                                         </div>
-                                        <div className={'border-2 rounded-xl p-4 cursor-pointer transition-all ' + (form.scheduledAt ? 'border-bgfi-primary bg-bgfi-primary/5' : 'border-gray-200')} onClick={() => setForm({...form, scheduledAt: form.scheduledAt || new Date().toISOString().slice(0, 16)})}>
+                                        <div className={'border-2 rounded-xl p-4 cursor-pointer transition-all ' + (form.scheduledAt ? 'border-cnss-primary bg-cnss-primary/5' : 'border-gray-200')} onClick={() => setForm({...form, scheduledAt: form.scheduledAt || new Date().toISOString().slice(0, 16)})}>
                                             <Icons.Calendar />
                                             <p className="font-medium text-sm mt-2">Planifier</p>
                                             <p className="text-xs text-gray-500">Choisir une date et heure d'envoi</p>
@@ -1047,7 +1047,7 @@
                                     {campaigns.length === 0 && <tr><td colSpan="7" className="py-8 text-center text-gray-500">Aucune campagne</td></tr>}
                                     {campaigns.map(c => (
                                         <tr key={c.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => setSelectedCampaign(c)}>
-                                            <td className="py-4 px-4"><div className="flex items-center gap-3"><div className="w-10 h-10 bg-bgfi-primary/10 rounded-xl flex items-center justify-center text-bgfi-primary flex-shrink-0"><Icons.Send /></div><div className="min-w-0"><p className="font-medium text-gray-900 truncate">{c.name}</p><p className="text-sm text-gray-500 truncate">{c.template?.name || '-'}</p></div></div></td>
+                                            <td className="py-4 px-4"><div className="flex items-center gap-3"><div className="w-10 h-10 bg-cnss-primary/10 rounded-xl flex items-center justify-center text-cnss-primary flex-shrink-0"><Icons.Send /></div><div className="min-w-0"><p className="font-medium text-gray-900 truncate">{c.name}</p><p className="text-sm text-gray-500 truncate">{c.template?.name || '-'}</p></div></div></td>
                                             <td className="py-4 px-4"><Badge variant={statusVariant[c.status] || 'default'}>{statusMap[c.status] || c.status}</Badge></td>
                                             <td className="py-4 px-4 text-sm text-gray-600 hidden md:table-cell">{catMap[c.type] || c.type}</td>
                                             <td className="py-4 px-4 text-sm text-gray-600 hidden lg:table-cell">{c.segmentRef?.name || categoryMap[c.legacySegment] || 'Tous'}</td>
@@ -1066,7 +1066,7 @@
                                 <div key={c.id} className="p-4 hover:bg-gray-50 active:bg-gray-100 cursor-pointer" onClick={() => setSelectedCampaign(c)}>
                                     <div className="flex items-center justify-between gap-3 mb-2">
                                         <div className="flex items-center gap-3 min-w-0">
-                                            <div className="w-9 h-9 bg-bgfi-primary/10 rounded-lg flex items-center justify-center text-bgfi-primary flex-shrink-0"><Icons.Send /></div>
+                                            <div className="w-9 h-9 bg-cnss-primary/10 rounded-lg flex items-center justify-center text-cnss-primary flex-shrink-0"><Icons.Send /></div>
                                             <div className="min-w-0"><p className="font-medium text-gray-900 text-sm truncate">{c.name}</p><p className="text-xs text-gray-500 truncate">{c.template?.name || '-'}</p></div>
                                         </div>
                                         <Badge variant={statusVariant[c.status] || 'default'}>{statusMap[c.status] || c.status}</Badge>
@@ -1169,9 +1169,9 @@
             return (
                 <div className="space-y-6">
                     <div className="flex items-center gap-0 sm:gap-2 border-b border-gray-200 overflow-x-auto">
-                        <button onClick={() => setActiveTab('chat')} className={`px-3 sm:px-4 py-3 text-xs sm:text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === 'chat' ? 'border-bgfi-primary text-bgfi-primary' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Test Chatbot</button>
-                        <button onClick={() => setActiveTab('knowledge')} className={`px-3 sm:px-4 py-3 text-xs sm:text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === 'knowledge' ? 'border-bgfi-primary text-bgfi-primary' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Base Connaissances</button>
-                        <button onClick={() => setActiveTab('config')} className={`px-3 sm:px-4 py-3 text-xs sm:text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === 'config' ? 'border-bgfi-primary text-bgfi-primary' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Config RAG</button>
+                        <button onClick={() => setActiveTab('chat')} className={`px-3 sm:px-4 py-3 text-xs sm:text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === 'chat' ? 'border-cnss-primary text-cnss-primary' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Test Chatbot</button>
+                        <button onClick={() => setActiveTab('knowledge')} className={`px-3 sm:px-4 py-3 text-xs sm:text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === 'knowledge' ? 'border-cnss-primary text-cnss-primary' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Base Connaissances</button>
+                        <button onClick={() => setActiveTab('config')} className={`px-3 sm:px-4 py-3 text-xs sm:text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === 'config' ? 'border-cnss-primary text-cnss-primary' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Config RAG</button>
                     </div>
 
                     {activeTab === 'chat' && (
@@ -1181,7 +1181,7 @@
                                     {messages.length === 0 && <p className="text-center text-gray-400 py-16">Envoyez un message pour tester le chatbot</p>}
                                     {messages.map(msg => (
                                         <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                                            <div className={`max-w-[80%] rounded-2xl px-4 py-3 ${msg.role === 'user' ? 'bg-bgfi-primary text-white rounded-br-md' : 'bg-gray-100 text-gray-900 rounded-bl-md'}`}>
+                                            <div className={`max-w-[80%] rounded-2xl px-4 py-3 ${msg.role === 'user' ? 'bg-cnss-primary text-white rounded-br-md' : 'bg-gray-100 text-gray-900 rounded-bl-md'}`}>
                                                 <p className="text-sm whitespace-pre-line">{msg.content}</p>
                                                 <p className={`text-xs mt-1 ${msg.role === 'user' ? 'text-blue-200' : 'text-gray-500'}`}>{msg.timestamp}</p>
                                             </div>
@@ -1191,7 +1191,7 @@
                                     <div ref={messagesEndRef} />
                                 </div>
                                 <div className="flex gap-2">
-                                    <input type="text" value={inputMessage} onChange={(e) => setInputMessage(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()} placeholder="Ecrivez votre message..." className="flex-1 rounded-xl border-gray-300 shadow-sm focus:border-bgfi-primary focus:ring-bgfi-primary px-4 py-3 border" />
+                                    <input type="text" value={inputMessage} onChange={(e) => setInputMessage(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()} placeholder="Ecrivez votre message..." className="flex-1 rounded-xl border-gray-300 shadow-sm focus:border-cnss-primary focus:ring-cnss-primary px-4 py-3 border" />
                                     <Button onClick={handleSendMessage} disabled={isTyping} icon={Icons.Send}>Envoyer</Button>
                                 </div>
                             </Card>
@@ -1217,10 +1217,10 @@
                                 </div>
                             </div>
                             {isUploading && (
-                                <div className="bg-bgfi-primary/5 border border-bgfi-primary/20 rounded-xl p-4 flex items-center gap-4">
-                                    <div className="animate-spin rounded-full h-8 w-8 border-4 border-bgfi-primary/20 border-t-bgfi-primary"></div>
+                                <div className="bg-cnss-primary/5 border border-cnss-primary/20 rounded-xl p-4 flex items-center gap-4">
+                                    <div className="animate-spin rounded-full h-8 w-8 border-4 border-cnss-primary/20 border-t-cnss-primary"></div>
                                     <div>
-                                        <p className="font-medium text-bgfi-primary">Upload en cours</p>
+                                        <p className="font-medium text-cnss-primary">Upload en cours</p>
                                         <p className="text-sm text-gray-600">{uploadProgress || 'Extraction du texte et indexation des chunks...'}</p>
                                     </div>
                                 </div>
@@ -1253,15 +1253,15 @@
                                     <div><label className="block text-sm font-medium text-gray-700 mb-2">Modele LLM</label><div className="flex items-center gap-2 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg"><span className="text-sm font-medium text-gray-900">GPT-4</span><span className="ml-auto px-2 py-0.5 bg-emerald-100 text-emerald-700 text-xs font-medium rounded-full">Actif</span></div></div>
                                     <div><label className="block text-sm font-medium text-gray-700 mb-2">Nombre de chunks (contexte)</label><input type="range" min="1" max="10" defaultValue="5" className="w-full" /><div className="flex justify-between text-xs text-gray-500 mt-1"><span>1</span><span>5</span><span>10</span></div></div>
                                     <div><label className="block text-sm font-medium text-gray-700 mb-2">Seuil de similarite</label><input type="range" min="0" max="100" defaultValue="75" className="w-full" /><div className="flex justify-between text-xs text-gray-500 mt-1"><span>0%</span><span>75%</span><span>100%</span></div></div>
-                                    <div className="flex items-center gap-3"><input type="checkbox" id="citations" defaultChecked className="w-4 h-4 text-bgfi-primary rounded" /><label htmlFor="citations" className="text-sm text-gray-700">Inclure les citations des sources</label></div>
-                                    <div className="flex items-center gap-3"><input type="checkbox" id="fallback" defaultChecked className="w-4 h-4 text-bgfi-primary rounded" /><label htmlFor="fallback" className="text-sm text-gray-700">Reponse de secours si aucune source trouvee</label></div>
+                                    <div className="flex items-center gap-3"><input type="checkbox" id="citations" defaultChecked className="w-4 h-4 text-cnss-primary rounded" /><label htmlFor="citations" className="text-sm text-gray-700">Inclure les citations des sources</label></div>
+                                    <div className="flex items-center gap-3"><input type="checkbox" id="fallback" defaultChecked className="w-4 h-4 text-cnss-primary rounded" /><label htmlFor="fallback" className="text-sm text-gray-700">Reponse de secours si aucune source trouvee</label></div>
                                 </div>
                             </Card>
                             <Card title="Personnalisation du Bot">
                                 <div className="space-y-6">
-                                    <Input label="Nom du Bot" value="Stella" />
-                                    <div><label className="block text-sm font-medium text-gray-700 mb-2">Message d'accueil</label><textarea className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-bgfi-primary focus:ring-bgfi-primary sm:text-sm px-4 py-3 border" rows="3" defaultValue="Bonjour ! Je suis Stella, votre assistant BGFI disponible 24/7. Comment puis-je vous aider aujourd'hui ?" /></div>
-                                    <div><label className="block text-sm font-medium text-gray-700 mb-2">Instructions systeme (prompt)</label><textarea className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-bgfi-primary focus:ring-bgfi-primary sm:text-sm px-4 py-3 border font-mono text-xs" rows="6" defaultValue={`Tu es Stella, l'assistant virtuel de BGFI Bank.\n\nREGLES:\n- Reponds uniquement en francais\n- Base-toi UNIQUEMENT sur la documentation fournie\n- Si tu ne trouves pas la reponse, oriente vers le service client\n- Sois professionnel, chaleureux et concis\n- Ne partage JAMAIS d'informations sensibles`} /></div>
+                                    <Input label="Nom du Bot" value="Aimé" />
+                                    <div><label className="block text-sm font-medium text-gray-700 mb-2">Message d'accueil</label><textarea className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-cnss-primary focus:ring-cnss-primary sm:text-sm px-4 py-3 border" rows="3" defaultValue="Bonjour ! Je suis Aimé, votre assistant CNSS disponible 24/7. Comment puis-je vous aider aujourd'hui ?" /></div>
+                                    <div><label className="block text-sm font-medium text-gray-700 mb-2">Instructions systeme (prompt)</label><textarea className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-cnss-primary focus:ring-cnss-primary sm:text-sm px-4 py-3 border font-mono text-xs" rows="6" defaultValue={`Tu es Aimé, l'assistant virtuel de la CNSS.\n\nREGLES:\n- Reponds uniquement en francais\n- Base-toi UNIQUEMENT sur la documentation fournie\n- Si tu ne trouves pas la reponse, oriente vers le service client\n- Sois professionnel, chaleureux et concis\n- Ne partage JAMAIS d'informations sensibles`} /></div>
                                 </div>
                             </Card>
                         </div>
@@ -1478,7 +1478,7 @@
                     {/* Tabs */}
                     <div className="flex gap-1 bg-gray-100 p-1 rounded-lg overflow-x-auto">
                         {convTabs.map(t => (
-                            <button key={t.id} onClick={() => setConvTab(t.id)} className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium rounded-md transition-all whitespace-nowrap ${convTab === t.id ? 'bg-white text-bgfi-primary shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}>{t.label}</button>
+                            <button key={t.id} onClick={() => setConvTab(t.id)} className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium rounded-md transition-all whitespace-nowrap ${convTab === t.id ? 'bg-white text-cnss-primary shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}>{t.label}</button>
                         ))}
                     </div>
 
@@ -1492,14 +1492,14 @@
                                     <div className="relative flex-1">
                                         <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400 pointer-events-none"><Icons.Search /></span>
                                         <input type="text" placeholder="Rechercher..."
-                                            className="w-full pl-10 pr-4 py-2.5 rounded-xl border-0 bg-gray-50 text-sm focus:ring-2 focus:ring-bgfi-primary/20 focus:bg-white transition-all"
+                                            className="w-full pl-10 pr-4 py-2.5 rounded-xl border-0 bg-gray-50 text-sm focus:ring-2 focus:ring-cnss-primary/20 focus:bg-white transition-all"
                                             value={filters.search}
                                             onChange={e => setFilters(f => ({ ...f, search: e.target.value }))}
                                             onKeyDown={e => e.key === 'Enter' && fetchSessions()} />
                                     </div>
                                     <div className="flex gap-2">
                                         <button onClick={() => setShowFilters(f => !f)}
-                                            className={`inline-flex items-center gap-2 px-3 sm:px-4 py-2.5 rounded-xl text-sm font-medium border transition-all flex-1 sm:flex-none justify-center ${showFilters || activeFilterCount > 0 ? 'bg-bgfi-primary text-white border-bgfi-primary' : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-gray-300'}`}>
+                                            className={`inline-flex items-center gap-2 px-3 sm:px-4 py-2.5 rounded-xl text-sm font-medium border transition-all flex-1 sm:flex-none justify-center ${showFilters || activeFilterCount > 0 ? 'bg-cnss-primary text-white border-cnss-primary' : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-gray-300'}`}>
                                             <Icons.Filter />
                                             <span className="hidden sm:inline">Filtres</span>
                                             {activeFilterCount > 0 && (
@@ -1514,7 +1514,7 @@
                                 {activeFilterCount > 0 && !showFilters && (
                                     <div className="px-4 pb-3 flex flex-wrap gap-1.5">
                                         {filters.sentiment && (
-                                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-bgfi-primary/10 text-bgfi-primary">
+                                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-cnss-primary/10 text-cnss-primary">
                                                 {sentimentLabels[filters.sentiment]}
                                                 <button onClick={() => setFilters(f => ({ ...f, sentiment: '' }))} className="hover:text-red-500 ml-0.5">&times;</button>
                                             </span>
@@ -1559,7 +1559,7 @@
                                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
                                             <div>
                                                 <label className="block text-xs font-medium text-gray-500 mb-1.5">Sentiment</label>
-                                                <select className={`w-full rounded-lg text-sm border transition-all ${filters.sentiment ? 'border-bgfi-primary bg-bgfi-primary/5 text-bgfi-primary font-medium' : 'border-gray-200 text-gray-700'}`}
+                                                <select className={`w-full rounded-lg text-sm border transition-all ${filters.sentiment ? 'border-cnss-primary bg-cnss-primary/5 text-cnss-primary font-medium' : 'border-gray-200 text-gray-700'}`}
                                                     value={filters.sentiment} onChange={e => setFilters(f => ({ ...f, sentiment: e.target.value }))}>
                                                     <option value="">Tous</option>
                                                     {Object.entries(sentimentLabels).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
@@ -1567,7 +1567,7 @@
                                             </div>
                                             <div>
                                                 <label className="block text-xs font-medium text-gray-500 mb-1.5">Intention</label>
-                                                <select className={`w-full rounded-lg text-sm border transition-all ${filters.intentCategory ? 'border-bgfi-primary bg-bgfi-primary/5 text-bgfi-primary font-medium' : 'border-gray-200 text-gray-700'}`}
+                                                <select className={`w-full rounded-lg text-sm border transition-all ${filters.intentCategory ? 'border-cnss-primary bg-cnss-primary/5 text-cnss-primary font-medium' : 'border-gray-200 text-gray-700'}`}
                                                     value={filters.intentCategory} onChange={e => setFilters(f => ({ ...f, intentCategory: e.target.value }))}>
                                                     <option value="">Toutes</option>
                                                     {Object.entries(intentLabels).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
@@ -1665,7 +1665,7 @@
                                                                 <span className="font-medium text-gray-900">{group.name}</span>
                                                                 <span className="text-xs text-gray-400">{group.sessions[0]?.source === 'whatsapp' ? 'WhatsApp' : 'Web'}</span>
                                                                 {hasMultiple && (
-                                                                    <span className="text-xs bg-bgfi-primary/10 text-bgfi-primary px-2 py-0.5 rounded-full font-medium">
+                                                                    <span className="text-xs bg-cnss-primary/10 text-cnss-primary px-2 py-0.5 rounded-full font-medium">
                                                                         {group.sessions.length} conversations
                                                                     </span>
                                                                 )}
@@ -1747,7 +1747,7 @@
                                             <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 bg-gray-50">
                                                 {(Array.isArray(selectedSession.messages) ? selectedSession.messages : []).map((m, i) => (
                                                     <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                                                        <div className={`max-w-[85%] sm:max-w-[80%] rounded-2xl px-3 sm:px-4 py-2.5 text-sm ${m.role === 'user' ? 'bg-bgfi-primary text-white rounded-br-sm' : 'bg-white border rounded-bl-sm text-gray-800'}`}>
+                                                        <div className={`max-w-[85%] sm:max-w-[80%] rounded-2xl px-3 sm:px-4 py-2.5 text-sm ${m.role === 'user' ? 'bg-cnss-primary text-white rounded-br-sm' : 'bg-white border rounded-bl-sm text-gray-800'}`}>
                                                             {m.content}
                                                             <div className={`text-xs mt-1 ${m.role === 'user' ? 'text-white/70' : 'text-gray-400'}`}>
                                                                 {m.timestamp ? new Date(m.timestamp).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : ''}
@@ -1862,7 +1862,7 @@
                                     </div>
 
                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-                                        <Card className="p-3 sm:p-4 text-center"><div className="text-lg sm:text-2xl font-bold text-bgfi-primary">{selectedReport.totalConversations || 0}</div><div className="text-xs text-gray-500">Conversations</div></Card>
+                                        <Card className="p-3 sm:p-4 text-center"><div className="text-lg sm:text-2xl font-bold text-cnss-primary">{selectedReport.totalConversations || 0}</div><div className="text-xs text-gray-500">Conversations</div></Card>
                                         <Card className="p-3 sm:p-4 text-center"><div className="text-lg sm:text-2xl font-bold text-yellow-500">{selectedReport.avgSatisfactionScore?.toFixed(1) || 'N/A'}<span className="text-sm">/5</span></div><div className="text-xs text-gray-500">Satisfaction moyenne</div></Card>
                                         <Card className="p-3 sm:p-4 text-center"><div className="text-lg sm:text-2xl font-bold text-green-600">{selectedReport.resolvedCount || 0}</div><div className="text-xs text-gray-500">Resolues</div></Card>
                                         <Card className="p-3 sm:p-4 text-center"><div className="text-lg sm:text-2xl font-bold text-red-500">{selectedReport.escalationCount || 0}</div><div className="text-xs text-gray-500">Escaladees</div></Card>
@@ -1948,7 +1948,7 @@
                                             <h4 className="font-medium text-gray-900 mb-2">Besoins clients principaux</h4>
                                             <ul className="space-y-1">
                                                 {selectedReport.topCustomerNeeds.map((need, i) => (
-                                                    <li key={i} className="text-sm text-gray-700 flex items-start gap-2"><span className="text-bgfi-primary font-bold">{i + 1}.</span> {need}</li>
+                                                    <li key={i} className="text-sm text-gray-700 flex items-start gap-2"><span className="text-cnss-primary font-bold">{i + 1}.</span> {need}</li>
                                                 ))}
                                             </ul>
                                         </Card>
@@ -2001,7 +2001,7 @@
                                 <>
                                     {/* KPI row */}
                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-                                        <Card className="p-3 sm:p-4 text-center"><div className="text-lg sm:text-2xl font-bold text-bgfi-primary">{enrichStats.totalEnriched}</div><div className="text-xs text-gray-500">Sessions analysees</div></Card>
+                                        <Card className="p-3 sm:p-4 text-center"><div className="text-lg sm:text-2xl font-bold text-cnss-primary">{enrichStats.totalEnriched}</div><div className="text-xs text-gray-500">Sessions analysees</div></Card>
                                         <Card className="p-3 sm:p-4 text-center"><div className="text-lg sm:text-2xl font-bold text-yellow-500">{enrichStats.avgSatisfaction?.toFixed(1) || 'N/A'}<span className="text-sm">/5</span></div><div className="text-xs text-gray-500">Satisfaction moyenne</div></Card>
                                         <Card className="p-3 sm:p-4 text-center"><div className="text-lg sm:text-2xl font-bold text-red-500">{enrichStats.actionRequiredPercent}%</div><div className="text-xs text-gray-500">Actions requises</div></Card>
                                         <Card className="p-3 sm:p-4 text-center"><div className="text-lg sm:text-2xl font-bold text-green-600">{enrichStats.resolvedPercent}%</div><div className="text-xs text-gray-500">Taux de resolution</div></Card>
@@ -2153,8 +2153,8 @@
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-2">Action</label>
                                         <div className="flex gap-2">
-                                            <button onClick={() => setSegmentMode('new')} className={`flex-1 px-3 py-2 text-sm rounded-lg border transition-all ${segmentMode === 'new' ? 'bg-bgfi-primary text-white border-bgfi-primary' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'}`}>Nouveau segment</button>
-                                            <button onClick={() => setSegmentMode('existing')} className={`flex-1 px-3 py-2 text-sm rounded-lg border transition-all ${segmentMode === 'existing' ? 'bg-bgfi-primary text-white border-bgfi-primary' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'}`}>Segment existant</button>
+                                            <button onClick={() => setSegmentMode('new')} className={`flex-1 px-3 py-2 text-sm rounded-lg border transition-all ${segmentMode === 'new' ? 'bg-cnss-primary text-white border-cnss-primary' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'}`}>Nouveau segment</button>
+                                            <button onClick={() => setSegmentMode('existing')} className={`flex-1 px-3 py-2 text-sm rounded-lg border transition-all ${segmentMode === 'existing' ? 'bg-cnss-primary text-white border-cnss-primary' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'}`}>Segment existant</button>
                                         </div>
                                     </div>
 
@@ -2307,7 +2307,7 @@
                                     {contacts.length === 0 && <tr><td colSpan="9" className="py-8 text-center text-gray-500">Aucun contact</td></tr>}
                                     {contacts.map(contact => (
                                         <tr key={contact.id} className="hover:bg-gray-50">
-                                            <td className="py-4 px-4"><div className="flex items-center gap-3"><div className="w-10 h-10 bg-bgfi-primary/10 rounded-full flex items-center justify-center text-bgfi-primary font-semibold flex-shrink-0">{(contact.name || '?').split(' ').map(n => n[0]).join('').substring(0,2)}</div><div className="min-w-0"><span className="font-medium text-gray-900 block truncate">{contact.name || '-'}</span><span className="text-xs text-gray-500 truncate block">{contact.email || ''}</span></div></div></td>
+                                            <td className="py-4 px-4"><div className="flex items-center gap-3"><div className="w-10 h-10 bg-cnss-primary/10 rounded-full flex items-center justify-center text-cnss-primary font-semibold flex-shrink-0">{(contact.name || '?').split(' ').map(n => n[0]).join('').substring(0,2)}</div><div className="min-w-0"><span className="font-medium text-gray-900 block truncate">{contact.name || '-'}</span><span className="text-xs text-gray-500 truncate block">{contact.email || ''}</span></div></div></td>
                                             <td className="py-4 px-4 text-sm text-gray-600">{contact.phone}</td>
                                             <td className="py-4 px-4 text-sm text-gray-600 hidden lg:table-cell">{contact.city || '-'}</td>
                                             <td className="py-4 px-4 text-sm text-gray-600 hidden xl:table-cell">{contact.ageRange || '-'}</td>
@@ -2328,7 +2328,7 @@
                                 <div key={contact.id} className="p-4 hover:bg-gray-50">
                                     <div className="flex items-center justify-between gap-3 mb-2">
                                         <div className="flex items-center gap-3 min-w-0">
-                                            <div className="w-10 h-10 bg-bgfi-primary/10 rounded-full flex items-center justify-center text-bgfi-primary font-semibold flex-shrink-0 text-sm">{(contact.name || '?').split(' ').map(n => n[0]).join('').substring(0,2)}</div>
+                                            <div className="w-10 h-10 bg-cnss-primary/10 rounded-full flex items-center justify-center text-cnss-primary font-semibold flex-shrink-0 text-sm">{(contact.name || '?').split(' ').map(n => n[0]).join('').substring(0,2)}</div>
                                             <div className="min-w-0">
                                                 <p className="font-medium text-gray-900 text-sm truncate">{contact.name || '-'}</p>
                                                 <p className="text-xs text-gray-500 truncate">{contact.phone}</p>
@@ -2389,9 +2389,9 @@
                                     <button onClick={() => setShowImportModal(false)} className="text-gray-400 hover:text-gray-600 p-1"><Icons.X /></button>
                                 </div>
                                 <div className="p-4 sm:p-6 space-y-6">
-                                    <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 sm:p-8 text-center hover:border-bgfi-primary hover:bg-blue-50 transition-colors cursor-pointer" onClick={() => document.getElementById('csv-upload').click()}>
+                                    <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 sm:p-8 text-center hover:border-cnss-primary hover:bg-blue-50 transition-colors cursor-pointer" onClick={() => document.getElementById('csv-upload').click()}>
                                         <input type="file" id="csv-upload" className="hidden" accept=".csv,.xlsx" onChange={handleImport} />
-                                        <div className="w-14 h-14 sm:w-16 sm:h-16 bg-bgfi-primary/10 rounded-full flex items-center justify-center text-bgfi-primary mx-auto mb-4"><Icons.Upload /></div>
+                                        <div className="w-14 h-14 sm:w-16 sm:h-16 bg-cnss-primary/10 rounded-full flex items-center justify-center text-cnss-primary mx-auto mb-4"><Icons.Upload /></div>
                                         <p className="font-medium text-gray-900">Deposez votre fichier ici</p>
                                         <p className="text-sm text-gray-500 mt-1">CSV ou Excel (max 10MB)</p>
                                     </div>
@@ -2413,7 +2413,7 @@
                                 </div>
                                 <div className="p-4 sm:p-6 space-y-4">
                                     <div className="bg-gray-50 rounded-xl p-3 flex items-center gap-3 mb-2">
-                                        <div className="w-10 h-10 bg-bgfi-primary/10 rounded-full flex items-center justify-center text-bgfi-primary font-semibold flex-shrink-0">{(editContact.name || '?').split(' ').map(n => n[0]).join('').substring(0,2)}</div>
+                                        <div className="w-10 h-10 bg-cnss-primary/10 rounded-full flex items-center justify-center text-cnss-primary font-semibold flex-shrink-0">{(editContact.name || '?').split(' ').map(n => n[0]).join('').substring(0,2)}</div>
                                         <div className="min-w-0"><span className="font-medium text-gray-900 block truncate">{editContact.phone}</span><span className="text-xs text-gray-500">ID: {editContact.id.substring(0,8)}...</span></div>
                                     </div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -2623,11 +2623,11 @@
                                     const val = Array.isArray(r.value) ? r.value.join(', ') : r.value;
                                     return (
                                         <React.Fragment key={i}>
-                                            {i > 0 && <span className="text-xs font-bold px-1.5 py-1 rounded bg-bgfi-primary/10 text-bgfi-primary">{segment.criteria.operator}</span>}
+                                            {i > 0 && <span className="text-xs font-bold px-1.5 py-1 rounded bg-cnss-primary/10 text-cnss-primary">{segment.criteria.operator}</span>}
                                             <span className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full bg-white border border-gray-200 shadow-sm">
                                                 <span className="font-medium text-gray-700">{fl[r.field] || r.field}</span>
                                                 <span className="text-gray-400">{ol[r.op] || r.op}</span>
-                                                <span className="font-semibold text-bgfi-primary">{String(val)}</span>
+                                                <span className="font-semibold text-cnss-primary">{String(val)}</span>
                                             </span>
                                         </React.Fragment>
                                     );
@@ -2638,7 +2638,7 @@
                         {/* Tabs */}
                         <div className="flex border-b border-gray-200 shrink-0">
                             {[{ id: 'contacts', label: 'Contacts', icon: Icons.Users }, { id: 'insights', label: 'Insights', icon: Icons.BarChart3 }].map(t => (
-                                <button key={t.id} onClick={() => setTab(t.id)} className={`flex items-center gap-2 px-5 py-3 text-sm font-medium border-b-2 transition-colors ${tab === t.id ? 'border-bgfi-primary text-bgfi-primary' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
+                                <button key={t.id} onClick={() => setTab(t.id)} className={`flex items-center gap-2 px-5 py-3 text-sm font-medium border-b-2 transition-colors ${tab === t.id ? 'border-cnss-primary text-cnss-primary' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
                                     <t.icon className="w-4 h-4" />{t.label}
                                 </button>
                             ))}
@@ -2711,7 +2711,7 @@
                                             {/* KPI row */}
                                             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
                                                 <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-xl p-3 sm:p-4 text-center">
-                                                    <p className="text-lg sm:text-2xl font-bold text-bgfi-primary">{insights.total}</p>
+                                                    <p className="text-lg sm:text-2xl font-bold text-cnss-primary">{insights.total}</p>
                                                     <p className="text-xs text-gray-500 mt-1">Contacts totaux</p>
                                                 </div>
                                                 <div className="bg-gradient-to-br from-green-50 to-green-100/50 rounded-xl p-3 sm:p-4 text-center">
@@ -2847,7 +2847,7 @@
                                         {/* Search input */}
                                         <div className="relative">
                                             <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"><Icons.Search /></div>
-                                            <input type="text" value={addSearch} onChange={e => setAddSearch(e.target.value)} placeholder="Rechercher un contact..." className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-bgfi-primary/20 focus:border-bgfi-primary outline-none" autoFocus />
+                                            <input type="text" value={addSearch} onChange={e => setAddSearch(e.target.value)} placeholder="Rechercher un contact..." className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-cnss-primary/20 focus:border-cnss-primary outline-none" autoFocus />
                                             {addSearching && <div className="absolute right-3 top-1/2 -translate-y-1/2"><Spinner /></div>}
                                         </div>
 
@@ -2857,7 +2857,7 @@
                                                 <p className="text-xs font-medium text-gray-500 mb-2">{addSelected.length} contact{addSelected.length > 1 ? 's' : ''} selectionne{addSelected.length > 1 ? 's' : ''}</p>
                                                 <div className="flex flex-wrap gap-2">
                                                     {addSelected.map(c => (
-                                                        <span key={c.id} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-bgfi-primary/10 text-bgfi-primary rounded-full text-sm font-medium">
+                                                        <span key={c.id} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-cnss-primary/10 text-cnss-primary rounded-full text-sm font-medium">
                                                             {c.name || c.phone}
                                                             <button onClick={() => toggleAddContact(c)} className="hover:text-red-500 transition-colors">
                                                                 <Icons.X />
@@ -2876,11 +2876,11 @@
                                                         {addResults.map((c, i) => {
                                                             const isSelected = addSelected.some(s => s.id === c.id);
                                                             return (
-                                                                <div key={c.id} onClick={() => toggleAddContact(c)} className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors ${i > 0 ? 'border-t border-gray-100' : ''} ${isSelected ? 'bg-bgfi-primary/5' : 'hover:bg-gray-50'}`}>
-                                                                    <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors ${isSelected ? 'bg-bgfi-primary border-bgfi-primary' : 'border-gray-300'}`}>
+                                                                <div key={c.id} onClick={() => toggleAddContact(c)} className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors ${i > 0 ? 'border-t border-gray-100' : ''} ${isSelected ? 'bg-cnss-primary/5' : 'hover:bg-gray-50'}`}>
+                                                                    <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors ${isSelected ? 'bg-cnss-primary border-cnss-primary' : 'border-gray-300'}`}>
                                                                         {isSelected && <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/></svg>}
                                                                     </div>
-                                                                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-bgfi-primary to-bgfi-secondary flex items-center justify-center text-white text-sm font-bold shrink-0">
+                                                                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-cnss-primary to-cnss-secondary flex items-center justify-center text-white text-sm font-bold shrink-0">
                                                                         {(c.name || '?')[0].toUpperCase()}
                                                                     </div>
                                                                     <div className="flex-1 min-w-0">
@@ -3010,12 +3010,12 @@
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {segments.map(seg => (
-                                <div key={seg.id} className="group bg-white rounded-2xl border border-gray-200 hover:border-bgfi-primary/40 hover:shadow-lg transition-all cursor-pointer p-5" onClick={() => setSelectedSegment(seg)}>
+                                <div key={seg.id} className="group bg-white rounded-2xl border border-gray-200 hover:border-cnss-primary/40 hover:shadow-lg transition-all cursor-pointer p-5" onClick={() => setSelectedSegment(seg)}>
                                     <div className="flex items-start justify-between mb-3">
                                         <div className="flex items-center gap-3">
                                             <div className="w-11 h-11 rounded-xl flex items-center justify-center text-white" style={{ background: seg.type === 'BANK_CRITERIA' ? 'linear-gradient(135deg, #00a86b, #2d5a87)' : seg.type === 'STATIC' ? 'linear-gradient(135deg, #8b5cf6, #6d28d9)' : 'linear-gradient(135deg, #1e3a5f, #3b82f6)' }}><Icons.Layers /></div>
                                             <div>
-                                                <p className="font-semibold text-gray-900 group-hover:text-bgfi-primary transition-colors">{seg.name}</p>
+                                                <p className="font-semibold text-gray-900 group-hover:text-cnss-primary transition-colors">{seg.name}</p>
                                                 <Badge variant={seg.type === 'DYNAMIC' ? 'info' : seg.type === 'BANK_CRITERIA' ? 'primary' : 'default'}>{seg.type === 'BANK_CRITERIA' ? 'Bancaire' : seg.type === 'DYNAMIC' ? 'Dynamique' : 'Statique'}</Badge>
                                             </div>
                                         </div>
@@ -3034,8 +3034,8 @@
                                     {/* Footer */}
                                     <div className="flex items-center justify-between pt-3 border-t border-gray-100">
                                         <div className="flex items-center gap-1.5">
-                                            <Icons.Users className="w-4 h-4 text-bgfi-primary" />
-                                            <span className="text-sm font-bold text-bgfi-primary">{seg.contactCount}</span>
+                                            <Icons.Users className="w-4 h-4 text-cnss-primary" />
+                                            <span className="text-sm font-bold text-cnss-primary">{seg.contactCount}</span>
                                             <span className="text-xs text-gray-400">contacts</span>
                                         </div>
                                         <span className="text-xs text-gray-400">{seg.lastEvaluatedAt ? new Date(seg.lastEvaluatedAt).toLocaleDateString('fr-FR') : 'Non evalue'}</span>
@@ -3064,23 +3064,23 @@
 
                                 {/* AI Assistant section */}
                                 <div className="px-6 pt-5 pb-4">
-                                    <div className="bg-gradient-to-r from-bgfi-primary/5 to-blue-50 rounded-xl p-4 border border-bgfi-primary/10">
+                                    <div className="bg-gradient-to-r from-cnss-primary/5 to-blue-50 rounded-xl p-4 border border-cnss-primary/10">
                                         <div className="flex items-center gap-2 mb-3">
-                                            <div className="w-8 h-8 rounded-lg bg-bgfi-primary flex items-center justify-center"><Icons.Bot className="text-white w-4 h-4" /></div>
+                                            <div className="w-8 h-8 rounded-lg bg-cnss-primary flex items-center justify-center"><Icons.Bot className="text-white w-4 h-4" /></div>
                                             <div>
                                                 <p className="text-sm font-semibold text-gray-900">Assistant IA</p>
                                                 <p className="text-xs text-gray-500">Decrivez votre cible en langage naturel</p>
                                             </div>
                                         </div>
                                         <div className="flex gap-2">
-                                            <input type="text" className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-bgfi-primary/30 focus:border-bgfi-primary" placeholder='Ex: "Clients VIP a Libreville avec un score > 80"' value={aiPrompt} onChange={e => setAiPrompt(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleAiSuggest()} disabled={aiLoading} />
+                                            <input type="text" className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cnss-primary/30 focus:border-cnss-primary" placeholder='Ex: "Clients VIP a Libreville avec un score > 80"' value={aiPrompt} onChange={e => setAiPrompt(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleAiSuggest()} disabled={aiLoading} />
                                             <Button onClick={handleAiSuggest} disabled={aiLoading || !aiPrompt.trim()} size="sm">{aiLoading ? 'Analyse...' : 'Generer'}</Button>
                                         </div>
                                         {aiError && <p className="text-xs text-red-500 mt-2">{aiError}</p>}
                                         {/* Quick suggestions */}
                                         <div className="flex flex-wrap gap-1.5 mt-3">
                                             {['Clients actifs a Libreville', 'Jeunes 18-25 ans avec compte epargne', 'VIP et Premium fort engagement', 'Clients inactifs a reactiver'].map(s => (
-                                                <button key={s} className="text-xs px-2.5 py-1 bg-white rounded-full border border-gray-200 text-gray-600 hover:border-bgfi-primary hover:text-bgfi-primary transition-colors" onClick={() => { setAiPrompt(s); }}>{s}</button>
+                                                <button key={s} className="text-xs px-2.5 py-1 bg-white rounded-full border border-gray-200 text-gray-600 hover:border-cnss-primary hover:text-cnss-primary transition-colors" onClick={() => { setAiPrompt(s); }}>{s}</button>
                                             ))}
                                         </div>
                                     </div>
@@ -3100,7 +3100,7 @@
                                     </div>
                                 </div>
                                 <div className="p-6 border-t border-gray-200 flex items-center justify-between">
-                                    <div>{previewCount !== null && <span className="text-sm text-gray-500"><span className="font-bold text-bgfi-primary">{previewCount}</span> contact(s) cibles</span>}</div>
+                                    <div>{previewCount !== null && <span className="text-sm text-gray-500"><span className="font-bold text-cnss-primary">{previewCount}</span> contact(s) cibles</span>}</div>
                                     <div className="flex gap-3">
                                         <Button variant="secondary" onClick={() => setShowCreate(false)}>Annuler</Button>
                                         <Button onClick={handleCreate} disabled={creating || !form.name || form.criteria.rules.length === 0} icon={Icons.CheckCircle}>{creating ? 'Creation...' : 'Creer le segment'}</Button>
@@ -3319,7 +3319,7 @@
                             <div className="relative flex-1">
                                 <Icons.Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                                 <input type="text" placeholder="Rechercher..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
-                                    className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-bgfi-primary/20 focus:border-bgfi-primary" />
+                                    className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-cnss-primary/20 focus:border-cnss-primary" />
                                 {searchQuery && <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"><Icons.X className="w-4 h-4" /></button>}
                             </div>
                             <div className="flex gap-1 bg-gray-100 p-1 rounded-lg flex-shrink-0">
@@ -3348,7 +3348,7 @@
                         <div className="flex items-center gap-2 text-sm text-gray-500">
                             <span>{templates.length} resultat{templates.length > 1 ? 's' : ''}</span>
                             {(statusFilter !== 'ALL' || categoryFilter !== 'ALL' || searchQuery) && (
-                                <button onClick={() => { setStatusFilter('ALL'); setCategoryFilter('ALL'); setSearchQuery(''); }} className="text-bgfi-primary hover:underline text-xs ml-1">Effacer les filtres</button>
+                                <button onClick={() => { setStatusFilter('ALL'); setCategoryFilter('ALL'); setSearchQuery(''); }} className="text-cnss-primary hover:underline text-xs ml-1">Effacer les filtres</button>
                             )}
                         </div>
                     )}
@@ -3403,7 +3403,7 @@
                                             <div className="flex items-center justify-between pt-3 border-t border-gray-100">
                                                 <span className="text-xs text-gray-400">{template.language?.toUpperCase() || 'FR'}</span>
                                                 <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <button onClick={() => openDuplicate(template)} className="p-1.5 rounded-lg text-gray-400 hover:text-bgfi-primary hover:bg-bgfi-primary/5 transition-colors" title="Dupliquer"><Icons.Copy className="w-4 h-4" /></button>
+                                                    <button onClick={() => openDuplicate(template)} className="p-1.5 rounded-lg text-gray-400 hover:text-cnss-primary hover:bg-cnss-primary/5 transition-colors" title="Dupliquer"><Icons.Copy className="w-4 h-4" /></button>
                                                     <button onClick={() => handleDelete(template.id)} className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors" title="Supprimer"><Icons.Trash2 className="w-4 h-4" /></button>
                                                 </div>
                                             </div>
@@ -3467,7 +3467,7 @@
                                                 <td className="px-5 py-4"><span className="text-xs text-gray-500 uppercase">{template.language || 'fr'}</span></td>
                                                 <td className="px-5 py-4 text-right">
                                                     <div className="flex gap-1 justify-end opacity-0 group-hover:opacity-100 transition-opacity">
-                                                        <button onClick={() => openDuplicate(template)} className="p-1.5 rounded-lg text-gray-400 hover:text-bgfi-primary hover:bg-bgfi-primary/5 transition-colors" title="Dupliquer"><Icons.Copy className="w-4 h-4" /></button>
+                                                        <button onClick={() => openDuplicate(template)} className="p-1.5 rounded-lg text-gray-400 hover:text-cnss-primary hover:bg-cnss-primary/5 transition-colors" title="Dupliquer"><Icons.Copy className="w-4 h-4" /></button>
                                                         <button onClick={() => handleDelete(template.id)} className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors" title="Supprimer"><Icons.Trash2 className="w-4 h-4" /></button>
                                                     </div>
                                                 </td>
@@ -3497,7 +3497,7 @@
                                         <label className="block text-sm font-medium text-gray-700 mb-2">En-tete (Header)</label>
                                         <div className="flex gap-2 mb-2">
                                             {['NONE', 'IMAGE', 'VIDEO', 'TEXT'].map(ht => (
-                                                <button key={ht} className={'px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ' + (form.headerType === ht ? 'bg-bgfi-primary text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200')} onClick={() => setForm({...form, headerType: ht, headerContent: ht === 'NONE' ? '' : form.headerContent})}>
+                                                <button key={ht} className={'px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ' + (form.headerType === ht ? 'bg-cnss-primary text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200')} onClick={() => setForm({...form, headerType: ht, headerContent: ht === 'NONE' ? '' : form.headerContent})}>
                                                     {ht === 'NONE' ? 'Aucun' : ht === 'IMAGE' ? 'Image' : ht === 'VIDEO' ? 'Video' : 'Texte'}
                                                 </button>
                                             ))}
@@ -3506,14 +3506,14 @@
                                             <div>
                                                 {/* Zone d'upload drag & drop */}
                                                 {!form.headerContent ? (
-                                                    <div className={'relative border-2 border-dashed rounded-xl p-6 text-center transition-colors ' + (uploading ? 'border-blue-300 bg-blue-50' : 'border-gray-300 hover:border-bgfi-primary hover:bg-gray-50')}
-                                                        onDragOver={e => { e.preventDefault(); e.currentTarget.classList.add('border-bgfi-primary', 'bg-blue-50'); }}
-                                                        onDragLeave={e => { e.preventDefault(); e.currentTarget.classList.remove('border-bgfi-primary', 'bg-blue-50'); }}
-                                                        onDrop={e => { e.preventDefault(); e.currentTarget.classList.remove('border-bgfi-primary', 'bg-blue-50'); const f = e.dataTransfer.files[0]; if (f) handleMediaUpload(f); }}>
+                                                    <div className={'relative border-2 border-dashed rounded-xl p-6 text-center transition-colors ' + (uploading ? 'border-blue-300 bg-blue-50' : 'border-gray-300 hover:border-cnss-primary hover:bg-gray-50')}
+                                                        onDragOver={e => { e.preventDefault(); e.currentTarget.classList.add('border-cnss-primary', 'bg-blue-50'); }}
+                                                        onDragLeave={e => { e.preventDefault(); e.currentTarget.classList.remove('border-cnss-primary', 'bg-blue-50'); }}
+                                                        onDrop={e => { e.preventDefault(); e.currentTarget.classList.remove('border-cnss-primary', 'bg-blue-50'); const f = e.dataTransfer.files[0]; if (f) handleMediaUpload(f); }}>
                                                         {uploading ? (
                                                             <div className="flex flex-col items-center gap-2">
-                                                                <div className="w-8 h-8 border-3 border-bgfi-primary border-t-transparent rounded-full animate-spin"></div>
-                                                                <p className="text-sm font-medium text-bgfi-primary">{uploadProgress || 'Upload en cours...'}</p>
+                                                                <div className="w-8 h-8 border-3 border-cnss-primary border-t-transparent rounded-full animate-spin"></div>
+                                                                <p className="text-sm font-medium text-cnss-primary">{uploadProgress || 'Upload en cours...'}</p>
                                                             </div>
                                                         ) : (
                                                             <div className="flex flex-col items-center gap-2">
@@ -3524,7 +3524,7 @@
                                                                     <p className="text-sm font-medium text-gray-700">Glissez votre {form.headerType === 'VIDEO' ? 'video' : 'image'} ici</p>
                                                                     <p className="text-xs text-gray-500 mt-1">{form.headerType === 'VIDEO' ? 'MP4 - max 50 Mo' : 'JPEG, PNG, WebP - max 5 Mo'}</p>
                                                                 </div>
-                                                                <label className="mt-2 px-4 py-2 bg-bgfi-primary text-white text-sm font-medium rounded-lg cursor-pointer hover:bg-bgfi-secondary transition-colors">
+                                                                <label className="mt-2 px-4 py-2 bg-cnss-primary text-white text-sm font-medium rounded-lg cursor-pointer hover:bg-cnss-secondary transition-colors">
                                                                     Parcourir
                                                                     <input type="file" className="hidden" accept={form.headerType === 'VIDEO' ? 'video/mp4,video/quicktime' : 'image/jpeg,image/png,image/webp'}
                                                                         onChange={e => { const f = e.target.files[0]; if (f) handleMediaUpload(f); e.target.value = ''; }} />
@@ -3556,13 +3556,13 @@
                                             </div>
                                         )}
                                         {form.headerType === 'TEXT' && (
-                                            <Input label="Texte de l'en-tete" placeholder="Bienvenue chez BGFI Bank" value={form.headerContent} onChange={v => setForm({...form, headerContent: v})} />
+                                            <Input label="Texte de l'en-tete" placeholder="Bienvenue a la CNSS" value={form.headerContent} onChange={v => setForm({...form, headerContent: v})} />
                                         )}
                                     </div>
 
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-2">Contenu du message (Body)</label>
-                                        <textarea id="tpl-body-textarea" className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-bgfi-primary focus:ring-bgfi-primary sm:text-sm px-4 py-3 border" rows="6" placeholder="Bonjour {{1}}, bienvenue chez BGFI Bank ! Votre compte {{2}} est actif." value={form.content} onChange={(e) => setForm({...form, content: e.target.value})} />
+                                        <textarea id="tpl-body-textarea" className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-cnss-primary focus:ring-cnss-primary sm:text-sm px-4 py-3 border" rows="6" placeholder="Bonjour {{1}}, bienvenue a la CNSS ! Votre compte {{2}} est actif." value={form.content} onChange={(e) => setForm({...form, content: e.target.value})} />
                                         <div className="flex flex-wrap gap-1.5 mt-2">
                                             <span className="text-xs text-gray-500 mr-1 py-1">Inserer :</span>
                                             {['{{1}}', '{{2}}', '{{3}}'].map(v => (
@@ -3581,7 +3581,7 @@
                                             const varOptions = [
                                                 { value: 'nom', label: 'Nom complet du contact', example: 'Franck Sowax' },
                                                 { value: 'prenom', label: 'Prenom du contact', example: 'Franck' },
-                                                { value: 'email', label: 'Email du contact', example: 'franck@bgfi.ga' },
+                                                { value: 'email', label: 'Email du contact', example: 'franck@cnss.ga' },
                                                 { value: 'phone', label: 'Telephone du contact', example: '+241 07 48 87 16' },
                                             ];
                                             return (
@@ -3601,14 +3601,14 @@
                                                                 <div key={varTag} className="flex flex-col sm:flex-row sm:items-center gap-2 p-3 bg-gray-50 rounded-lg">
                                                                     <span className="font-mono text-sm font-bold text-blue-700 bg-blue-100 px-2 py-0.5 rounded w-fit">{varTag}</span>
                                                                     <Icons.ChevronRight className="w-4 h-4 text-gray-400 hidden sm:block" />
-                                                                    <select className="flex-1 rounded-lg border-gray-300 shadow-sm focus:border-bgfi-primary focus:ring-bgfi-primary text-sm px-3 py-2 border" value={currentVal}
+                                                                    <select className="flex-1 rounded-lg border-gray-300 shadow-sm focus:border-cnss-primary focus:ring-cnss-primary text-sm px-3 py-2 border" value={currentVal}
                                                                         onChange={e => setForm({...form, variables: {...(form.variables || {}), [varKey]: e.target.value}})}>
                                                                         <option value="">-- Choisir la donnee --</option>
                                                                         {varOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                                                                         <option value="__custom">Texte fixe (identique pour tous)</option>
                                                                     </select>
                                                                     {currentVal === '__custom' && (
-                                                                        <input type="text" className="flex-1 rounded-lg border-gray-300 shadow-sm focus:border-bgfi-primary focus:ring-bgfi-primary text-sm px-3 py-2 border" placeholder="Valeur fixe..."
+                                                                        <input type="text" className="flex-1 rounded-lg border-gray-300 shadow-sm focus:border-cnss-primary focus:ring-cnss-primary text-sm px-3 py-2 border" placeholder="Valeur fixe..."
                                                                             value={(form.variables || {})[`${varKey}_custom`] || ''} onChange={e => setForm({...form, variables: {...(form.variables || {}), [`${varKey}_custom`]: e.target.value}})} />
                                                                     )}
                                                                     {selectedOpt && <span className="text-xs text-gray-400 italic">ex: {selectedOpt.example}</span>}
@@ -3642,7 +3642,7 @@
                                         })()}
                                     </div>
 
-                                    <Input label="Pied de page (Footer) - optionnel" placeholder="BGFI Bank - Votre partenaire pour l'avenir" value={form.footer} onChange={v => setForm({...form, footer: v})} />
+                                    <Input label="Pied de page (Footer) - optionnel" placeholder="CNSS - Votre partenaire pour l'avenir" value={form.footer} onChange={v => setForm({...form, footer: v})} />
 
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-2">Boutons (optionnel)</label>
@@ -3687,7 +3687,7 @@
                                         <label className="block text-sm font-medium text-gray-700 mb-2">En-tete (Header)</label>
                                         <div className="flex gap-2 mb-2">
                                             {['NONE', 'IMAGE', 'VIDEO', 'TEXT'].map(ht => (
-                                                <button key={ht} className={'px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ' + (dupForm.headerType === ht ? 'bg-bgfi-primary text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200')} onClick={() => setDupForm({...dupForm, headerType: ht, headerContent: ht === 'NONE' ? '' : dupForm.headerContent})}>
+                                                <button key={ht} className={'px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ' + (dupForm.headerType === ht ? 'bg-cnss-primary text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200')} onClick={() => setDupForm({...dupForm, headerType: ht, headerContent: ht === 'NONE' ? '' : dupForm.headerContent})}>
                                                     {ht === 'NONE' ? 'Aucun' : ht === 'IMAGE' ? 'Image' : ht === 'VIDEO' ? 'Video' : 'Texte'}
                                                 </button>
                                             ))}
@@ -3695,18 +3695,18 @@
                                         {(dupForm.headerType === 'IMAGE' || dupForm.headerType === 'VIDEO') && (
                                             <div>
                                                 {!dupForm.headerContent ? (
-                                                    <div className={'relative border-2 border-dashed rounded-xl p-6 text-center transition-colors ' + (dupUploading ? 'border-blue-300 bg-blue-50' : 'border-gray-300 hover:border-bgfi-primary hover:bg-gray-50')}
-                                                        onDragOver={e => { e.preventDefault(); e.currentTarget.classList.add('border-bgfi-primary', 'bg-blue-50'); }}
-                                                        onDragLeave={e => { e.preventDefault(); e.currentTarget.classList.remove('border-bgfi-primary', 'bg-blue-50'); }}
-                                                        onDrop={e => { e.preventDefault(); e.currentTarget.classList.remove('border-bgfi-primary', 'bg-blue-50'); const f = e.dataTransfer.files[0]; if (f) handleDupMediaUpload(f); }}>
+                                                    <div className={'relative border-2 border-dashed rounded-xl p-6 text-center transition-colors ' + (dupUploading ? 'border-blue-300 bg-blue-50' : 'border-gray-300 hover:border-cnss-primary hover:bg-gray-50')}
+                                                        onDragOver={e => { e.preventDefault(); e.currentTarget.classList.add('border-cnss-primary', 'bg-blue-50'); }}
+                                                        onDragLeave={e => { e.preventDefault(); e.currentTarget.classList.remove('border-cnss-primary', 'bg-blue-50'); }}
+                                                        onDrop={e => { e.preventDefault(); e.currentTarget.classList.remove('border-cnss-primary', 'bg-blue-50'); const f = e.dataTransfer.files[0]; if (f) handleDupMediaUpload(f); }}>
                                                         {dupUploading ? (
-                                                            <div className="flex flex-col items-center gap-2"><div className="w-8 h-8 border-3 border-bgfi-primary border-t-transparent rounded-full animate-spin"></div><p className="text-sm font-medium text-bgfi-primary">Upload en cours...</p></div>
+                                                            <div className="flex flex-col items-center gap-2"><div className="w-8 h-8 border-3 border-cnss-primary border-t-transparent rounded-full animate-spin"></div><p className="text-sm font-medium text-cnss-primary">Upload en cours...</p></div>
                                                         ) : (
                                                             <div className="flex flex-col items-center gap-2">
                                                                 <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center">{dupForm.headerType === 'VIDEO' ? <Icons.Play className="w-6 h-6 text-gray-400" /> : <Icons.Upload className="w-6 h-6 text-gray-400" />}</div>
                                                                 <p className="text-sm font-medium text-gray-700">Glissez votre {dupForm.headerType === 'VIDEO' ? 'video' : 'image'} ici</p>
                                                                 <p className="text-xs text-gray-500">{dupForm.headerType === 'VIDEO' ? 'MP4 - max 50 Mo' : 'JPEG, PNG, WebP - max 5 Mo'}</p>
-                                                                <label className="mt-2 px-4 py-2 bg-bgfi-primary text-white text-sm font-medium rounded-lg cursor-pointer hover:bg-bgfi-secondary transition-colors">Parcourir<input type="file" className="hidden" accept={dupForm.headerType === 'VIDEO' ? 'video/mp4,video/quicktime' : 'image/jpeg,image/png,image/webp'} onChange={e => { const f = e.target.files[0]; if (f) handleDupMediaUpload(f); e.target.value = ''; }} /></label>
+                                                                <label className="mt-2 px-4 py-2 bg-cnss-primary text-white text-sm font-medium rounded-lg cursor-pointer hover:bg-cnss-secondary transition-colors">Parcourir<input type="file" className="hidden" accept={dupForm.headerType === 'VIDEO' ? 'video/mp4,video/quicktime' : 'image/jpeg,image/png,image/webp'} onChange={e => { const f = e.target.files[0]; if (f) handleDupMediaUpload(f); e.target.value = ''; }} /></label>
                                                             </div>
                                                         )}
                                                     </div>
@@ -3728,7 +3728,7 @@
 
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-2">Contenu du message (Body)</label>
-                                        <textarea className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-bgfi-primary focus:ring-bgfi-primary sm:text-sm px-4 py-3 border" rows="6" value={dupForm.content} onChange={(e) => setDupForm({...dupForm, content: e.target.value})} />
+                                        <textarea className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-cnss-primary focus:ring-cnss-primary sm:text-sm px-4 py-3 border" rows="6" value={dupForm.content} onChange={(e) => setDupForm({...dupForm, content: e.target.value})} />
                                         <p className="text-xs text-gray-500 mt-2">Modifiez le contenu puis soumettez. Utilisez {'{{1}}'}, {'{{2}}'}, etc. pour les variables.</p>
                                     </div>
 
@@ -3859,7 +3859,7 @@
                             <h2 className="text-xl font-bold text-gray-900">Analytics</h2>
                             <p className="text-xs sm:text-sm text-gray-500 mt-0.5">Performance marketing et bancaire</p>
                         </div>
-                        <Button variant="secondary" size="sm" icon={Icons.Download} onClick={async () => { try { const resp = await fetch(API_BASE + '/analytics/export?format=csv', { headers: { Authorization: 'Bearer ' + authStore.getToken() } }); const blob = await resp.blob(); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'analytics-bgfi.csv'; a.click(); URL.revokeObjectURL(url); } catch(e) { alert(e.message); } }}>Exporter CSV</Button>
+                        <Button variant="secondary" size="sm" icon={Icons.Download} onClick={async () => { try { const resp = await fetch(API_BASE + '/analytics/export?format=csv', { headers: { Authorization: 'Bearer ' + authStore.getToken() } }); const blob = await resp.blob(); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'analytics-cnss.csv'; a.click(); URL.revokeObjectURL(url); } catch(e) { alert(e.message); } }}>Exporter CSV</Button>
                     </div>
 
                     {/* Row 1: 6 KPI Cards */}
@@ -4197,7 +4197,7 @@
                 ? React.createElement('div', { className: 'w-2.5 h-2.5 rounded-full bg-emerald-500' })
                 : React.createElement('div', { className: 'w-2.5 h-2.5 rounded-full bg-gray-300' });
 
-            return React.createElement(Card, { title: 'Chatbot Automatique (Stella)' },
+            return React.createElement(Card, { title: 'Chatbot Automatique (Aimé)' },
                 loading ? React.createElement('div', { className: 'py-8 text-center text-gray-500' }, 'Chargement...') :
                 chatbotStatus ? React.createElement('div', { className: 'space-y-5' },
                     // Status toggle display
@@ -4395,7 +4395,7 @@
                     </Card>
 
                     {/* Consommation Tokens IA */}
-                    <Card title="Consommation IA - Chatbot Stella">
+                    <Card title="Consommation IA - Chatbot Aimé">
                         {tokenLoading ? <div className="py-8 text-center text-gray-500">Chargement...</div> : tokenUsage ? (
                             <div className="space-y-6">
                                 {/* Modele actif + infos */}
@@ -4507,10 +4507,10 @@
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <Card title="Informations Generales">
                             <div className="space-y-4">
-                                <Input label="Nom de l'organisation" value="BGFI Bank" />
-                                <Input label="Email de contact" value="marketing@bgfi.ga" />
+                                <Input label="Nom de l'organisation" value="CNSS" />
+                                <Input label="Email de contact" value="marketing@cnss.ga" />
                                 <Input label="Telephone" value="+241 01 74 12 34" />
-                                <div><label className="block text-sm font-medium text-gray-700 mb-2">Adresse</label><textarea className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-bgfi-primary focus:ring-bgfi-primary sm:text-sm px-4 py-3 border" rows="3" defaultValue="Boulevard Triomphal, Libreville, Gabon" /></div>
+                                <div><label className="block text-sm font-medium text-gray-700 mb-2">Adresse</label><textarea className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-cnss-primary focus:ring-cnss-primary sm:text-sm px-4 py-3 border" rows="3" defaultValue="Boulevard Triomphal, Libreville, Gabon" /></div>
                             </div>
                         </Card>
                         <Card title="Etat des Services">
@@ -4532,7 +4532,7 @@
             );
         };
 
-        ReactDOM.createRoot(document.getElementById('root')).render(<BGFIWhatsAppSaaS />);
+        ReactDOM.createRoot(document.getElementById('root')).render(<CNSSWhatsAppSaaS />);
     </script>
 </body>
 </html>

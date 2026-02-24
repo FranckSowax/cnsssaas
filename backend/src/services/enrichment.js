@@ -1,7 +1,7 @@
 // ============================================
 // Service d'enrichissement IA des conversations
 // Analyse automatique des conversations chatbot
-// pour extraire des indicateurs bancaires
+// pour extraire des indicateurs sociaux
 // ============================================
 
 const { PrismaClient } = require('@prisma/client');
@@ -19,8 +19,8 @@ const VALID_SENTIMENTS = ['POSITIVE', 'NEUTRAL', 'NEGATIVE', 'FRUSTRATED'];
 const VALID_URGENCY = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'];
 const VALID_RESOLUTION = ['RESOLVED', 'UNRESOLVED', 'ESCALATION_NEEDED', 'FOLLOW_UP_REQUIRED'];
 
-const ENRICHMENT_PROMPT = `Tu es un analyste specialise dans les services bancaires de BGFI Bank Gabon.
-Analyse la conversation suivante entre un client WhatsApp et Stella (le chatbot IA de BGFI Bank).
+const ENRICHMENT_PROMPT = `Tu es un analyste spécialisé dans les prestations sociales de la CNSS.
+Analyse la conversation suivante entre un assuré WhatsApp et Aimé (le chatbot IA de la CNSS).
 
 Retourne UNIQUEMENT un objet JSON valide avec les champs suivants:
 - "intentCategory": une valeur parmi [ACCOUNT_INQUIRY, LOAN_REQUEST, CARD_ISSUE, TRANSFER_HELP, COMPLAINT, PRODUCT_INFO, ACCOUNT_OPENING, FEES_CHARGES, MOBILE_BANKING, GENERAL]
@@ -70,7 +70,7 @@ async function enrichConversation(sessionId) {
   }
 
   const dialogue = messages.map(m => {
-    const role = m.role === 'user' ? 'Client' : 'Stella (Bot)';
+    const role = m.role === 'user' ? 'Assuré' : 'Aimé (Bot)';
     return `${role}: ${m.content}`;
   }).join('\n');
 
@@ -269,7 +269,7 @@ async function generateDailyReport(dateStr) {
   // Generer insights IA si des donnees existent et API key disponible
   if (sessions.length > 0 && apiKey) {
     try {
-      const reportPrompt = `Tu es un analyste bancaire de BGFI Bank Gabon. Voici les statistiques des conversations chatbot du ${date.toLocaleDateString('fr-FR')}:
+      const reportPrompt = `Tu es un analyste de la CNSS. Voici les statistiques des conversations chatbot du ${date.toLocaleDateString('fr-FR')}:
 
 - Total conversations: ${stats.totalConversations} (${stats.whatsappConversations} WhatsApp, ${stats.webConversations} web)
 - Sentiments: ${stats.sentimentPositive} positif, ${stats.sentimentNeutral} neutre, ${stats.sentimentNegative} negatif, ${stats.sentimentFrustrated} frustre
@@ -364,7 +364,7 @@ async function feedReportToRag(reportId) {
 
   const dateStr = report.date.toLocaleDateString('fr-FR');
 
-  const content = `Rapport quotidien des conversations BGFI Bank - ${dateStr}
+  const content = `Rapport quotidien des conversations CNSS - ${dateStr}
 
 Statistiques:
 - ${report.totalConversations} conversations (${report.whatsappConversations} WhatsApp, ${report.webConversations} web)

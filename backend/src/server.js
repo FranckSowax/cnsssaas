@@ -100,7 +100,7 @@ app.use('/api/webhooks', webhookRoutes);
 // Supporte multi-boutons (0, 1, 2)
 // ============================================
 app.get('/t/:trackingId/:buttonIndex?', async (req, res) => {
-  const fallback = process.env.TRACKING_FALLBACK_URL || 'https://bgfixstudia.com/';
+  const fallback = process.env.TRACKING_FALLBACK_URL || 'https://cnsssaas.ga/';
   try {
     const { PrismaClient } = require('@prisma/client');
     const prisma = new PrismaClient();

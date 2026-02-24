@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Guide de Deploiement On-Premise - BGFI WhatsApp Platform</title>
+    <title>Guide de Deploiement On-Premise - CNSS WhatsApp Platform</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
         :root {
@@ -131,9 +131,9 @@
 <!-- COUVERTURE -->
 <!-- ============================================ -->
 <div class="cover">
-    <div class="cover-badge-top">BGFI Bank Group &bull; Direction des Systemes d'Information</div>
+    <div class="cover-badge-top">CNSS Bank Group &bull; Direction des Systemes d'Information</div>
     <h1>Guide de Deploiement <span>On-Premise</span></h1>
-    <p class="sub">WhatsApp Business Intelligence Platform<br>Installation, configuration et mise en production sur infrastructure BGFI</p>
+    <p class="sub">WhatsApp Business Intelligence Platform<br>Installation, configuration et mise en production sur infrastructure CNSS</p>
 
     <div class="cover-grid">
         <div class="cover-stat">
@@ -154,7 +154,7 @@
         </div>
     </div>
 
-    <div class="cover-conf">Confidentiel - Usage interne BGFI</div>
+    <div class="cover-conf">Confidentiel - Usage interne CNSS</div>
     <div class="cover-footer">
         <span>Version 1.0</span>
         <span>Fevrier 2026</span>
@@ -194,20 +194,20 @@
     <div class="arch-diagram">
         <pre style="background:none;color:var(--g700);text-align:left;padding:0;font-size:0.75rem;line-height:1.8;">
     ┌─────────────────────────────────────────────────────────────────┐
-    │                     SERVEUR BGFI (Docker Host)                  │
+    │                     SERVEUR CNSS (Docker Host)                  │
     │                                                                 │
     │   ┌─────────────────────────────────────────────────────────┐   │
-    │   │            Reseau externe (bgfi-external)               │   │
+    │   │            Reseau externe (cnss-external)               │   │
     │   │                                                         │   │
     │   │   ┌───────────────────────────────┐                     │   │
     │   │   │      NGINX (port 443/80)      │ ◄── Internet        │   │
     │   │   │   SSL + Filtrage IP Meta      │     (Webhooks Meta) │   │
-    │   │   │   Restriction reseau BGFI     │     (Clics clients) │   │
+    │   │   │   Restriction reseau CNSS     │     (Clics clients) │   │
     │   │   └──────────────┬────────────────┘                     │   │
     │   └──────────────────┼──────────────────────────────────────┘   │
     │                      │                                          │
     │   ┌──────────────────┼──────────────────────────────────────┐   │
-    │   │            Reseau interne (bgfi-internal)               │   │
+    │   │            Reseau interne (cnss-internal)               │   │
     │   │                  │   Pas d'acces Internet direct         │   │
     │   │                  ▼                                       │   │
     │   │   ┌───────────────────────────────┐                     │   │
@@ -219,7 +219,7 @@
     │   │                  ▼                                       │   │
     │   │   ┌───────────────────────────────┐                     │   │
     │   │   │  PostgreSQL 16 + pgvector     │                     │   │
-    │   │   │  Base: bgfi_whatsapp          │                     │   │
+    │   │   │  Base: cnss_whatsapp          │                     │   │
     │   │   │  Volume persistant: pgdata    │                     │   │
     │   │   └───────────────────────────────┘                     │   │
     │   └─────────────────────────────────────────────────────────┘   │
@@ -236,12 +236,12 @@
             <tr>
                 <td class="font-bold">nginx</td>
                 <td class="font-mono">nginx:alpine</td>
-                <td>Reverse proxy SSL, filtrage IP Meta, restriction reseau interne BGFI</td>
+                <td>Reverse proxy SSL, filtrage IP Meta, restriction reseau interne CNSS</td>
                 <td class="font-mono">443, 80</td>
             </tr>
             <tr>
                 <td class="font-bold">app</td>
-                <td class="font-mono">bgfi-whatsapp-app</td>
+                <td class="font-mono">cnss-whatsapp-app</td>
                 <td>API backend (Express.js) + frontend SPA + service IA (RAG/OpenAI)</td>
                 <td class="font-mono">3000 (interne)</td>
             </tr>
@@ -261,13 +261,13 @@
         </thead>
         <tbody>
             <tr>
-                <td class="font-bold font-mono">bgfi-internal</td>
+                <td class="font-bold font-mono">cnss-internal</td>
                 <td><span class="badge badge-green">Interne</span></td>
                 <td>nginx, app, db</td>
                 <td>Reseau isole sans acces Internet. Communication inter-services uniquement.</td>
             </tr>
             <tr>
-                <td class="font-bold font-mono">bgfi-external</td>
+                <td class="font-bold font-mono">cnss-external</td>
                 <td><span class="badge badge-orange">Externe</span></td>
                 <td>nginx</td>
                 <td>Acces Internet pour recevoir les webhooks Meta et servir les redirections de tracking.</td>
@@ -361,7 +361,7 @@
                 <td>Webhooks WhatsApp (messages entrants, statuts)</td>
             </tr>
             <tr>
-                <td>Reseau interne BGFI</td>
+                <td>Reseau interne CNSS</td>
                 <td class="text-center">443</td>
                 <td>Acces interface d'administration</td>
             </tr>
@@ -379,7 +379,7 @@
     <h2 id="s3">3. Preparation des fichiers</h2>
 
     <h3>Structure du package de deploiement</h3>
-    <pre><code>bgfi-whatsapp-saas/
+    <pre><code>cnss-whatsapp-saas/
 ├── backend/
 │   ├── src/                    <span class="comment"># Code source API</span>
 │   ├── prisma/
@@ -400,14 +400,14 @@
 
     <h3>Transfert des fichiers sur le serveur</h3>
     <pre><code><span class="comment"># Option 1: depuis un depot Git</span>
-<span class="cmd">git clone</span> https://github.com/FranckSowax/bgfi-wacbt.git bgfi-whatsapp-saas
-<span class="cmd">cd</span> bgfi-whatsapp-saas
+<span class="cmd">git clone</span> https://github.com/FranckSowax/cnss-wacbt.git cnss-whatsapp-saas
+<span class="cmd">cd</span> cnss-whatsapp-saas
 
 <span class="comment"># Option 2: transfert par archive</span>
-<span class="cmd">scp</span> bgfi-whatsapp-saas.tar.gz user@serveur-bgfi:/opt/
-<span class="cmd">ssh</span> user@serveur-bgfi
-<span class="cmd">tar</span> -xzf /opt/bgfi-whatsapp-saas.tar.gz -C /opt/
-<span class="cmd">cd</span> /opt/bgfi-whatsapp-saas</code></pre>
+<span class="cmd">scp</span> cnss-whatsapp-saas.tar.gz user@serveur-cnss:/opt/
+<span class="cmd">ssh</span> user@serveur-cnss
+<span class="cmd">tar</span> -xzf /opt/cnss-whatsapp-saas.tar.gz -C /opt/
+<span class="cmd">cd</span> /opt/cnss-whatsapp-saas</code></pre>
 
     <!-- ============================================ -->
     <!-- SECTION 4 : CONFIGURATION -->
@@ -454,7 +454,7 @@
             <tr>
                 <td class="font-bold font-mono">WHATSAPP_VERIFY_TOKEN</td>
                 <td>Token de verification pour le webhook</td>
-                <td class="font-mono">bgfi_webhook_verify_2026</td>
+                <td class="font-mono">cnss_webhook_verify_2026</td>
             </tr>
             <tr>
                 <td class="font-bold font-mono">WHATSAPP_APP_SECRET</td>
@@ -469,7 +469,7 @@
             <tr>
                 <td class="font-bold font-mono">TRACKING_BASE_URL</td>
                 <td>URL publique pour le tracking des clics</td>
-                <td class="font-mono">https://whatsapp.bgfi.com/t/{{1}}</td>
+                <td class="font-mono">https://whatsapp.cnss.com/t/{{1}}</td>
             </tr>
         </tbody>
     </table>
@@ -505,11 +505,11 @@
 
     <p>Le serveur Nginx requiert un certificat SSL valide pour le HTTPS. Deux options :</p>
 
-    <h3>Option A : Certificat interne BGFI (PKI d'entreprise)</h3>
-    <p>Si BGFI dispose d'une autorite de certification interne :</p>
+    <h3>Option A : Certificat interne CNSS (PKI d'entreprise)</h3>
+    <p>Si CNSS dispose d'une autorite de certification interne :</p>
     <pre><code><span class="comment"># Placer les fichiers du certificat</span>
-<span class="cmd">cp</span> /chemin/vers/bgfi-cert.pem deploy/ssl/fullchain.pem
-<span class="cmd">cp</span> /chemin/vers/bgfi-key.pem deploy/ssl/privkey.pem
+<span class="cmd">cp</span> /chemin/vers/cnss-cert.pem deploy/ssl/fullchain.pem
+<span class="cmd">cp</span> /chemin/vers/cnss-key.pem deploy/ssl/privkey.pem
 <span class="cmd">chmod</span> 600 deploy/ssl/privkey.pem</code></pre>
 
     <h3>Option B : Certificat Let's Encrypt (domaine public)</h3>
@@ -518,18 +518,18 @@
 <span class="cmd">apt install</span> certbot
 
 <span class="comment"># Generer le certificat (arreter Nginx d'abord)</span>
-<span class="cmd">certbot</span> certonly --standalone -d whatsapp.bgfi.com
+<span class="cmd">certbot</span> certonly --standalone -d whatsapp.cnss.com
 
 <span class="comment"># Copier les certificats</span>
-<span class="cmd">cp</span> /etc/letsencrypt/live/whatsapp.bgfi.com/fullchain.pem deploy/ssl/
-<span class="cmd">cp</span> /etc/letsencrypt/live/whatsapp.bgfi.com/privkey.pem deploy/ssl/</code></pre>
+<span class="cmd">cp</span> /etc/letsencrypt/live/whatsapp.cnss.com/fullchain.pem deploy/ssl/
+<span class="cmd">cp</span> /etc/letsencrypt/live/whatsapp.cnss.com/privkey.pem deploy/ssl/</code></pre>
 
     <h3>Option C : Certificat auto-signe (tests uniquement)</h3>
     <pre><code><span class="comment"># Le script deploy.sh peut generer un certificat auto-signe</span>
 <span class="cmd">openssl</span> req -x509 -nodes -days 365 -newkey rsa:2048 \
     -keyout deploy/ssl/privkey.pem \
     -out deploy/ssl/fullchain.pem \
-    -subj "/C=GA/ST=Estuaire/L=Libreville/O=BGFI Bank/CN=whatsapp.bgfi.com"</code></pre>
+    -subj "/C=GA/ST=Estuaire/L=Libreville/O=CNSS Bank/CN=whatsapp.cnss.com"</code></pre>
 
     <div class="box box-warning">
         <strong>Certificat auto-signe</strong>
@@ -581,7 +581,7 @@
 
     <div class="box box-success">
         <strong>Compte administrateur par defaut</strong>
-        <p>Email : <code>admin@bgfi.ga</code> &nbsp;|&nbsp; Mot de passe : <code>admin123</code></p>
+        <p>Email : <code>admin@cnss.ga</code> &nbsp;|&nbsp; Mot de passe : <code>admin123</code></p>
         <p>Changez ce mot de passe immediatement apres la premiere connexion.</p>
     </div>
 
@@ -606,7 +606,7 @@
         <tbody>
             <tr>
                 <td class="font-bold">URL de rappel</td>
-                <td class="font-mono">https://votre-domaine.bgfi.com/api/webhooks/whatsapp</td>
+                <td class="font-mono">https://votre-domaine.cnss.com/api/webhooks/whatsapp</td>
             </tr>
             <tr>
                 <td class="font-bold">Token de verification</td>
@@ -629,14 +629,14 @@
         <span class="step-num">4</span>
         <h3>Tester le webhook</h3>
     </div>
-    <pre><code><span class="comment"># Tester depuis le serveur BGFI</span>
-<span class="cmd">curl</span> -X GET "https://votre-domaine.bgfi.com/api/webhooks/whatsapp?hub.mode=subscribe&hub.verify_token=VOTRE_TOKEN&hub.challenge=test123"
+    <pre><code><span class="comment"># Tester depuis le serveur CNSS</span>
+<span class="cmd">curl</span> -X GET "https://votre-domaine.cnss.com/api/webhooks/whatsapp?hub.mode=subscribe&hub.verify_token=VOTRE_TOKEN&hub.challenge=test123"
 
 <span class="comment"># Reponse attendue: test123</span></code></pre>
 
     <div class="box box-info">
         <strong>Webhook et Tracking URL</strong>
-        <p>La variable <code>TRACKING_BASE_URL</code> doit pointer vers le meme domaine que le webhook. Exemple : <code>https://whatsapp.bgfi.com/t/{{1}}</code></p>
+        <p>La variable <code>TRACKING_BASE_URL</code> doit pointer vers le meme domaine que le webhook. Exemple : <code>https://whatsapp.cnss.com/t/{{1}}</code></p>
         <p>Si vous avez un template WhatsApp avec un bouton URL dynamique, Meta remplacera <code>{{1}}</code> par l'identifiant de tracking unique de chaque message.</p>
     </div>
 
@@ -671,7 +671,7 @@
 <span class="cmd">iptables</span> -A INPUT -p tcp --dport 443 -s 185.60.216.0/22 -j ACCEPT
 <span class="cmd">iptables</span> -A INPUT -p tcp --dport 443 -s 204.15.20.0/22 -j ACCEPT
 
-<span class="comment"># Autoriser HTTPS depuis le reseau interne BGFI</span>
+<span class="comment"># Autoriser HTTPS depuis le reseau interne CNSS</span>
 <span class="cmd">iptables</span> -A INPUT -p tcp --dport 443 -s 10.0.0.0/8 -j ACCEPT
 <span class="cmd">iptables</span> -A INPUT -p tcp --dport 443 -s 172.16.0.0/12 -j ACCEPT
 <span class="cmd">iptables</span> -A INPUT -p tcp --dport 443 -s 192.168.0.0/16 -j ACCEPT
@@ -681,7 +681,7 @@
 
     <div class="box box-info">
         <strong>Filtrage IP au niveau Nginx</strong>
-        <p>En complement du firewall, Nginx est configure pour filtrer les IPs au niveau applicatif. Les webhooks (<code>/api/webhooks/whatsapp</code>) n'acceptent que les IPs Meta. L'interface d'administration (<code>/</code> et <code>/api/</code>) n'est accessible que depuis le reseau interne BGFI.</p>
+        <p>En complement du firewall, Nginx est configure pour filtrer les IPs au niveau applicatif. Les webhooks (<code>/api/webhooks/whatsapp</code>) n'acceptent que les IPs Meta. L'interface d'administration (<code>/</code> et <code>/api/</code>) n'est accessible que depuis le reseau interne CNSS.</p>
     </div>
 
     <h3>Plages IP Meta officielles</h3>
@@ -719,9 +719,9 @@
 <span class="cmd">docker compose</span> ps
 
 <span class="comment"># Resultat attendu :</span>
-<span class="comment"># bgfi-whatsapp-db      running (healthy)</span>
-<span class="comment"># bgfi-whatsapp-app     running (healthy)</span>
-<span class="comment"># bgfi-whatsapp-nginx   running</span>
+<span class="comment"># cnss-whatsapp-db      running (healthy)</span>
+<span class="comment"># cnss-whatsapp-app     running (healthy)</span>
+<span class="comment"># cnss-whatsapp-nginx   running</span>
 
 <span class="comment"># Tester l'API health</span>
 <span class="cmd">curl</span> -k https://localhost/api/health
@@ -742,16 +742,16 @@
 
     <h3>Test de connexion a la base de donnees</h3>
     <pre><code><span class="comment"># Verifier les tables creees</span>
-<span class="cmd">docker compose</span> exec db psql -U bgfi_user -d bgfi_whatsapp -c "\dt"
+<span class="cmd">docker compose</span> exec db psql -U cnss_user -d cnss_whatsapp -c "\dt"
 
 <span class="comment"># Tables attendues : users, contacts, campaigns, messages, templates,</span>
 <span class="comment"># segments, chat_sessions, rag_documents, rag_chunks, etc.</span></code></pre>
 
     <h3>Test de l'interface web</h3>
-    <p>Ouvrir dans un navigateur : <code>https://votre-domaine.bgfi.com</code></p>
+    <p>Ouvrir dans un navigateur : <code>https://votre-domaine.cnss.com</code></p>
     <ol>
         <li>La page de connexion doit s'afficher</li>
-        <li>Se connecter avec <code>admin@bgfi.ga</code> / <code>admin123</code></li>
+        <li>Se connecter avec <code>admin@cnss.ga</code> / <code>admin123</code></li>
         <li>Le dashboard doit s'afficher avec les statistiques</li>
         <li>Verifier que les onglets Contacts, Campagnes, Templates fonctionnent</li>
     </ol>
@@ -798,7 +798,7 @@
 
     <h3>Acces a la base de donnees</h3>
     <pre><code><span class="comment"># Console PostgreSQL</span>
-<span class="cmd">docker compose</span> exec db psql -U bgfi_user -d bgfi_whatsapp
+<span class="cmd">docker compose</span> exec db psql -U cnss_user -d cnss_whatsapp
 
 <span class="comment"># Exemples de requetes utiles :</span>
 <span class="comment"># Nombre de contacts</span>
@@ -817,12 +817,12 @@ SELECT name, status, "sentCount", "deliveredCount", clicked FROM campaigns ORDER
 
     <h3>Sauvegarde de la base de donnees</h3>
     <pre><code><span class="comment"># Sauvegarde complete (avec pgvector)</span>
-<span class="cmd">docker compose</span> exec db pg_dump -U bgfi_user -d bgfi_whatsapp \
+<span class="cmd">docker compose</span> exec db pg_dump -U cnss_user -d cnss_whatsapp \
     --format=custom --compress=9 \
     > backup_$(date +%Y%m%d_%H%M%S).dump
 
 <span class="comment"># Sauvegarde SQL (lisible)</span>
-<span class="cmd">docker compose</span> exec db pg_dump -U bgfi_user -d bgfi_whatsapp \
+<span class="cmd">docker compose</span> exec db pg_dump -U cnss_user -d cnss_whatsapp \
     > backup_$(date +%Y%m%d_%H%M%S).sql</code></pre>
 
     <h3>Sauvegarde automatique (cron)</h3>
@@ -830,22 +830,22 @@ SELECT name, status, "sentCount", "deliveredCount", clicked FROM campaigns ORDER
 <span class="cmd">crontab</span> -e
 
 <span class="comment"># Ajouter cette ligne :</span>
-0 2 * * * cd /opt/bgfi-whatsapp-saas && docker compose exec -T db pg_dump -U bgfi_user -d bgfi_whatsapp --format=custom --compress=9 > /opt/backups/bgfi_$(date +\%Y\%m\%d).dump 2>&1
+0 2 * * * cd /opt/cnss-whatsapp-saas && docker compose exec -T db pg_dump -U cnss_user -d cnss_whatsapp --format=custom --compress=9 > /opt/backups/cnss_$(date +\%Y\%m\%d).dump 2>&1
 
 <span class="comment"># Creer le dossier de sauvegardes</span>
 <span class="cmd">mkdir</span> -p /opt/backups</code></pre>
 
     <h3>Restauration</h3>
     <pre><code><span class="comment"># Restaurer depuis un fichier .dump</span>
-<span class="cmd">docker compose</span> exec -T db pg_restore -U bgfi_user -d bgfi_whatsapp \
+<span class="cmd">docker compose</span> exec -T db pg_restore -U cnss_user -d cnss_whatsapp \
     --clean --if-exists < backup_20260219.dump
 
 <span class="comment"># Restaurer depuis un fichier .sql</span>
-<span class="cmd">docker compose</span> exec -T db psql -U bgfi_user -d bgfi_whatsapp < backup_20260219.sql</code></pre>
+<span class="cmd">docker compose</span> exec -T db psql -U cnss_user -d cnss_whatsapp < backup_20260219.sql</code></pre>
 
     <h3>Sauvegarde des volumes Docker</h3>
     <pre><code><span class="comment"># Sauvegarde du volume PostgreSQL</span>
-<span class="cmd">docker</span> run --rm -v bgfi-whatsapp-saas_pgdata:/data -v /opt/backups:/backup \
+<span class="cmd">docker</span> run --rm -v cnss-whatsapp-saas_pgdata:/data -v /opt/backups:/backup \
     alpine tar czf /backup/pgdata_$(date +%Y%m%d).tar.gz /data</code></pre>
 
     <!-- ============================================ -->
@@ -858,7 +858,7 @@ SELECT name, status, "sentCount", "deliveredCount", clicked FROM campaigns ORDER
         <li>Serveur provisionne (4 vCPU, 8 Go RAM, 100 Go SSD)</li>
         <li>Docker et Docker Compose installes</li>
         <li>Nom de domaine configure (DNS A record vers le serveur)</li>
-        <li>Certificat SSL valide obtenu (Let's Encrypt ou PKI BGFI)</li>
+        <li>Certificat SSL valide obtenu (Let's Encrypt ou PKI CNSS)</li>
         <li>Token WhatsApp permanent genere (System User sur Meta Business)</li>
         <li>Cle API OpenAI creee avec budget configure</li>
         <li>Regles firewall en place (ports 80/443 ouverts)</li>
@@ -881,7 +881,7 @@ SELECT name, status, "sentCount", "deliveredCount", clicked FROM campaigns ORDER
         <li>Webhook Meta configure et verifie</li>
         <li>Envoi d'un message test WhatsApp reussi</li>
         <li>Reception d'un message WhatsApp entrant fonctionnelle</li>
-        <li>Chatbot IA (Stella) repond aux messages</li>
+        <li>Chatbot IA (Aimé) repond aux messages</li>
         <li>Mot de passe admin par defaut change</li>
         <li>Sauvegarde automatique configuree (cron)</li>
         <li>Monitoring des logs en place</li>
@@ -893,7 +893,7 @@ SELECT name, status, "sentCount", "deliveredCount", clicked FROM campaigns ORDER
         <li>Port PostgreSQL (5432) non expose en dehors de Docker</li>
         <li>Plages IP Meta a jour dans la configuration Nginx</li>
         <li>Interface d'administration restreinte au reseau interne</li>
-        <li>Logs applicatifs transmis au SIEM BGFI (si applicable)</li>
+        <li>Logs applicatifs transmis au SIEM CNSS (si applicable)</li>
         <li>Politique de rotation des sauvegardes definie (retention 30 jours)</li>
     </ul>
 
@@ -902,9 +902,9 @@ SELECT name, status, "sentCount", "deliveredCount", clicked FROM campaigns ORDER
         <p>Pour toute question relative au deploiement ou a la configuration, contactez l'equipe de developpement.</p>
         <p>Documentation complementaire :</p>
         <ul style="margin-bottom:0;">
-            <li>Securite reseau : <code>securite-reseau-bgfi-whatsapp.html</code></li>
-            <li>Simulation des couts : <code>simulation-cout-whatsapp-groupe-bgfi.html</code></li>
-            <li>Devis plateforme : <code>devis-bgfi-whatsapp-platform.html</code></li>
+            <li>Securite reseau : <code>securite-reseau-cnss-whatsapp.html</code></li>
+            <li>Simulation des couts : <code>simulation-cout-whatsapp-groupe-cnss.html</code></li>
+            <li>Devis plateforme : <code>devis-cnss-whatsapp-platform.html</code></li>
         </ul>
     </div>
 

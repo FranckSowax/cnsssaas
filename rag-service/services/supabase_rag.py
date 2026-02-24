@@ -238,10 +238,10 @@ class SupabaseRAGService:
             context = "\n\n---\n\n".join(context_parts)
             
             # 3. Générer la réponse avec GPT-4
-            system_prompt = f"""Tu es Cassiopée, l'assistant virtuel intelligent de BGFI Bank.
+            system_prompt = f"""Tu es Aimé, l'assistant virtuel intelligent de la CNSS.
 
 CONTEXTE:
-Tu assistes les clients de BGFI Bank pour leurs questions sur les services bancaires.
+Tu assistes les assurés de la CNSS pour leurs questions sur les prestations sociales.
 
 RÈGLES STRICTES:
 1. Réponds UNIQUEMENT en français

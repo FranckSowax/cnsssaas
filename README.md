@@ -1,4 +1,4 @@
-# BGFI WhatsApp Marketing SaaS
+# CNSS WhatsApp Marketing SaaS
 
 ## 📋 Documentation Technique Complète
 
@@ -65,7 +65,7 @@
 
 ### 1. Cloner le projet
 ```bash
-git clone https://github.com/bgfi/whatsapp-marketing-saas.git
+git clone https://github.com/cnss/whatsapp-marketing-saas.git
 cd whatsapp-marketing-saas
 ```
 
@@ -83,7 +83,7 @@ cp .env.example .env
 Éditer `.env`:
 ```env
 # Database
-DATABASE_URL=postgresql://user:password@localhost:5432/bgfi_whatsapp
+DATABASE_URL=postgresql://user:password@localhost:5432/cnss_whatsapp
 
 # JWT
 JWT_SECRET=votre_secret_jwt_tres_securise
@@ -204,7 +204,7 @@ router.post('/respondio/incoming', async (req, res) => {
 ```javascript
 // Request
 {
-  "email": "admin@bgfi.ga",
+  "email": "admin@cnsssaas.ga",
   "password": "********"
 }
 
@@ -213,7 +213,7 @@ router.post('/respondio/incoming', async (req, res) => {
   "token": "eyJhbGciOiJIUzI1NiIs...",
   "user": {
     "id": "uuid",
-    "email": "admin@bgfi.ga",
+    "email": "admin@cnsssaas.ga",
     "role": "admin",
     "permissions": ["campaign:create", "campaign:read", "campaign:update"]
   }
@@ -261,7 +261,7 @@ router.post('/respondio/incoming', async (req, res) => {
   "scheduledAt": "2026-02-10T14:00:00Z",
   "variables": {
     "nom": "{{contact.name}}",
-    "lien": "https://bgfi.ga/app"
+    "lien": "https://cnsssaas.ga/app"
   }
 }
 
@@ -343,9 +343,9 @@ router.post('/respondio/incoming', async (req, res) => {
 
 // Response
 {
-  "response": "Pour récupérer vos identifiants BGFI...",
+  "response": "Pour récupérer vos identifiants CNSS...",
   "sources": [
-    { "document": "FAQ_BGFI_2026.pdf", "page": 12, "score": 0.94 }
+    { "document": "FAQ_CNSS_2026.pdf", "page": 12, "score": 0.94 }
   ],
   "confidence": 0.94,
   "sessionId": "uuid"
@@ -360,7 +360,7 @@ router.post('/respondio/incoming', async (req, res) => {
 // Response
 {
   "id": "uuid",
-  "name": "FAQ_BGFI_2026.pdf",
+  "name": "FAQ_CNSS_2026.pdf",
   "status": "processing",
   "chunks": 45,
   "estimatedTime": "2 minutes"
@@ -374,7 +374,7 @@ router.post('/respondio/incoming', async (req, res) => {
   "documents": [
     {
       "id": "uuid",
-      "name": "FAQ_BGFI_2026.pdf",
+      "name": "FAQ_CNSS_2026.pdf",
       "type": "pdf",
       "size": "2.4 MB",
       "status": "indexed",
@@ -397,7 +397,7 @@ router.post('/respondio/incoming', async (req, res) => {
       "name": "Relance Connexion",
       "category": "marketing",
       "status": "approved",
-      "content": "Bonjour {{1}} ! Votre application BGFI vous attend...",
+      "content": "Bonjour {{1}} ! Votre application CNSS vous attend...",
       "variables": ["nom", "lien"],
       "approvedAt": "2026-01-10T10:00:00Z"
     }
@@ -507,7 +507,7 @@ class Settings(BaseSettings):
     SIMILARITY_THRESHOLD: float = 0.75
     
     # System Prompt
-    SYSTEM_PROMPT = """Tu es Cassiopée, l'assistant virtuel de BGFI Bank.
+    SYSTEM_PROMPT = """Tu es Aimé, l'assistant virtuel de la CNSS.
 
 RÈGLES:
 - Réponds UNIQUEMENT en français
@@ -1143,7 +1143,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - DATABASE_URL=postgresql://postgres:password@db:5432/bgfi_whatsapp
+      - DATABASE_URL=postgresql://postgres:password@db:5432/cnss_whatsapp
       - REDIS_URL=redis://redis:6379
       - JWT_SECRET=${JWT_SECRET}
       - RESPOND_IO_API_KEY=${RESPOND_IO_API_KEY}
@@ -1170,7 +1170,7 @@ services:
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=password
-      - POSTGRES_DB=bgfi_whatsapp
+      - POSTGRES_DB=cnss_whatsapp
     volumes:
       - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
@@ -1208,13 +1208,13 @@ upstream api {
 
 server {
     listen 80;
-    server_name api.bgfi-whatsapp.ga;
+    server_name api.cnsssaas.ga;
     return 301 https://$server_name$request_uri;
 }
 
 server {
     listen 443 ssl http2;
-    server_name api.bgfi-whatsapp.ga;
+    server_name api.cnsssaas.ga;
 
     ssl_certificate /etc/nginx/ssl/cert.pem;
     ssl_certificate_key /etc/nginx/ssl/key.pem;
@@ -1238,12 +1238,12 @@ server {
 ## 📞 Support
 
 Pour toute question ou problème:
-- Email: support@bgfi.ga
+- Email: support@cnsssaas.ga
 - Téléphone: +241 01 74 12 34
-- Documentation: https://docs.bgfi-whatsapp.ga
+- Documentation: https://docs.cnsssaas.ga
 
 ---
 
 **Version:** 1.0.0  
 **Dernière mise à jour:** 06 Février 2026  
-**Auteur:** BGFI Digital Team
+**Auteur:** CNSS Digital Team

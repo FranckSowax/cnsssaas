@@ -1,4 +1,4 @@
-# 🚀 BGFI WhatsApp Marketing SaaS - Configuration Supabase
+# 🚀 CNSS WhatsApp Marketing SaaS - Configuration Supabase
 
 Ce document explique comment configurer le service RAG avec **Supabase** et **pgvector** pour le stockage vectoriel.
 

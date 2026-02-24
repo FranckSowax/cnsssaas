@@ -57,7 +57,7 @@ router.post('/message', async (req, res) => {
 
     res.status(500).json({
       error: 'Erreur lors du traitement du message',
-      response: 'Desole, une erreur est survenue. Veuillez reessayer ou contacter le service client au 011 76 32 29.'
+      response: 'Desole, une erreur est survenue. Veuillez reessayer ou contacter le service client.'
     });
   }
 });
@@ -216,9 +216,9 @@ router.get('/status', authenticate, async (req, res) => {
         configured: !!openaiKey,
         model
       },
-      systemPromptPreview: (config.systemPrompt || "Tu es Stella, l'assistant virtuel de BGFI Bank Gabon...").substring(0, 150) + '...',
+      systemPromptPreview: (config.systemPrompt || "Tu es Aimé, l'assistant virtuel de la CNSS...").substring(0, 150) + '...',
       fallbackMessage: process.env.CHATBOT_FALLBACK_MESSAGE ||
-        'Merci pour votre message. Un conseiller BGFI Bank vous repondra dans les plus brefs delais. Service client : 011 76 32 29',
+        'Merci pour votre message. Un conseiller CNSS vous repondra dans les plus brefs delais.',
       recentSessions
     });
   } catch (error) {

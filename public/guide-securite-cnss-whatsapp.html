@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Guide de Securite - BGFI WhatsApp SaaS Platform</title>
+    <title>Guide de Securite - CNSS WhatsApp SaaS Platform</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
@@ -44,7 +44,7 @@
 
         @page {
             margin: 2cm;
-            @bottom-center { content: "CONFIDENTIEL - BGFI Bank Gabon"; font-size: 8pt; color: #999; }
+            @bottom-center { content: "CONFIDENTIEL - CNSS Bank Gabon"; font-size: 8pt; color: #999; }
             @bottom-right { content: counter(page); font-size: 8pt; color: #999; }
         }
 
@@ -392,11 +392,11 @@
         </svg>
     </div>
     <h1 class="cover-title">Guide de Securite</h1>
-    <p class="cover-subtitle">BGFI WhatsApp Business Platform<br>Architecture, Protection des Donnees & Scenarios d'Integration</p>
+    <p class="cover-subtitle">CNSS WhatsApp Business Platform<br>Architecture, Protection des Donnees & Scenarios d'Integration</p>
     <div class="cover-meta">
         <span>Version 1.0</span>
         <span>Fevrier 2026</span>
-        <span>BGFI Bank Gabon</span>
+        <span>CNSS Bank Gabon</span>
     </div>
     <div class="cover-badge">CONFIDENTIEL</div>
 </div>
@@ -412,7 +412,7 @@
     <div class="toc-item"><a href="#s4"><span class="toc-num">04</span> Securite des API & communications</a></div>
     <div class="toc-item"><a href="#s5"><span class="toc-num">05</span> Securite WhatsApp Cloud API</a></div>
     <div class="toc-item"><a href="#s6"><span class="toc-num">06</span> Conformite & reglementation</a></div>
-    <div class="toc-item"><a href="#s7"><span class="toc-num">07</span> Scenario A : Integration avec les bases de donnees BGFI</a></div>
+    <div class="toc-item"><a href="#s7"><span class="toc-num">07</span> Scenario A : Integration avec les bases de donnees CNSS</a></div>
     <div class="toc-item"><a href="#s8"><span class="toc-num">08</span> Scenario B : Notifications utilitaires (paiements, alertes)</a></div>
     <div class="toc-item"><a href="#s9"><span class="toc-num">09</span> Scenario C : Connexion au Core Banking System</a></div>
     <div class="toc-item"><a href="#s10"><span class="toc-num">10</span> Plan de securisation & roadmap</a></div>
@@ -422,7 +422,7 @@
 <!-- ==================== SECTION 1 ==================== -->
 <h2 id="s1"><span class="section-num">1</span> Vue d'ensemble de l'architecture</h2>
 
-<p>La plateforme BGFI WhatsApp SaaS est concue selon une architecture <strong>trois tiers securisee</strong> avec separation stricte des responsabilites :</p>
+<p>La plateforme CNSS WhatsApp SaaS est concue selon une architecture <strong>trois tiers securisee</strong> avec separation stricte des responsabilites :</p>
 
 <div class="architecture-diagram">
     <div class="arch-box primary">
@@ -436,7 +436,7 @@
     </div>
     <div class="arch-arrow">&rarr;</div>
     <div class="arch-box green">
-        <h4>Backend BGFI</h4>
+        <h4>Backend CNSS</h4>
         <p>Express.js / Node.js<br>Railway (EU)</p>
     </div>
     <div class="arch-arrow">&rarr;</div>
@@ -727,61 +727,61 @@
 
 <!-- ==================== SECTION 7 ==================== -->
 <div class="page-break"></div>
-<h2 id="s7"><span class="section-num">7</span> Scenario A : Integration avec les bases de donnees BGFI</h2>
+<h2 id="s7"><span class="section-num">7</span> Scenario A : Integration avec les bases de donnees CNSS</h2>
 
 <div class="scenario">
     <div class="scenario-header">
         <div class="scenario-icon blue">&#128450;</div>
         <div>
-            <h3 style="margin:0">Connexion a une base de donnees BGFI existante</h3>
+            <h3 style="margin:0">Connexion a une base de donnees CNSS existante</h3>
             <p style="margin:0;color:var(--gray-500);font-size:0.9rem">Synchronisation des contacts, segments, ou donnees client</p>
         </div>
     </div>
 
     <h4>Architecture recommandee</h4>
-    <p>La plateforme ne doit <strong>jamais acceder directement</strong> a la base de donnees de production de BGFI. L'integration doit se faire via une <strong>API intermediaire (middleware)</strong> controlee par l'equipe IT BGFI.</p>
+    <p>La plateforme ne doit <strong>jamais acceder directement</strong> a la base de donnees de production de CNSS. L'integration doit se faire via une <strong>API intermediaire (middleware)</strong> controlee par l'equipe IT CNSS.</p>
 
     <div class="architecture-diagram">
         <div class="arch-box primary">
-            <h4>BGFI WhatsApp SaaS</h4>
+            <h4>CNSS WhatsApp SaaS</h4>
             <p>Notre plateforme</p>
         </div>
         <div class="arch-arrow">&harr;</div>
         <div class="arch-box green">
-            <h4>API Gateway BGFI</h4>
-            <p>Middleware securise<br>controle par IT BGFI</p>
+            <h4>API Gateway CNSS</h4>
+            <p>Middleware securise<br>controle par IT CNSS</p>
         </div>
         <div class="arch-arrow">&harr;</div>
         <div class="arch-box">
-            <h4>Base BGFI</h4>
+            <h4>Base CNSS</h4>
             <p>Core Banking /<br>CRM / Data Lake</p>
         </div>
     </div>
 
     <h4>Mesures de securite</h4>
     <ul class="checklist">
-        <li><strong>API Gateway BGFI</strong> : Point d'entree unique, gere par l'equipe IT BGFI</li>
+        <li><strong>API Gateway CNSS</strong> : Point d'entree unique, gere par l'equipe IT CNSS</li>
         <li><strong>Authentification mutuelle (mTLS)</strong> : Certificats client + serveur pour chaque communication</li>
-        <li><strong>IP Whitelisting</strong> : Seule l'IP statique de Railway autorisee a appeler l'API BGFI</li>
+        <li><strong>IP Whitelisting</strong> : Seule l'IP statique de Railway autorisee a appeler l'API CNSS</li>
         <li><strong>OAuth 2.0 Client Credentials</strong> : Token de service avec scope limite (lecture contacts, pas d'ecriture bancaire)</li>
         <li><strong>Chiffrement des donnees en transit</strong> : TLS 1.2+ obligatoire</li>
         <li><strong>Limitation des champs exposes</strong> : L'API Gateway ne retourne que nom + telephone (jamais de solde, numero de compte, etc.)</li>
-        <li><strong>Rate limiting cote BGFI</strong> : L'API Gateway controle le volume de requetes</li>
+        <li><strong>Rate limiting cote CNSS</strong> : L'API Gateway controle le volume de requetes</li>
         <li><strong>Journalisation bilaterale</strong> : Logs des deux cotes pour tracabilite complete</li>
     </ul>
 
     <h4>Flux de donnees type : Synchronisation contacts</h4>
     <ol class="flow-list">
-        <li><span class="flow-num">1</span><div class="flow-content"><strong>Demande authentifiee</strong><span>La plateforme envoie une requete GET signee avec token OAuth 2.0 vers l'API Gateway BGFI</span></div></li>
+        <li><span class="flow-num">1</span><div class="flow-content"><strong>Demande authentifiee</strong><span>La plateforme envoie une requete GET signee avec token OAuth 2.0 vers l'API Gateway CNSS</span></div></li>
         <li><span class="flow-num">2</span><div class="flow-content"><strong>Validation par le Gateway</strong><span>L'API Gateway verifie le token, l'IP source, le scope des permissions</span></div></li>
-        <li><span class="flow-num">3</span><div class="flow-content"><strong>Requete filtree</strong><span>Le Gateway interroge la base BGFI avec un SELECT limite aux champs autorises</span></div></li>
+        <li><span class="flow-num">3</span><div class="flow-content"><strong>Requete filtree</strong><span>Le Gateway interroge la base CNSS avec un SELECT limite aux champs autorises</span></div></li>
         <li><span class="flow-num">4</span><div class="flow-content"><strong>Reponse minimale</strong><span>Seuls nom + telephone + segment commercial sont retournes (pas de donnees bancaires)</span></div></li>
         <li><span class="flow-num">5</span><div class="flow-content"><strong>Stockage isole</strong><span>Les contacts sont stockes dans la base dediee de la plateforme WhatsApp (separee de la base bancaire)</span></div></li>
     </ol>
 
     <div class="box box-warning">
         <strong>Responsabilite partagee</strong>
-        <p>L'equipe IT BGFI controle l'API Gateway et decide quelles donnees sont exposees. La plateforme WhatsApp consomme uniquement ce qui est mis a disposition. Aucun acces direct a la base bancaire n'est possible depuis la plateforme.</p>
+        <p>L'equipe IT CNSS controle l'API Gateway et decide quelles donnees sont exposees. La plateforme WhatsApp consomme uniquement ce qui est mis a disposition. Aucun acces direct a la base bancaire n'est possible depuis la plateforme.</p>
     </div>
 </div>
 
@@ -815,12 +815,12 @@
         <div class="arch-arrow">&rarr;</div>
         <div class="arch-box green">
             <h4>Message Broker</h4>
-            <p>RabbitMQ / Kafka<br>reseau interne BGFI</p>
+            <p>RabbitMQ / Kafka<br>reseau interne CNSS</p>
         </div>
         <div class="arch-arrow">&rarr;</div>
         <div class="arch-box blue">
             <h4>API Notification</h4>
-            <p>Service intermediaire<br>dans le DMZ BGFI</p>
+            <p>Service intermediaire<br>dans le DMZ CNSS</p>
         </div>
         <div class="arch-arrow">&rarr;</div>
         <div class="arch-box primary">
@@ -833,7 +833,7 @@
     <ul class="checklist">
         <li><strong>Aucun montant ni numero de compte stocke</strong> : Les donnees transactionnelles sont transmises en temps reel et jamais persistees dans la plateforme WhatsApp</li>
         <li><strong>Templates utilitaires pre-approuves</strong> : Les templates de type UTILITY sont valides par Meta et contiennent des variables generiques ({{1}}, {{2}})</li>
-        <li><strong>Webhook securise avec signature</strong> : L'API de notification BGFI appelle la plateforme via un endpoint dedie, authentifie par API Key + signature HMAC</li>
+        <li><strong>Webhook securise avec signature</strong> : L'API de notification CNSS appelle la plateforme via un endpoint dedie, authentifie par API Key + signature HMAC</li>
         <li><strong>File d'attente avec retry</strong> : En cas d'echec d'envoi WhatsApp, le message est re-tente automatiquement (max 3 fois)</li>
         <li><strong>Idempotence</strong> : Un identifiant unique par notification empeche les envois en double</li>
         <li><strong>Audit trail complet</strong> : Chaque notification envoyee est tracee avec : horodatage, destinataire (masque), template utilise, statut de livraison</li>
@@ -877,8 +877,8 @@
 
     <ol class="flow-list">
         <li><span class="flow-num">1</span><div class="flow-content"><strong>Verification d'identite renforcee</strong><span>Avant toute consultation bancaire via WhatsApp, le client doit s'authentifier via un OTP (One-Time Password) envoye par SMS au numero enregistre dans le Core Banking.</span></div></li>
-        <li><span class="flow-num">2</span><div class="flow-content"><strong>API Gateway bancaire (DMZ)</strong><span>Un micro-service dedie, heberge dans le reseau interne BGFI (DMZ), sert d'intermediaire unique entre la plateforme WhatsApp et le Core Banking System. Il expose des endpoints en lecture seule.</span></div></li>
-        <li><span class="flow-num">3</span><div class="flow-content"><strong>Authentification mutuelle (mTLS)</strong><span>Communication chiffree avec certificats mutuels entre la plateforme et l'API Gateway bancaire. Les certificats sont emis par la PKI interne BGFI.</span></div></li>
+        <li><span class="flow-num">2</span><div class="flow-content"><strong>API Gateway bancaire (DMZ)</strong><span>Un micro-service dedie, heberge dans le reseau interne CNSS (DMZ), sert d'intermediaire unique entre la plateforme WhatsApp et le Core Banking System. Il expose des endpoints en lecture seule.</span></div></li>
+        <li><span class="flow-num">3</span><div class="flow-content"><strong>Authentification mutuelle (mTLS)</strong><span>Communication chiffree avec certificats mutuels entre la plateforme et l'API Gateway bancaire. Les certificats sont emis par la PKI interne CNSS.</span></div></li>
         <li><span class="flow-num">4</span><div class="flow-content"><strong>Tokenisation des donnees</strong><span>Les numeros de compte sont remplaces par des tokens opaques. Le mapping token ↔ compte est gere exclusivement par le Core Banking (jamais expose a la plateforme WhatsApp).</span></div></li>
         <li><span class="flow-num">5</span><div class="flow-content"><strong>Reponses ephemeres</strong><span>Les donnees bancaires (solde, releve) sont affichees au client puis immediatement purgees de la memoire de la plateforme. Aucun solde ni historique de transaction n'est stocke dans la base WhatsApp.</span></div></li>
         <li><span class="flow-num">6</span><div class="flow-content"><strong>Session timeout strict</strong><span>La session bancaire via WhatsApp expire apres 5 minutes d'inactivite. Toute nouvelle consultation necessite une re-authentification.</span></div></li>
@@ -934,11 +934,11 @@
 <table>
     <thead><tr><th>Mesure</th><th>Prerequis</th><th>Priorite</th></tr></thead>
     <tbody>
-        <tr><td>API Gateway pour integration BGFI</td><td>Validation DSI + cahier des charges</td><td><span class="badge badge-amber">Haute</span></td></tr>
-        <tr><td>Authentification mTLS</td><td>PKI BGFI disponible</td><td><span class="badge badge-amber">Haute</span></td></tr>
+        <tr><td>API Gateway pour integration CNSS</td><td>Validation DSI + cahier des charges</td><td><span class="badge badge-amber">Haute</span></td></tr>
+        <tr><td>Authentification mTLS</td><td>PKI CNSS disponible</td><td><span class="badge badge-amber">Haute</span></td></tr>
         <tr><td>Endpoint notifications utilitaires</td><td>Templates UTILITY approuves Meta</td><td><span class="badge badge-amber">Haute</span></td></tr>
         <tr><td>Chiffrement des champs sensibles (AES)</td><td>Cle de chiffrement dediee</td><td><span class="badge badge-blue">Moyenne</span></td></tr>
-        <tr><td>Journalisation centralisee (SIEM)</td><td>Infrastructure SIEM BGFI</td><td><span class="badge badge-blue">Moyenne</span></td></tr>
+        <tr><td>Journalisation centralisee (SIEM)</td><td>Infrastructure SIEM CNSS</td><td><span class="badge badge-blue">Moyenne</span></td></tr>
         <tr><td>Rotation automatique des secrets</td><td>Vault ou AWS Secrets Manager</td><td><span class="badge badge-blue">Moyenne</span></td></tr>
     </tbody>
 </table>
@@ -962,7 +962,7 @@
 <p>Par conception architecturale (<strong>separation des responsabilites</strong>) :</p>
 <ul>
     <li>La plateforme n'a aucune connaissance de l'existence du Core Banking System</li>
-    <li>En cas d'integration future, un <strong>API Gateway controle par l'equipe IT BGFI</strong> sert d'intermediaire exclusif</li>
+    <li>En cas d'integration future, un <strong>API Gateway controle par l'equipe IT CNSS</strong> sert d'intermediaire exclusif</li>
     <li>Le Gateway decide quelles donnees exposer (principe du moindre privilege)</li>
     <li>Audit de chaque requete des deux cotes</li>
 </ul>
@@ -995,11 +995,11 @@
     <li>Politique de retention des donnees configurable</li>
 </ul>
 
-<h4>Q7 : Peut-on heberger la plateforme sur les serveurs internes BGFI ?</h4>
+<h4>Q7 : Peut-on heberger la plateforme sur les serveurs internes CNSS ?</h4>
 <p><strong>Oui, c'est possible et recommande pour un deploiement en production avancee.</strong> La plateforme est un serveur Node.js standard qui peut etre deploye sur :</p>
 <ul>
     <li>Un serveur Linux interne (Docker ou bare metal)</li>
-    <li>Un cluster Kubernetes BGFI</li>
+    <li>Un cluster Kubernetes CNSS</li>
     <li>Un cloud prive (VMware, OpenStack)</li>
 </ul>
 
@@ -1014,17 +1014,17 @@
 <h4>Q9 : Peut-on auditer le code source ?</h4>
 <div class="box box-success">
     <strong>Oui, absolument.</strong>
-    <p>Le code source complet est disponible sur le repository GitHub prive (FranckSowax/bgfi-wacbt). L'equipe securite BGFI peut effectuer un audit de code, un test d'intrusion, ou une revue architecturale a tout moment. Nous encourageons cette demarche.</p>
+    <p>Le code source complet est disponible sur le repository GitHub prive (FranckSowax/cnss-wacbt). L'equipe securite CNSS peut effectuer un audit de code, un test d'intrusion, ou une revue architecturale a tout moment. Nous encourageons cette demarche.</p>
 </div>
 
-<h4>Q10 : Comment s'integrer avec l'Active Directory / LDAP de BGFI ?</h4>
+<h4>Q10 : Comment s'integrer avec l'Active Directory / LDAP de CNSS ?</h4>
 <p>L'integration SSO est realisable via :</p>
 <ul>
     <li><strong>SAML 2.0</strong> : Integration avec ADFS (Active Directory Federation Services)</li>
     <li><strong>OIDC / OAuth 2.0</strong> : Via Azure AD ou Keycloak</li>
     <li><strong>LDAP direct</strong> : Ajout d'un middleware passport-ldapauth en Node.js</li>
 </ul>
-<p>L'implementation requiert la cooperation de l'equipe IT BGFI pour configurer le fournisseur d'identite.</p>
+<p>L'implementation requiert la cooperation de l'equipe IT CNSS pour configurer le fournisseur d'identite.</p>
 
 <h4>Q11 : Quel est le cout de la plateforme en tokens IA ?</h4>
 <p>La plateforme integre un <strong>tableau de bord de suivi de consommation IA</strong> dans les Parametres, affichant en temps reel :</p>
@@ -1039,10 +1039,10 @@
 
 <!-- ==================== FOOTER ==================== -->
 <div class="doc-footer">
-    <p><strong>BGFI WhatsApp Business Platform — Guide de Securite v1.0</strong></p>
+    <p><strong>CNSS WhatsApp Business Platform — Guide de Securite v1.0</strong></p>
     <p>Document confidentiel — Fevrier 2026</p>
-    <p>Prepare pour la Direction des Systemes d'Information — BGFI Bank Gabon</p>
-    <p style="margin-top: 1rem; font-size: 0.75rem;">Ce document est fourni a titre informatif dans le cadre de l'evaluation de la plateforme BGFI WhatsApp SaaS. Il peut etre mis a jour en fonction de l'evolution de l'architecture et des exigences de securite.</p>
+    <p>Prepare pour la Direction des Systemes d'Information — CNSS Bank Gabon</p>
+    <p style="margin-top: 1rem; font-size: 0.75rem;">Ce document est fourni a titre informatif dans le cadre de l'evaluation de la plateforme CNSS WhatsApp SaaS. Il peut etre mis a jour en fonction de l'evolution de l'architecture et des exigences de securite.</p>
 </div>
 
 </div>

@@ -125,7 +125,7 @@ async function handleIncomingMessage(message, contacts) {
           where: { id: dbContact.id },
           data: { status: 'ACTIVE', optedIn: true, optedInAt: new Date() }
         });
-        await whatsappService.sendMessage(phone, 'Vous etes de nouveau inscrit a nos communications BGFI Bank. Bienvenue !').catch(() => {});
+        await whatsappService.sendMessage(phone, 'Vous etes de nouveau inscrit a nos communications CNSS. Bienvenue !').catch(() => {});
         logger.info('Contact opted back in', { contactId: dbContact.id });
         return;
       }
@@ -180,7 +180,7 @@ async function handleIncomingMessage(message, contacts) {
           logger.error('Error in auto-reply', { error: chatErr.message });
           // Message de fallback en cas d'erreur
           const fallbackMsg = process.env.CHATBOT_FALLBACK_MESSAGE ||
-            'Merci pour votre message. Un conseiller BGFI Bank vous repondra dans les plus brefs delais. Service client : 011 76 32 29';
+            'Merci pour votre message. Un conseiller CNSS vous repondra dans les plus brefs delais.';
           await whatsappService.sendMessage(phone, fallbackMsg).catch(() => {});
         }
       }

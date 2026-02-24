@@ -1,5 +1,5 @@
 # ============================================
-# BGFI API Backend Dockerfile
+# CNSS API Backend Dockerfile
 # ============================================
 
 FROM node:18-alpine AS base

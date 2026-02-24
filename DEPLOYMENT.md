@@ -1,4 +1,4 @@
-# 🚀 Guide de Déploiement - BGFI WhatsApp Marketing SaaS
+# 🚀 Guide de Déploiement - CNSS WhatsApp Marketing SaaS
 
 ## Table des matières
 1. [Prérequis](#prérequis)
@@ -28,7 +28,7 @@
 
 ### 1. Cloner le repository
 ```bash
-git clone https://github.com/bgfi/whatsapp-marketing-saas.git
+git clone https://github.com/cnss/whatsapp-marketing-saas.git
 cd whatsapp-marketing-saas
 ```
 
@@ -60,7 +60,7 @@ OPENAI_API_KEY=sk-votre_cle_openai
 # Pinecone
 PINECONE_API_KEY=votre_cle_pinecone
 PINECONE_ENVIRONMENT=gcp-starter
-PINECONE_INDEX=bgfi-knowledge
+PINECONE_INDEX=cnss-knowledge
 
 # Client URL
 CLIENT_URL=https://votre-domaine.com
@@ -126,7 +126,7 @@ sudo curl -L "https://github.com/docker/compose/releases/download/v2.20.0/docker
 sudo chmod +x /usr/local/bin/docker-compose
 
 # Cloner le projet
-git clone https://github.com/bgfi/whatsapp-marketing-saas.git
+git clone https://github.com/cnss/whatsapp-marketing-saas.git
 cd whatsapp-marketing-saas
 
 # Configurer
@@ -223,7 +223,7 @@ docker-compose exec redis redis-cli ping
 # Login
 curl -X POST http://localhost/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email": "admin@bgfi.ga", "password": "password"}'
+  -d '{"email": "admin@cnsssaas.ga", "password": "password"}'
 
 # Créer une campagne (avec token)
 curl -X POST http://localhost/api/campaigns \
@@ -254,10 +254,10 @@ Dashboards disponibles:
 Configurer des alertes dans `monitoring/prometheus/alerts.yml`:
 ```yaml
 groups:
-  - name: bgfi-alerts
+  - name: cnss-alerts
     rules:
       - alert: HighErrorRate
-        expr: rate(bgfi_api_errors_total[5m]) > 0.1
+        expr: rate(cnss_api_errors_total[5m]) > 0.1
         for: 5m
         labels:
           severity: warning
@@ -292,7 +292,7 @@ sudo dpkg-reconfigure -plow unattended-upgrades
 # Script de backup
 #!/bin/bash
 DATE=$(date +%Y%m%d_%H%M%S)
-docker-compose exec -T db pg_dump -U postgres bgfi_whatsapp > backup_$DATE.sql
+docker-compose exec -T db pg_dump -U postgres cnss_whatsapp > backup_$DATE.sql
 gzip backup_$DATE.sql
 ```
 
@@ -358,9 +358,9 @@ docker-compose restart rag-service
 ## 📞 Support
 
 En cas de problème:
-- 📧 Email: support@bgfi.ga
+- 📧 Email: support@cnsssaas.ga
 - 📱 Téléphone: +241 01 74 12 34
-- 📖 Documentation: https://docs.bgfi-whatsapp.ga
+- 📖 Documentation: https://docs.cnsssaas.ga
 
 ---
 
