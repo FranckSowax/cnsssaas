@@ -27,7 +27,7 @@ const upload = multer({
 // Stocke l'URL originale dans redirectUrl et remplace par l'URL de tracking
 const TRACKING_BASE = process.env.TRACKING_BASE_URL || (process.env.RAILWAY_PUBLIC_DOMAIN
   ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}/t/{{1}}`
-  : 'https://cnss-wacbt-production.up.railway.app/t/{{1}}');
+  : 'https://cnsssaas-production.up.railway.app/t/{{1}}');
 
 function applyTrackingToButtons(buttons) {
   if (!buttons || !Array.isArray(buttons)) return buttons;
