@@ -314,11 +314,10 @@ class CampaignService {
       }
     }
 
-    // Update campaign sent count (only API-level sent count, not delivery)
-    // Delivery/failure stats are updated by webhook handler to avoid race conditions
+    // Update campaign counters: sent = actual successful API sends, failed = API-level failures
     await prisma.campaign.update({
       where: { id: campaign.id },
-      data: { sent: totalSent + totalFailed }
+      data: { sent: totalSent, failed: totalFailed }
     });
 
     logger.info('Campaign direct send completed', {
@@ -345,8 +344,7 @@ class CampaignService {
     await prisma.campaign.update({
       where: { id: campaignId },
       data: {
-        sent: { increment: results.sent + results.failed },
-        delivered: { increment: results.sent },
+        sent: { increment: results.sent },
         failed: { increment: results.failed }
       }
     });
