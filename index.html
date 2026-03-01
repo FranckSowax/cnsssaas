@@ -608,18 +608,21 @@
                     <Card>
                         <h3 className="text-sm font-semibold text-gray-700 mb-3">Clics par bouton</h3>
                         <div className="space-y-2">
-                            {buttonStats.filter(b => b.type === 'URL').map(b => {
+                            {buttonStats.map(b => {
                                 const rate = totalSent > 0 ? ((b.clicks / totalSent) * 100).toFixed(1) : 0;
+                                const isUrl = b.type === 'URL';
+                                const isPhone = b.type === 'PHONE_NUMBER';
                                 return (
-                                    <div key={b.index} className="flex items-center justify-between bg-amber-50 rounded-lg px-4 py-3">
+                                    <div key={b.index} className={`flex items-center justify-between rounded-lg px-4 py-3 ${isUrl ? 'bg-amber-50' : isPhone ? 'bg-blue-50' : 'bg-gray-50'}`}>
                                         <div className="flex items-center gap-2">
-                                            <Icons.MousePointer className="w-4 h-4 text-amber-600" />
+                                            {isUrl ? <Icons.MousePointer className="w-4 h-4 text-amber-600" /> : isPhone ? <Icons.Phone className="w-4 h-4 text-blue-600" /> : <Icons.MessageCircle className="w-4 h-4 text-gray-600" />}
                                             <span className="text-sm font-medium text-gray-800">{b.text}</span>
                                             {b.redirectUrl && <span className="text-xs text-gray-400 truncate max-w-[200px]">{b.redirectUrl}</span>}
+                                            {!isUrl && <span className="text-xs text-gray-400">{isPhone ? 'Appel' : 'Reponse rapide'}</span>}
                                         </div>
                                         <div className="text-right">
-                                            <span className="text-lg font-bold text-amber-700">{b.clicks}</span>
-                                            <span className="text-xs text-amber-600 ml-1">({rate}%)</span>
+                                            <span className={`text-lg font-bold ${isUrl ? 'text-amber-700' : isPhone ? 'text-blue-700' : 'text-gray-700'}`}>{b.clicks}</span>
+                                            <span className={`text-xs ml-1 ${isUrl ? 'text-amber-600' : isPhone ? 'text-blue-600' : 'text-gray-600'}`}>({rate}%)</span>
                                         </div>
                                     </div>
                                 );
