@@ -372,11 +372,23 @@ class CampaignService {
     });
     if (!campaign) throw new Error('Campagne non trouvée');
 
+    // Compter les stats directement depuis les messages (source de verite)
     const messages = await prisma.message.groupBy({
       by: ['status'],
       where: { campaignId },
       _count: { status: true }
     });
+
+    const statusCounts = {};
+    messages.forEach(m => { statusCounts[m.status] = m._count.status; });
+
+    // sent = tous les messages qui ont au moins ete envoyes (SENT + DELIVERED + READ)
+    const sent = (statusCounts['SENT'] || 0) + (statusCounts['DELIVERED'] || 0) + (statusCounts['READ'] || 0);
+    const delivered = (statusCounts['DELIVERED'] || 0) + (statusCounts['READ'] || 0);
+    const read = statusCounts['READ'] || 0;
+    const failed = statusCounts['FAILED'] || 0;
+    const pending = (statusCounts['PENDING'] || 0) + (statusCounts['QUEUED'] || 0);
+    const clicked = campaign.clicked || 0;
 
     // Calculer les clics par bouton
     const clickedMessages = await prisma.message.findMany({
@@ -404,23 +416,20 @@ class CampaignService {
     }));
 
     const stats = {
-      total: campaign.sent,
-      delivered: campaign.delivered,
-      read: campaign.read,
-      clicked: campaign.clicked,
-      failed: campaign.failed,
-      pending: 0,
+      total: sent,
+      sent,
+      delivered,
+      read,
+      clicked,
+      failed,
+      pending,
       rates: {
-        delivery: campaign.sent > 0 ? ((campaign.delivered / campaign.sent) * 100).toFixed(2) : 0,
-        open: campaign.delivered > 0 ? ((campaign.read / campaign.delivered) * 100).toFixed(2) : 0,
-        click: campaign.read > 0 ? ((campaign.clicked / campaign.read) * 100).toFixed(2) : 0
+        delivery: sent > 0 ? ((delivered / sent) * 100).toFixed(2) : 0,
+        open: delivered > 0 ? ((read / delivered) * 100).toFixed(2) : 0,
+        click: read > 0 ? ((clicked / read) * 100).toFixed(2) : 0
       },
       buttonStats
     };
-
-    messages.forEach(m => {
-      if (m.status === 'PENDING' || m.status === 'QUEUED') stats.pending += m._count.status;
-    });
 
     return stats;
   }

@@ -256,6 +256,7 @@ async function handleStatusUpdate(status) {
     // Mettre a jour les statistiques de la campagne (increments uniquement)
     if (dbMessage.campaignId) {
       const campaignUpdate = {};
+      if (dbStatus === 'SENT') campaignUpdate.sent = { increment: 1 };
       if (dbStatus === 'DELIVERED') campaignUpdate.delivered = { increment: 1 };
       if (dbStatus === 'READ') campaignUpdate.read = { increment: 1 };
       if (dbStatus === 'FAILED') campaignUpdate.failed = { increment: 1 };

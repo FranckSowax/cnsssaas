@@ -562,10 +562,15 @@
             const buttonStats = statsData?.buttonStats || [];
 
             const c = campaign;
-            const totalSent = c.sent || 0;
-            const deliveryRate = totalSent > 0 ? ((c.delivered / totalSent) * 100).toFixed(1) : 0;
-            const openRate = c.delivered > 0 ? ((c.read / c.delivered) * 100).toFixed(1) : 0;
-            const clickRate = c.read > 0 ? ((c.clicked / c.read) * 100).toFixed(1) : 0;
+            const s = statsData || {};
+            const totalSent = s.sent || c.sent || 0;
+            const totalDelivered = s.delivered || c.delivered || 0;
+            const totalRead = s.read || c.read || 0;
+            const totalClicked = s.clicked || c.clicked || 0;
+            const totalFailed = s.failed || c.failed || 0;
+            const deliveryRate = totalSent > 0 ? ((totalDelivered / totalSent) * 100).toFixed(1) : 0;
+            const openRate = totalDelivered > 0 ? ((totalRead / totalDelivered) * 100).toFixed(1) : 0;
+            const clickRate = totalRead > 0 ? ((totalClicked / totalRead) * 100).toFixed(1) : 0;
 
             const [statusFilter, setStatusFilter] = useState('');
             const filtered = statusFilter ? messages.filter(m => m.status === statusFilter) : messages;
@@ -593,10 +598,10 @@
 
                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
                         <Card className="text-center"><p className="text-lg sm:text-2xl font-bold text-blue-700">{formatNum(totalSent)}</p><p className="text-xs text-blue-600 mt-1">Envoyes</p></Card>
-                        <Card className="text-center"><p className="text-lg sm:text-2xl font-bold text-green-700">{formatNum(c.delivered || 0)}</p><p className="text-xs text-green-600 mt-1">Delivres ({deliveryRate}%)</p></Card>
-                        <Card className="text-center"><p className="text-lg sm:text-2xl font-bold text-purple-700">{formatNum(c.read || 0)}</p><p className="text-xs text-purple-600 mt-1">Lus ({openRate}%)</p></Card>
-                        <Card className="text-center"><p className="text-lg sm:text-2xl font-bold text-amber-700">{formatNum(c.clicked || 0)}</p><p className="text-xs text-amber-600 mt-1">Cliques ({clickRate}%)</p></Card>
-                        <Card className="text-center col-span-2 sm:col-span-1"><p className="text-lg sm:text-2xl font-bold text-red-700">{formatNum(c.failed || 0)}</p><p className="text-xs text-red-600 mt-1">Echoues</p></Card>
+                        <Card className="text-center"><p className="text-lg sm:text-2xl font-bold text-green-700">{formatNum(totalDelivered)}</p><p className="text-xs text-green-600 mt-1">Delivres ({deliveryRate}%)</p></Card>
+                        <Card className="text-center"><p className="text-lg sm:text-2xl font-bold text-purple-700">{formatNum(totalRead)}</p><p className="text-xs text-purple-600 mt-1">Lus ({openRate}%)</p></Card>
+                        <Card className="text-center"><p className="text-lg sm:text-2xl font-bold text-amber-700">{formatNum(totalClicked)}</p><p className="text-xs text-amber-600 mt-1">Cliques ({clickRate}%)</p></Card>
+                        <Card className="text-center col-span-2 sm:col-span-1"><p className="text-lg sm:text-2xl font-bold text-red-700">{formatNum(totalFailed)}</p><p className="text-xs text-red-600 mt-1">Echoues</p></Card>
                     </div>
 
                     {buttonStats.length > 0 && (
