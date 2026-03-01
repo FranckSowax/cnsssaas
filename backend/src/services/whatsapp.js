@@ -319,13 +319,16 @@ class WhatsAppCloudService {
     try {
       // Step 1: Download the image
       logger.info('Downloading image for media upload', { url: imageUrl.substring(0, 80) + '...' });
+      // Only send WhatsApp auth header for Meta/WhatsApp CDN URLs
+      const isMetaUrl = imageUrl.includes('whatsapp.net') || imageUrl.includes('facebook.com') || imageUrl.includes('fbcdn.net');
+      const downloadHeaders = { 'User-Agent': 'WhatsApp/2.0' };
+      if (isMetaUrl) {
+        downloadHeaders['Authorization'] = `OAuth ${this.accessToken}`;
+      }
       const imageResponse = await axios.get(imageUrl, {
         responseType: 'arraybuffer',
         timeout: 30000,
-        headers: {
-          'Authorization': `OAuth ${this.accessToken}`,
-          'User-Agent': 'WhatsApp/2.0'
-        }
+        headers: downloadHeaders
       });
 
       const imageBuffer = Buffer.from(imageResponse.data);

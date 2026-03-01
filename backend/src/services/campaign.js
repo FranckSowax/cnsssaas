@@ -493,16 +493,27 @@ class CampaignService {
   buildSendComponents(template, contact, variables, mediaId = null, trackingId = null) {
     const components = [];
 
-    // HEADER component (image/video/document) - use uploaded media ID
-    if (template.headerType && template.headerType !== 'NONE' && template.headerType !== 'TEXT' && mediaId) {
+    // HEADER component (image/video/document) - use uploaded media ID or fallback to public link
+    if (template.headerType && template.headerType !== 'NONE' && template.headerType !== 'TEXT') {
       const mediaType = template.headerType.toLowerCase(); // image, video, document
-      components.push({
-        type: 'header',
-        parameters: [{
-          type: mediaType,
-          [mediaType]: { id: mediaId }
-        }]
-      });
+      if (mediaId) {
+        components.push({
+          type: 'header',
+          parameters: [{
+            type: mediaType,
+            [mediaType]: { id: mediaId }
+          }]
+        });
+      } else if (template.headerContent && template.headerContent.startsWith('http')) {
+        // Fallback: use public URL link directly
+        components.push({
+          type: 'header',
+          parameters: [{
+            type: mediaType,
+            [mediaType]: { link: template.headerContent }
+          }]
+        });
+      }
     }
 
     // BODY component (text variables)
