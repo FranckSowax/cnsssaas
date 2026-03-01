@@ -247,4 +247,35 @@ setInterval(async () => {
 
 logger.info('Tache planifiee configuree: rapport quotidien a 8h00 (Libreville/UTC+1)');
 
+// === Tache planifiee : Lancement automatique des campagnes planifiees ===
+const campaignService = require('./services/campaign');
+const { PrismaClient: PrismaScheduler } = require('@prisma/client');
+const schedulerPrisma = new PrismaScheduler();
+
+setInterval(async () => {
+  try {
+    const now = new Date();
+    const scheduledCampaigns = await schedulerPrisma.campaign.findMany({
+      where: {
+        status: 'SCHEDULED',
+        scheduledAt: { lte: now }
+      }
+    });
+
+    for (const campaign of scheduledCampaigns) {
+      try {
+        logger.info('[SCHEDULER] Lancement campagne planifiee', { campaignId: campaign.id, name: campaign.name, scheduledAt: campaign.scheduledAt });
+        await campaignService.launchCampaign(campaign.id);
+        logger.info('[SCHEDULER] Campagne lancee avec succes', { campaignId: campaign.id });
+      } catch (err) {
+        logger.error('[SCHEDULER] Erreur lancement campagne', { campaignId: campaign.id, error: err.message });
+      }
+    }
+  } catch (err) {
+    logger.error('[SCHEDULER] Erreur verification campagnes planifiees', { error: err.message });
+  }
+}, 30 * 1000); // Verifie toutes les 30 secondes
+
+logger.info('Scheduler campagnes planifiees configure (verification toutes les 30s)');
+
 module.exports = app;

@@ -635,7 +635,7 @@
                         <div className="text-sm"><span className="text-gray-500">Creee le</span><p className="font-medium text-gray-900">{c.createdAt ? new Date(c.createdAt).toLocaleString('fr-FR') : '-'}</p></div>
                         <div className="text-sm"><span className="text-gray-500">Lancee le</span><p className="font-medium text-gray-900">{c.startedAt ? new Date(c.startedAt).toLocaleString('fr-FR') : '-'}</p></div>
                         <div className="text-sm"><span className="text-gray-500">Terminee le</span><p className="font-medium text-gray-900">{c.completedAt ? new Date(c.completedAt).toLocaleString('fr-FR') : '-'}</p></div>
-                        {c.scheduledAt && <div className="text-sm"><span className="text-gray-500">Planifiee le</span><p className="font-medium text-gray-900">{new Date(c.scheduledAt).toLocaleString('fr-FR')}</p></div>}
+                        {c.scheduledAt && <div className="text-sm"><span className="text-gray-500">Planifiee le</span><p className="font-medium text-gray-900">{new Date(c.scheduledAt).toLocaleString('fr-FR', { timeZone: 'Africa/Libreville' })} (Libreville)</p></div>}
                     </div>
 
                     <Card>
@@ -824,7 +824,7 @@
             const handleCreate = async () => {
                 setCreating(true);
                 try {
-                    const body = { name: form.name, type: form.type, templateId: form.templateId, scheduledAt: form.scheduledAt || undefined, variables: selTemplate?.variableMapping || undefined };
+                    const body = { name: form.name, type: form.type, templateId: form.templateId, scheduledAt: form.scheduledAt ? form.scheduledAt + ':00+01:00' : undefined, variables: selTemplate?.variableMapping || undefined };
                     if (form.targetMode === 'segment' && form.segmentId) {
                         body.segmentId = form.segmentId;
                     } else if (form.targetMode === 'builder') {
@@ -949,7 +949,7 @@
                                             <p className="text-xs text-gray-500">Choisir une date et heure d'envoi</p>
                                         </div>
                                     </div>
-                                    {form.scheduledAt && <Input label="Date et heure d'envoi" type="datetime-local" value={form.scheduledAt} onChange={v => setForm({...form, scheduledAt: v})} />}
+                                    {form.scheduledAt && <Input label="Date et heure d'envoi (heure de Libreville UTC+1)" type="datetime-local" value={form.scheduledAt} onChange={v => setForm({...form, scheduledAt: v})} />}
                                 </div>
                             )}
 
@@ -960,7 +960,7 @@
                                         <div className="flex justify-between"><span className="text-sm text-gray-500">Type</span><span className="text-sm font-medium">{catMap[form.type] || form.type}</span></div>
                                         <div className="flex justify-between"><span className="text-sm text-gray-500">Ciblage</span><span className="text-sm font-medium">{form.targetMode === 'all' ? 'Tous les contacts' : form.targetMode === 'segment' ? (selSegment?.name || '-') : 'Criteres personnalises' + (previewCount !== null ? ' (' + previewCount + ' contacts)' : '')}</span></div>
                                         <div className="flex justify-between"><span className="text-sm text-gray-500">Template</span><span className="text-sm font-medium">{selTemplate?.displayName || selTemplate?.name || '-'}</span></div>
-                                        <div className="flex justify-between"><span className="text-sm text-gray-500">Planification</span><span className="text-sm font-medium">{form.scheduledAt ? new Date(form.scheduledAt).toLocaleString('fr-FR') : 'Brouillon (envoi manuel)'}</span></div>
+                                        <div className="flex justify-between"><span className="text-sm text-gray-500">Planification</span><span className="text-sm font-medium">{form.scheduledAt ? new Date(form.scheduledAt + ':00+01:00').toLocaleString('fr-FR', { timeZone: 'Africa/Libreville' }) + ' (Libreville)' : 'Brouillon (envoi manuel)'}</span></div>
                                     </div>
                                 </div>
                             )}
@@ -1016,7 +1016,9 @@
             const handleEdit = async () => {
                 setSaving(true);
                 try {
-                    await api('/campaigns/' + editModal.id, { method: 'PUT', body: JSON.stringify(editForm) });
+                    const editBody = { ...editForm };
+                    if (editBody.scheduledAt) editBody.scheduledAt = editBody.scheduledAt + ':00+01:00';
+                    await api('/campaigns/' + editModal.id, { method: 'PUT', body: JSON.stringify(editBody) });
                     setEditModal(null); refetch();
                 } catch (err) { alert(err.message); }
                 finally { setSaving(false); }
@@ -1106,7 +1108,7 @@
                                     </div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <Select label="Categorie" value={editForm.segment} onChange={v => setEditForm({...editForm, segment: v})} options={[{ value: 'ALL', label: 'Tous les contacts' }, { value: 'ACTIVE', label: 'Actifs' }, { value: 'INACTIVE', label: 'Inactifs' }, { value: 'NEW', label: 'Nouveaux' }, { value: 'BENEFICIAIRE', label: 'Bénéficiaire' }, { value: 'COTISANT', label: 'Cotisant' }]} />
-                                        <Input label="Date d'envoi" type="datetime-local" value={editForm.scheduledAt} onChange={v => setEditForm({...editForm, scheduledAt: v})} />
+                                        <Input label="Date d'envoi (heure de Libreville UTC+1)" type="datetime-local" value={editForm.scheduledAt} onChange={v => setEditForm({...editForm, scheduledAt: v})} />
                                     </div>
                                 </div>
                                 <div className="p-6 border-t border-gray-200 flex justify-end gap-3">
