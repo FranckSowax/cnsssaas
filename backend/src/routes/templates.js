@@ -640,11 +640,10 @@ router.post('/sync-all', authenticate, async (req, res) => {
       // Prefer header_url (actual accessible URL) over header_handle (opaque token for template creation only)
       const headerContent = headerComp?.format === 'TEXT' ? headerComp.text : (headerComp?.example?.header_url?.[0] || headerComp?.example?.header_handle?.[0] || null);
       const footer = footerComp?.text || null;
-      const rawButtons = buttonsComp?.buttons?.map(b => ({
+      const buttons = buttonsComp?.buttons?.map(b => ({
         type: b.type, text: b.text,
         url: b.url || null, phone: b.phone_number || null
       })) || null;
-      const buttons = applyTrackingToButtons(rawButtons);
 
       const existing = await prisma.template.findFirst({ where: { name: mt.name } });
       if (existing) {
