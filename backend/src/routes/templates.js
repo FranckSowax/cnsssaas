@@ -640,10 +640,17 @@ router.post('/sync-all', authenticate, async (req, res) => {
       // Prefer header_url (actual accessible URL) over header_handle (opaque token for template creation only)
       const headerContent = headerComp?.format === 'TEXT' ? headerComp.text : (headerComp?.example?.header_url?.[0] || headerComp?.example?.header_handle?.[0] || null);
       const footer = footerComp?.text || null;
-      const buttons = buttonsComp?.buttons?.map(b => ({
+      const rawButtons = buttonsComp?.buttons?.map(b => ({
         type: b.type, text: b.text,
         url: b.url || null, phone: b.phone_number || null
       })) || null;
+      // Appliquer le tracking uniquement aux boutons qui ont deja {{1}} dans Meta
+      const buttons = rawButtons ? rawButtons.map(btn => {
+        if (btn.type === 'URL' && btn.url && btn.url.includes('{{1}}')) {
+          return { ...btn, redirectUrl: btn.url, url: TRACKING_BASE };
+        }
+        return btn;
+      }) : null;
 
       const existing = await prisma.template.findFirst({ where: { name: mt.name } });
       if (existing) {
