@@ -35,12 +35,23 @@ router.get('/whatsapp', (req, res) => {
 // ============================================
 router.post('/whatsapp', async (req, res) => {
   try {
+    // Log d'arrivee du webhook (debug essentiel)
+    logger.info('>>> WEBHOOK POST received', {
+      contentType: req.headers['content-type'],
+      bodyObject: req.body?.object,
+      hasEntry: !!req.body?.entry,
+      entryCount: req.body?.entry?.length || 0,
+      ip: req.ip,
+      userAgent: req.headers['user-agent']
+    });
+
     // Toujours répondre 200 immédiatement pour éviter les retries Meta
     res.status(200).json({ received: true });
 
     const body = req.body;
 
     if (body.object !== 'whatsapp_business_account') {
+      logger.warn('Webhook ignored: object is not whatsapp_business_account', { object: body.object });
       return;
     }
 
@@ -48,6 +59,14 @@ router.post('/whatsapp', async (req, res) => {
       for (const change of entry.changes || []) {
         const value = change.value;
         if (!value) continue;
+
+        logger.info('Webhook change received', {
+          field: change.field,
+          hasMessages: !!value.messages,
+          hasStatuses: !!value.statuses,
+          messageCount: value.messages?.length || 0,
+          statusCount: value.statuses?.length || 0
+        });
 
         // Traiter les messages entrants
         if (value.messages) {

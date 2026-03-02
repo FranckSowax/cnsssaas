@@ -41,8 +41,11 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(morgan('combined', { stream: { write: msg => logger.info(msg.trim()) } }));
 
-// Rate limiting
-app.use('/api/', apiLimiter);
+// Rate limiting (exclure les webhooks - Meta envoie de nombreux callbacks)
+app.use('/api/', (req, res, next) => {
+  if (req.path.startsWith('/webhooks')) return next();
+  return apiLimiter(req, res, next);
+});
 
 // Fichiers statiques (frontend SPA)
 const rootDir = path.join(__dirname, '../../');
