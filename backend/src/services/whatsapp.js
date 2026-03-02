@@ -3,7 +3,7 @@ const crypto = require('crypto');
 const fs = require('fs');
 const logger = require('../utils/logger');
 
-const GRAPH_API_VERSION = 'v21.0';
+const GRAPH_API_VERSION = 'v25.0';
 const GRAPH_API_BASE = `https://graph.facebook.com/${GRAPH_API_VERSION}`;
 
 class WhatsAppCloudService {

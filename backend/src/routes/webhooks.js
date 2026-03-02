@@ -305,4 +305,29 @@ router.get('/health', (req, res) => {
   });
 });
 
+// ============================================
+// GET /webhooks/debug-status/:messageWamid - Diagnostic: verifier statut d'un message via Meta API
+// ============================================
+router.get('/debug-status/:messageWamid', async (req, res) => {
+  try {
+    const { messageWamid } = req.params;
+    const axios = require('axios');
+    const accessToken = process.env.WHATSAPP_ACCESS_TOKEN;
+
+    // Chercher le message en BDD
+    const dbMsg = await prisma.message.findFirst({
+      where: { externalId: messageWamid },
+      select: { id: true, status: true, phone: true, error: true, createdAt: true, deliveredAt: true, readAt: true, failedAt: true }
+    });
+
+    res.json({
+      wamid: messageWamid,
+      dbRecord: dbMsg || 'NOT FOUND in database',
+      note: 'WhatsApp Cloud API does not provide a message status query endpoint. Status is only available via webhook callbacks.'
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;
